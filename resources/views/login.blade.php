@@ -1,11 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-</head>
-<body>
-
-<h1>Login</h1>
+<h2>Login</h2>
 
 @if ($errors->any())
     <p style="color:red">{{ $errors->first() }}</p>
@@ -24,5 +17,7 @@
     <button type="submit">Login</button>
 </form>
 
-</body>
-</html>
+<p>
+    No account?
+    <a href="/register">Register</a>
+</p>
