@@ -1,4 +1,19 @@
-<h2>Login</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+
+<h1>Login</h1>
+
+@if ($errors->any())
+    <p style="color:red">{{ $errors->first() }}</p>
+@endif
+
+@if (session('success'))
+    <p style="color:green">{{ session('success') }}</p>
+@endif
 
 <form method="POST" action="/login">
     @csrf
@@ -8,3 +23,6 @@
 
     <button type="submit">Login</button>
 </form>
+
+</body>
+</html>
