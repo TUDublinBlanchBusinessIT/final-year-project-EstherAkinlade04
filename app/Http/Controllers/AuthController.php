@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // Show registration form
+    // Show register page
     public function showRegister()
     {
         return view('register');
@@ -33,7 +33,7 @@ class AuthController extends Controller
         return redirect('/login')->with('success', 'Registration successful. Please log in.');
     }
 
-    // Show login form
+    // Show login page
     public function showLogin()
     {
         return view('login');
