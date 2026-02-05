@@ -7,11 +7,15 @@
 
 <h1>The Vault</h1>
 
-<p>Welcome to The Vault fitness centre management system.</p>
+<p>
+    Welcome to <strong>The Vault</strong>, a fitness centre management system.
+</p>
 
 <p>
-    Please log in or create an account to continue.
+    Please log in or create an account to access the system.
 </p>
+
+<hr>
 
 <a href="/login">Login</a>
 <br><br>
