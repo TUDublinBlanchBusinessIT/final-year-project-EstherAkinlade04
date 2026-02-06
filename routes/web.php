@@ -4,12 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 
-// Home (smart redirect)
+// Home page (public – no login required)
 Route::get('/', function () {
-    if (auth()->check()) {
-        return redirect('/dashboard');
-    }
-
     return view('welcome');
 });
 
@@ -18,7 +14,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister']);
     Route::post('/register', [AuthController::class, 'register']);
 
-    Route::get('/login', [AuthController::class, 'showLogin']);
+    Route::get('/login', [AuthController::class, 'showLogin'])
+        ->name('login');
+
     Route::post('/login', [AuthController::class, 'login']);
 });
 
