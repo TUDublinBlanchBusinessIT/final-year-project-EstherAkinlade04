@@ -1,332 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>The Vault | Fitness Centre</title>
+<meta charset="UTF-8">
+<title>The Vault | Fitness Centre</title>
 
-    <style>
-        :root {
-            --lilac-main: #9b7edc;
-            --lilac-dark: #6f54c6;
-            --lilac-light: #f5f1fb;
-            --text-dark: #1c1c1c;
-            --text-muted: #555;
-        }
+<style>
+:root {
+    --lilac-main: #9b7edc;
+    --lilac-dark: #6f54c6;
+    --lilac-light: #f5f1fb;
+    --text-dark: #1c1c1c;
+    --text-muted: #555;
+}
 
-        * {
-            box-sizing: border-box;
-        }
+* { box-sizing: border-box; }
 
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: var(--lilac-light);
-            color: var(--text-dark);
-        }
+body {
+    margin: 0;
+    font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    background-color: var(--lilac-light);
+    color: var(--text-dark);
+}
 
-        /* ================= HEADER ================= */
-        header {
-            background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
-            padding: 22px 40px;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: center;
-            position: relative;
-        }
+/* ================= HEADER ================= */
+header {
+    background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
+    padding: 22px 40px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+}
 
-        .logo {
-            font-size: 26px;
-            font-weight: 800;
-            color: white;
-        }
+.logo a {
+    font-size: 26px;
+    font-weight: 800;
+    color: white;
+    text-decoration: none;
+}
 
-        .top-nav {
-            display: flex;
-            justify-content: center;
-            gap: 18px;
-        }
+.top-nav {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+}
 
-        .top-nav a {
-            padding: 12px 28px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 15px;
-            text-decoration: none;
-            color: white;
-            border: 2px solid rgba(255,255,255,0.4);
-            transition: all 0.25s ease;
-        }
+.top-nav a {
+    padding: 12px 28px;
+    border-radius: 30px;
+    font-weight: 700;
+    text-decoration: none;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.4);
+    transition: all 0.25s ease;
+}
 
-        .top-nav a:hover {
-            background-color: rgba(255,255,255,0.2);
-            transform: translateY(-1px);
-        }
+.top-nav a:hover {
+    background-color: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+}
 
-        .top-nav a.join {
-            background-color: white;
-            color: var(--lilac-dark);
-        }
+.top-nav a.join {
+    background-color: white;
+    color: var(--lilac-dark);
+}
 
-        /* Hamburger */
-        .hamburger {
-            width: 30px;
-            height: 22px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            cursor: pointer;
-        }
+/* ================= HERO ================= */
+.hero {
+    padding: 140px 20px 110px;
+    text-align: center;
+}
 
-        .hamburger span {
-            height: 3px;
-            background: white;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
+.hero h1 {
+    font-size: 54px;
+    color: var(--lilac-dark);
+}
 
-        .hamburger.active span:nth-child(1) {
-            transform: translateY(9px) rotate(45deg);
-        }
+.hero p {
+    max-width: 720px;
+    margin: 20px auto 40px;
+    font-size: 18px;
+    color: var(--text-muted);
+}
 
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
+.hero a {
+    padding: 16px 50px;
+    border-radius: 40px;
+    font-weight: 800;
+    text-decoration: none;
+    color: white;
+    background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
+    box-shadow: 0 18px 45px rgba(155,126,220,0.45);
+    transition: all 0.3s ease;
+}
 
-        .hamburger.active span:nth-child(3) {
-            transform: translateY(-9px) rotate(-45deg);
-        }
+.hero a:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 28px 60px rgba(155,126,220,0.7);
+}
 
-        .menu {
-            display: none;
-            position: absolute;
-            top: 80px;
-            right: 40px;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 18px 40px rgba(0,0,0,0.18);
-            overflow: hidden;
-            z-index: 100;
-        }
+/* ================= FEATURE POP ================= */
+.features {
+    padding: 100px 20px;
+    background: white;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: auto;
+}
 
-        .menu a {
-            display: block;
-            padding: 16px 40px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
+.feature-card {
+    padding: 45px 30px;
+    border-radius: 28px;
+    background: var(--lilac-light);
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s ease;
+}
 
-        .menu a:hover {
-            background-color: var(--lilac-light);
-        }
+.feature-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top, rgba(155,126,220,0.35), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
 
-        /* ================= HERO ================= */
-        .hero {
-            padding: 140px 20px 120px;
-            text-align: center;
-            animation: fadeUp 1s ease;
-        }
+.feature-card:hover::after {
+    opacity: 1;
+}
 
-        .hero h1 {
-            font-size: 52px;
-            margin-bottom: 20px;
-            color: var(--lilac-dark);
-        }
+.feature-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 22px 55px rgba(155,126,220,0.35);
+}
 
-        .hero p {
-            max-width: 720px;
-            margin: 0 auto 40px;
-            font-size: 18px;
-            line-height: 1.7;
-            color: var(--text-muted);
-        }
+/* ================= CLASSES ================= */
+.classes {
+    padding: 120px 20px;
+    text-align: center;
+}
 
-        .hero a {
-            display: inline-block;
-            padding: 16px 50px;
-            border-radius: 40px;
-            font-weight: 800;
-            text-decoration: none;
-            color: white;
-            background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
-            box-shadow: 0 16px 40px rgba(155,126,220,0.45);
-            transition: all 0.3s ease;
-        }
+.class-box {
+    margin-top: 40px;
+    padding: 55px;
+    border-radius: 28px;
+    background: white;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
 
-        .hero a:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 22px 50px rgba(155,126,220,0.65);
-        }
+.class-box h3 {
+    color: var(--lilac-dark);
+    font-size: 28px;
+}
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+.class-box p {
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin: 18px 0 28px;
+}
 
-        /* ================= FEATURES ================= */
-        .features {
-            padding: 100px 20px;
-            background: white;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 30px;
-            max-width: 1100px;
-            margin: auto;
-        }
+.class-actions a {
+    display: inline-block;
+    margin: 0 10px;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 700;
+    text-decoration: none;
+    color: white;
+    background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
+    transition: transform 0.3s ease;
+}
 
-        .feature-card {
-            padding: 40px 30px;
-            border-radius: 24px;
-            background: var(--lilac-light);
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+.class-actions a.secondary {
+    background: white;
+    color: var(--lilac-dark);
+    border: 2px solid var(--lilac-dark);
+}
 
-        .feature-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 18px 40px rgba(0,0,0,0.12);
-        }
+.class-actions a:hover {
+    transform: translateY(-3px);
+}
 
-        .feature-card h3 {
-            color: var(--lilac-dark);
-            margin-bottom: 14px;
-        }
+/* ================= PRICING (FLIP CARDS) ================= */
+.pricing {
+    padding: 120px 20px;
+    text-align: center;
+}
 
-        /* ================= CLASSES ================= */
-        .classes {
-            padding: 110px 20px;
-            text-align: center;
-        }
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 50px auto 0;
+}
 
-        .class-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 24px;
-            max-width: 1100px;
-            margin: 50px auto 0;
-        }
+.price-card {
+    perspective: 1000px;
+}
 
-        .class-card {
-            background: white;
-            border-radius: 22px;
-            padding: 30px;
-            font-weight: 700;
-            transition: transform 0.3s ease;
-        }
+.price-inner {
+    height: 340px;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
 
-        .class-card:hover {
-            transform: scale(1.05);
-        }
+.price-card:hover .price-inner {
+    transform: rotateY(180deg);
+}
 
-        /* ================= CTA ================= */
-        .cta {
-            padding: 100px 20px;
-            background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
-            text-align: center;
-            color: white;
-        }
+.price-front, .price-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 28px;
+    padding: 35px;
+    backface-visibility: hidden;
+    background: white;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+}
 
-        .cta h2 {
-            font-size: 38px;
-            margin-bottom: 20px;
-        }
+.price-front h3 {
+    color: var(--lilac-dark);
+}
 
-        .cta a {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 14px 44px;
-            border-radius: 30px;
-            background: white;
-            color: var(--lilac-dark);
-            font-weight: 800;
-            text-decoration: none;
-        }
+.price {
+    font-size: 38px;
+    font-weight: 800;
+    margin: 20px 0;
+}
 
-        footer {
-            background: #111;
-            color: #ccc;
-            text-align: center;
-            padding: 26px;
-            font-size: 14px;
-        }
-    </style>
+.price-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
+    color: white;
+}
+
+/* ================= FOOTER ================= */
+footer {
+    background: #111;
+    color: #ccc;
+    text-align: center;
+    padding: 26px;
+    font-size: 14px;
+}
+</style>
 </head>
 <body>
 
 <header>
-    <div class="logo">The Vault</div>
+    <div class="logo"><a href="/">The Vault</a></div>
 
     <nav class="top-nav">
         <a href="/">Home</a>
         <a href="/login">Login</a>
         <a href="/register" class="join">Join</a>
     </nav>
-
-    <div class="hamburger" onclick="toggleMenu(this)">
-        <span></span><span></span><span></span>
-    </div>
-
-    <div class="menu" id="menu">
-        <a href="/">Home</a>
-        <a href="/login">Login</a>
-        <a href="/register">Join</a>
-    </div>
 </header>
 
 <section class="hero">
-    <h1>Train Smarter. Move Better.</h1>
-    <p>
-        The Vault is a modern fitness platform designed to give members full control
-        over their training experience — from memberships to classes and bookings.
-    </p>
+    <h1>Train Smarter. Feel Stronger.</h1>
+    <p>A modern fitness platform designed around memberships, classes, and real results.</p>
     <a href="/register">Join The Vault</a>
 </section>
 
 <section class="features">
-    <div class="feature-card">
-        <h3>Memberships</h3>
-        <p>Flexible fitness memberships designed around your lifestyle.</p>
-    </div>
-
-    <div class="feature-card">
-        <h3>Classes</h3>
-        <p>Browse and book fitness classes that match your training goals.</p>
-    </div>
-
-    <div class="feature-card">
-        <h3>Bookings</h3>
-        <p>Manage your sessions and schedule through one simple system.</p>
-    </div>
+    <div class="feature-card">Flexible Memberships</div>
+    <div class="feature-card">Book Classes Easily</div>
+    <div class="feature-card">Train Your Way</div>
 </section>
 
 <section class="classes">
-    <h2>Popular Training Styles</h2>
+    <h2>Our Classes</h2>
 
-    <div class="class-grid">
-        <div class="class-card">HIIT Training</div>
-        <div class="class-card">Strength & Conditioning</div>
-        <div class="class-card">Yoga & Mobility</div>
-        <div class="class-card">Functional Fitness</div>
+    <div class="class-box" id="classBox">
+        <h3>Pilates</h3>
+        <p>
+            Pilates is head-to-toe conditioning. A full body and mind workout focusing on
+            muscle balance, posture alignment, flexibility, and core strength.
+        </p>
+
+        <div class="class-actions">
+            <a href="#">Book Now</a>
+            <a href="#" class="secondary">Watch</a>
+        </div>
     </div>
 </section>
 
-<section class="cta">
-    <h2>Start Your Fitness Journey Today</h2>
-    <a href="/register">Join Now</a>
+<section class="pricing">
+    <h2>Membership Options</h2>
+
+    <div class="pricing-grid">
+        <div class="price-card">
+            <div class="price-inner">
+                <div class="price-front">
+                    <h3>Student</h3>
+                    <div class="price">€25 / month</div>
+                </div>
+                <div class="price-back">
+                    <h3>Includes</h3>
+                    <p>Gym access<br>Classes<br>Flexible booking</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="price-card">
+            <div class="price-inner">
+                <div class="price-front">
+                    <h3>Standard</h3>
+                    <div class="price">€39 / month</div>
+                </div>
+                <div class="price-back">
+                    <h3>Includes</h3>
+                    <p>All gyms<br>All classes<br>Priority access</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="price-card">
+            <div class="price-inner">
+                <div class="price-front">
+                    <h3>Premium</h3>
+                    <div class="price">€49 / month</div>
+                </div>
+                <div class="price-back">
+                    <h3>Includes</h3>
+                    <p>Everything<br>Personal training<br>Exclusive sessions</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 <footer>
     © 2026 The Vault · Fitness Centre Management System
 </footer>
-
-<script>
-    function toggleMenu(button) {
-        const menu = document.getElementById('menu');
-        button.classList.toggle('active');
-        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    }
-</script>
 
 </body>
 </html>
