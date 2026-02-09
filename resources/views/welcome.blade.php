@@ -22,13 +22,14 @@ body {
     color: var(--text-dark);
 }
 
-/* ================= HEADER ================= */
+/* ===== HEADER ===== */
 header {
     background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
     padding: 22px 40px;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
+    position: relative;
 }
 
 .logo a {
@@ -64,7 +65,59 @@ header {
     color: var(--lilac-dark);
 }
 
-/* ================= HERO ================= */
+/* ===== HAMBURGER ===== */
+.hamburger {
+    width: 30px;
+    height: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.hamburger span {
+    height: 3px;
+    background: white;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+}
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+.hamburger.active span:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+}
+
+.menu {
+    display: none;
+    position: absolute;
+    top: 80px;
+    right: 40px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+    overflow: hidden;
+    z-index: 100;
+}
+
+.menu a {
+    display: block;
+    padding: 16px 40px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.menu a:hover {
+    background-color: var(--lilac-light);
+}
+
+/* ===== HERO ===== */
 .hero {
     padding: 140px 20px 110px;
     text-align: center;
@@ -98,7 +151,7 @@ header {
     box-shadow: 0 28px 60px rgba(155,126,220,0.7);
 }
 
-/* ================= FEATURE POP ================= */
+/* ===== FEATURES ===== */
 .features {
     padding: 100px 20px;
     background: white;
@@ -116,22 +169,7 @@ header {
     text-align: center;
     font-weight: 700;
     font-size: 18px;
-    position: relative;
-    overflow: hidden;
     transition: all 0.35s ease;
-}
-
-.feature-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top, rgba(155,126,220,0.35), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.feature-card:hover::after {
-    opacity: 1;
 }
 
 .feature-card:hover {
@@ -139,32 +177,39 @@ header {
     box-shadow: 0 22px 55px rgba(155,126,220,0.35);
 }
 
-/* ================= CLASSES ================= */
+/* ===== CLASSES (SLIDER / FLIP) ===== */
 .classes {
     padding: 120px 20px;
     text-align: center;
 }
 
-.class-box {
-    margin-top: 40px;
+.class-slider {
+    max-width: 800px;
+    margin: 50px auto 0;
+    position: relative;
+}
+
+.class-card {
+    display: none;
     padding: 55px;
     border-radius: 28px;
     background: white;
     box-shadow: 0 25px 60px rgba(0,0,0,0.15);
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    animation: flipIn 0.6s ease;
 }
 
-.class-box h3 {
-    color: var(--lilac-dark);
+.class-card.active {
+    display: block;
+}
+
+.class-card h3 {
     font-size: 28px;
+    color: var(--lilac-dark);
 }
 
-.class-box p {
-    color: var(--text-muted);
+.class-card p {
     line-height: 1.7;
+    color: var(--text-muted);
     margin: 18px 0 28px;
 }
 
@@ -177,7 +222,6 @@ header {
     text-decoration: none;
     color: white;
     background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
-    transition: transform 0.3s ease;
 }
 
 .class-actions a.secondary {
@@ -186,11 +230,18 @@ header {
     border: 2px solid var(--lilac-dark);
 }
 
-.class-actions a:hover {
-    transform: translateY(-3px);
+@keyframes flipIn {
+    from {
+        opacity: 0;
+        transform: rotateY(90deg);
+    }
+    to {
+        opacity: 1;
+        transform: rotateY(0);
+    }
 }
 
-/* ================= PRICING (FLIP CARDS) ================= */
+/* ===== PRICING (FLIP CARDS) ===== */
 .pricing {
     padding: 120px 20px;
     text-align: center;
@@ -229,14 +280,9 @@ header {
     box-shadow: 0 25px 60px rgba(0,0,0,0.15);
 }
 
-.price-front h3 {
-    color: var(--lilac-dark);
-}
-
 .price {
     font-size: 38px;
     font-weight: 800;
-    margin: 20px 0;
 }
 
 .price-back {
@@ -245,7 +291,7 @@ header {
     color: white;
 }
 
-/* ================= FOOTER ================= */
+/* ===== FOOTER ===== */
 footer {
     background: #111;
     color: #ccc;
@@ -265,11 +311,22 @@ footer {
         <a href="/login">Login</a>
         <a href="/register" class="join">Join</a>
     </nav>
+
+    <div class="hamburger" onclick="toggleMenu(this)">
+        <span></span><span></span><span></span>
+    </div>
+
+    <div class="menu" id="menu">
+        <a href="/">Home</a>
+        <a href="#">About Us</a>
+        <a href="/login">Login</a>
+        <a href="/register">Join</a>
+    </div>
 </header>
 
 <section class="hero">
     <h1>Train Smarter. Feel Stronger.</h1>
-    <p>A modern fitness platform designed around memberships, classes, and real results.</p>
+    <p>A modern fitness platform built around memberships, classes, and real results.</p>
     <a href="/register">Join The Vault</a>
 </section>
 
@@ -282,16 +339,41 @@ footer {
 <section class="classes">
     <h2>Our Classes</h2>
 
-    <div class="class-box" id="classBox">
-        <h3>Pilates</h3>
-        <p>
-            Pilates is head-to-toe conditioning. A full body and mind workout focusing on
-            muscle balance, posture alignment, flexibility, and core strength.
-        </p>
+    <div class="class-slider" id="classSlider">
+        <div class="class-card active">
+            <h3>Pilates</h3>
+            <p>Pilates is head-to-toe conditioning focusing on posture, flexibility, and core strength.</p>
+            <div class="class-actions">
+                <a href="#">Book Now</a>
+                <a href="#" class="secondary">Watch</a>
+            </div>
+        </div>
 
-        <div class="class-actions">
-            <a href="#">Book Now</a>
-            <a href="#" class="secondary">Watch</a>
+        <div class="class-card">
+            <h3>HIIT Training</h3>
+            <p>High-intensity workouts designed to burn fat, build strength, and boost endurance.</p>
+            <div class="class-actions">
+                <a href="#">Book Now</a>
+                <a href="#" class="secondary">Watch</a>
+            </div>
+        </div>
+
+        <div class="class-card">
+            <h3>Yoga</h3>
+            <p>Improve flexibility, balance, and mental focus through guided movement and breath.</p>
+            <div class="class-actions">
+                <a href="#">Book Now</a>
+                <a href="#" class="secondary">Watch</a>
+            </div>
+        </div>
+
+        <div class="class-card">
+            <h3>Strength & Conditioning</h3>
+            <p>Build muscle and improve performance using functional strength training.</p>
+            <div class="class-actions">
+                <a href="#">Book Now</a>
+                <a href="#" class="secondary">Watch</a>
+            </div>
         </div>
     </div>
 </section>
@@ -307,7 +389,6 @@ footer {
                     <div class="price">€25 / month</div>
                 </div>
                 <div class="price-back">
-                    <h3>Includes</h3>
                     <p>Gym access<br>Classes<br>Flexible booking</p>
                 </div>
             </div>
@@ -320,7 +401,6 @@ footer {
                     <div class="price">€39 / month</div>
                 </div>
                 <div class="price-back">
-                    <h3>Includes</h3>
                     <p>All gyms<br>All classes<br>Priority access</p>
                 </div>
             </div>
@@ -333,7 +413,6 @@ footer {
                     <div class="price">€49 / month</div>
                 </div>
                 <div class="price-back">
-                    <h3>Includes</h3>
                     <p>Everything<br>Personal training<br>Exclusive sessions</p>
                 </div>
             </div>
@@ -344,6 +423,41 @@ footer {
 <footer>
     © 2026 The Vault · Fitness Centre Management System
 </footer>
+
+<script>
+function toggleMenu(btn) {
+    btn.classList.toggle('active');
+    const menu = document.getElementById('menu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+/* Class slider with pause on hover */
+const cards = document.querySelectorAll('.class-card');
+let current = 0;
+let timer;
+
+function showCard(i) {
+    cards.forEach(c => c.classList.remove('active'));
+    cards[i].classList.add('active');
+}
+
+function startSlider() {
+    timer = setInterval(() => {
+        current = (current + 1) % cards.length;
+        showCard(current);
+    }, 3000);
+}
+
+function stopSlider() {
+    clearInterval(timer);
+}
+
+showCard(current);
+startSlider();
+
+document.getElementById('classSlider').addEventListener('mouseenter', stopSlider);
+document.getElementById('classSlider').addEventListener('mouseleave', startSlider);
+</script>
 
 </body>
 </html>
