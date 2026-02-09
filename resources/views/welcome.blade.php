@@ -22,7 +22,7 @@ body {
     color: var(--text-dark);
 }
 
-/* ===== HEADER ===== */
+/* ================= HEADER ================= */
 header {
     background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
     padding: 22px 40px;
@@ -65,7 +65,7 @@ header {
     color: var(--lilac-dark);
 }
 
-/* ===== HAMBURGER ===== */
+/* ================= HAMBURGER ================= */
 .hamburger {
     width: 30px;
     height: 22px;
@@ -117,14 +117,68 @@ header {
     background-color: var(--lilac-light);
 }
 
-/* ===== HERO ===== */
+/* ================= HERO ================= */
 .hero {
-    padding: 140px 20px 110px;
+    position: relative;
+    padding: 160px 20px 130px;
     text-align: center;
+    overflow: hidden;
+}
+
+/* 🔮 DARKER ANIMATED BACKGROUND */
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.hero-bg span {
+    position: absolute;
+    width: 460px;
+    height: 460px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(155,126,220,0.75),
+        rgba(124,92,196,0.55),
+        transparent 75%
+    );
+    filter: blur(10px);
+    animation: float 20s infinite ease-in-out;
+}
+
+.hero-bg span:nth-child(1) {
+    top: -160px;
+    left: -160px;
+    animation-duration: 26s;
+}
+
+.hero-bg span:nth-child(2) {
+    bottom: -160px;
+    right: -140px;
+    animation-duration: 30s;
+}
+
+.hero-bg span:nth-child(3) {
+    top: 35%;
+    right: 20%;
+    width: 340px;
+    height: 340px;
+    animation-duration: 22s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(60px, -60px); }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
 }
 
 .hero h1 {
-    font-size: 54px;
+    font-size: 56px;
     color: var(--lilac-dark);
 }
 
@@ -136,22 +190,22 @@ header {
 }
 
 .hero a {
-    padding: 16px 50px;
+    padding: 16px 52px;
     border-radius: 40px;
     font-weight: 800;
     text-decoration: none;
     color: white;
     background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
-    box-shadow: 0 18px 45px rgba(155,126,220,0.45);
+    box-shadow: 0 18px 45px rgba(124,92,196,0.65);
     transition: all 0.3s ease;
 }
 
 .hero a:hover {
     transform: translateY(-5px);
-    box-shadow: 0 28px 60px rgba(155,126,220,0.7);
+    box-shadow: 0 30px 70px rgba(124,92,196,0.9);
 }
 
-/* ===== FEATURES ===== */
+/* ================= FEATURES ================= */
 .features {
     padding: 100px 20px;
     background: white;
@@ -163,7 +217,7 @@ header {
 }
 
 .feature-card {
-    padding: 45px 30px;
+    padding: 48px 32px;
     border-radius: 28px;
     background: var(--lilac-light);
     text-align: center;
@@ -173,25 +227,24 @@ header {
 }
 
 .feature-card:hover {
-    transform: translateY(-10px) scale(1.03);
-    box-shadow: 0 22px 55px rgba(155,126,220,0.35);
+    transform: translateY(-12px) scale(1.05);
+    box-shadow: 0 25px 60px rgba(155,126,220,0.4);
 }
 
-/* ===== CLASSES (SLIDER / FLIP) ===== */
+/* ================= CLASSES ================= */
 .classes {
     padding: 120px 20px;
     text-align: center;
 }
 
 .class-slider {
-    max-width: 800px;
+    max-width: 820px;
     margin: 50px auto 0;
-    position: relative;
 }
 
 .class-card {
     display: none;
-    padding: 55px;
+    padding: 58px;
     border-radius: 28px;
     background: white;
     box-shadow: 0 25px 60px rgba(0,0,0,0.15);
@@ -203,7 +256,7 @@ header {
 }
 
 .class-card h3 {
-    font-size: 28px;
+    font-size: 30px;
     color: var(--lilac-dark);
 }
 
@@ -231,17 +284,11 @@ header {
 }
 
 @keyframes flipIn {
-    from {
-        opacity: 0;
-        transform: rotateY(90deg);
-    }
-    to {
-        opacity: 1;
-        transform: rotateY(0);
-    }
+    from { opacity: 0; transform: rotateY(90deg); }
+    to { opacity: 1; transform: rotateY(0); }
 }
 
-/* ===== PRICING (FLIP CARDS) ===== */
+/* ================= PRICING ================= */
 .pricing {
     padding: 120px 20px;
     text-align: center;
@@ -291,7 +338,7 @@ header {
     color: white;
 }
 
-/* ===== FOOTER ===== */
+/* ================= FOOTER ================= */
 footer {
     background: #111;
     color: #ccc;
@@ -325,9 +372,15 @@ footer {
 </header>
 
 <section class="hero">
-    <h1>Train Smarter. Feel Stronger.</h1>
-    <p>A modern fitness platform built around memberships, classes, and real results.</p>
-    <a href="/register">Join The Vault</a>
+    <div class="hero-bg">
+        <span></span><span></span><span></span>
+    </div>
+
+    <div class="hero-content">
+        <h1>Train Smarter. Feel Stronger.</h1>
+        <p>A modern fitness platform built around memberships, classes, and real results.</p>
+        <a href="/register">Join The Vault</a>
+    </div>
 </section>
 
 <section class="features">
@@ -342,7 +395,7 @@ footer {
     <div class="class-slider" id="classSlider">
         <div class="class-card active">
             <h3>Pilates</h3>
-            <p>Pilates is head-to-toe conditioning focusing on posture, flexibility, and core strength.</p>
+            <p>Full body conditioning focusing on posture, flexibility, and core strength.</p>
             <div class="class-actions">
                 <a href="#">Book Now</a>
                 <a href="#" class="secondary">Watch</a>
@@ -351,7 +404,7 @@ footer {
 
         <div class="class-card">
             <h3>HIIT Training</h3>
-            <p>High-intensity workouts designed to burn fat, build strength, and boost endurance.</p>
+            <p>High-intensity workouts to burn fat and boost endurance.</p>
             <div class="class-actions">
                 <a href="#">Book Now</a>
                 <a href="#" class="secondary">Watch</a>
@@ -360,7 +413,7 @@ footer {
 
         <div class="class-card">
             <h3>Yoga</h3>
-            <p>Improve flexibility, balance, and mental focus through guided movement and breath.</p>
+            <p>Improve balance, flexibility, and mental focus.</p>
             <div class="class-actions">
                 <a href="#">Book Now</a>
                 <a href="#" class="secondary">Watch</a>
@@ -369,7 +422,7 @@ footer {
 
         <div class="class-card">
             <h3>Strength & Conditioning</h3>
-            <p>Build muscle and improve performance using functional strength training.</p>
+            <p>Build strength and performance through functional training.</p>
             <div class="class-actions">
                 <a href="#">Book Now</a>
                 <a href="#" class="secondary">Watch</a>
@@ -431,7 +484,6 @@ function toggleMenu(btn) {
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 }
 
-/* Class slider with pause on hover */
 const cards = document.querySelectorAll('.class-card');
 let current = 0;
 let timer;
