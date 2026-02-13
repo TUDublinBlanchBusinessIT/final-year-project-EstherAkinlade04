@@ -10,6 +10,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     protected $hidden = [
@@ -17,18 +18,15 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // A user has many bookings
+    // Relationship: user bookings
     public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
 
-    // A user belongs to many fitness classes through bookings
-    public function fitnessClasses()
+    // Helper: check if admin
+    public function isAdmin()
     {
-        return $this->belongsToMany(
-            FitnessClass::class,
-            'bookings'
-        );
+        return $this->role === 'admin';
     }
 }
