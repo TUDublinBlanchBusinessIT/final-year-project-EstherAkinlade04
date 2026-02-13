@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Booking;
+use App\Models\User;
 
 class FitnessClass extends Model
 {
@@ -22,9 +24,6 @@ class FitnessClass extends Model
     // A class has many users through bookings
     public function users()
     {
-        return $this->belongsToMany(
-            User::class,
-            'bookings'
-        );
+        return $this->belongsToMany(User::class, 'bookings');
     }
 }
