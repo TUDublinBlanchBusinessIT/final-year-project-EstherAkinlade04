@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Booking;
+use App\Models\FitnessClass;
 
 class User extends Authenticatable
 {
@@ -18,13 +20,21 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // Relationship: user bookings
     public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
 
-    // Helper: check if admin
+    public function fitnessClasses()
+    {
+        return $this->belongsToMany(
+            FitnessClass::class,
+            'bookings',
+            'user_id',
+            'fitness_class_id'
+        );
+    }
+
     public function isAdmin()
     {
         return $this->role === 'admin';

@@ -14,6 +14,9 @@
 <p>Welcome, {{ $user->name }}!</p>
 <p>Email: {{ $user->email }}</p>
 
+<!-- ✅ ROLE DISPLAY ADDED HERE -->
+<p><strong>Role:</strong> {{ auth()->user()->role }}</p>
+
 <hr>
 
 <h2>My Bookings</h2>
