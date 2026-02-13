@@ -28,4 +28,7 @@ Route::middleware('auth')->group(function () {
 
     // ✅ NEW CLASSES ROUTE
     Route::get('/classes', [ClassesController::class, 'index']);
+    Route::post('/book/{id}', [\App\Http\Controllers\BookingController::class, 'store'])
+    ->name('book.class');
+
 });
