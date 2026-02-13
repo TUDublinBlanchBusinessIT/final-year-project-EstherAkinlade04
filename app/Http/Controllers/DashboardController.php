@@ -8,8 +8,11 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('dashboard', [
-            'user' => Auth::user()
-        ]);
+        $user = Auth::user();
+
+        // Get classes user has booked
+        $bookings = $user->fitnessClasses()->orderBy('class_time')->get();
+
+        return view('dashboard', compact('user', 'bookings'));
     }
 }
