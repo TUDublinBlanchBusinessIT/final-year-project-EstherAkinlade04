@@ -17,6 +17,11 @@
     <br>
     <strong>Time:</strong> 
     {{ \Carbon\Carbon::parse($class->class_time)->format('H:i') }}
+    <form method="POST" action="{{ route('book.class', $class->id) }}">
+    @csrf
+    <button type="submit">Book Class</button>
+</form>
+
 </p>
 
         <p><strong>Capacity:</strong> {{ $class->capacity }}</p>
