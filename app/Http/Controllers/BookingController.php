@@ -11,9 +11,9 @@ class BookingController extends Controller
     public function store($id)
     {
         $user = Auth::user();
-
         $class = FitnessClass::findOrFail($id);
 
+        // Check if already booked
         $existingBooking = Booking::where('user_id', $user->id)
             ->where('fitness_class_id', $id)
             ->first();
@@ -22,6 +22,14 @@ class BookingController extends Controller
             return back()->with('success', 'You have already booked this class.');
         }
 
+        // 🔴 CHECK CAPACITY
+        $currentBookings = Booking::where('fitness_class_id', $id)->count();
+
+        if ($currentBookings >= $class->capacity) {
+            return back()->with('error', 'Sorry, this class is fully booked.');
+        }
+
+        // Create booking
         Booking::create([
             'user_id' => $user->id,
             'fitness_class_id' => $id,
@@ -30,7 +38,7 @@ class BookingController extends Controller
         return back()->with('success', 'Class booked successfully!');
     }
 
-    // ✅ CANCEL BOOKING METHOD
+    // ✅ CANCEL BOOKING
     public function destroy($id)
     {
         $user = Auth::user();
@@ -40,7 +48,7 @@ class BookingController extends Controller
             ->first();
 
         if (!$booking) {
-            return back()->with('success', 'Booking not found.');
+            return back()->with('error', 'Booking not found.');
         }
 
         $booking->delete();
