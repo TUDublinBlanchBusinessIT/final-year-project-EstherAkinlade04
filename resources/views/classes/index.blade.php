@@ -11,7 +11,14 @@
     <div style="border:1px solid #ccc; padding:20px; margin-bottom:15px;">
         <h3>{{ $class->name }}</h3>
         <p>{{ $class->description }}</p>
-        <p><strong>Date:</strong> {{ $class->class_time }}</p>
+        <p>
+    <strong>Date:</strong> 
+    {{ \Carbon\Carbon::parse($class->class_time)->format('d M Y') }}
+    <br>
+    <strong>Time:</strong> 
+    {{ \Carbon\Carbon::parse($class->class_time)->format('H:i') }}
+</p>
+
         <p><strong>Capacity:</strong> {{ $class->capacity }}</p>
     </div>
 @endforeach
