@@ -74,4 +74,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
+    // ✅ Create class form
+    Route::get('/admin/classes/create', [AdminController::class, 'create'])
+        ->name('admin.classes.create');
+
+    // ✅ Store class
+    Route::post('/admin/classes', [AdminController::class, 'store'])
+        ->name('admin.classes.store');
 });

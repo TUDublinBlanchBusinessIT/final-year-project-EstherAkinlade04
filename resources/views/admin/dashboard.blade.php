@@ -3,7 +3,7 @@
 <head>
     <title>Admin Panel</title>
 </head>
-<body>
+<body style="font-family: Arial; background:#f4f4f4; margin:40px;">
 
 <h1>Admin Dashboard</h1>
 
@@ -12,7 +12,22 @@
 
 <hr>
 
+<!-- ✅ Create Class Button -->
+<p>
+    <a href="{{ route('admin.classes.create') }}">
+        <button style="padding:10px 20px; background:#6f54c6; color:white; border:none; border-radius:5px;">
+            + Create New Class
+        </button>
+    </a>
+</p>
+
 <h2>Class Overview</h2>
+
+@if(session('success'))
+    <p style="color:green; font-weight:bold;">
+        {{ session('success') }}
+    </p>
+@endif
 
 @if($classes->isEmpty())
     <p>No classes created yet.</p>
@@ -26,7 +41,7 @@
         $remaining = $capacity - $booked;
     @endphp
 
-    <div style="border:1px solid #ccc; padding:20px; margin-bottom:15px; border-radius:8px;">
+    <div style="background:white; border:1px solid #ddd; padding:20px; margin-bottom:15px; border-radius:8px; box-shadow:0 3px 8px rgba(0,0,0,0.05);">
 
         <h3>{{ $class->name }}</h3>
 
@@ -55,7 +70,7 @@
 
 <hr>
 
-<a href="/dashboard">Back to Dashboard</a>
+<a href="{{ route('dashboard') }}">Back to Dashboard</a>
 
 </body>
 </html>
