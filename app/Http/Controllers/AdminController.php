@@ -9,7 +9,12 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    // Dashboard
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Dashboard
+    |--------------------------------------------------------------------------
+    */
+
     public function index()
     {
         $classes = FitnessClass::withCount('bookings')
@@ -29,57 +34,86 @@ class AdminController extends Controller
         ));
     }
 
-    // Show Create Form
+    /*
+    |--------------------------------------------------------------------------
+    | Create Class
+    |--------------------------------------------------------------------------
+    */
+
     public function create()
     {
         return view('admin.create');
     }
 
-    // Store Class
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
             'class_time' => 'required|date',
             'capacity' => 'required|integer|min:1',
         ]);
 
-        FitnessClass::create($request->all());
+        FitnessClass::create($validated);
 
         return redirect()->route('admin.dashboard')
             ->with('success', 'Class created successfully.');
     }
 
-    // Show Edit Form
+    /*
+    |--------------------------------------------------------------------------
+    | Edit Class
+    |--------------------------------------------------------------------------
+    */
+
     public function edit($id)
     {
         $class = FitnessClass::findOrFail($id);
         return view('admin.edit', compact('class'));
     }
 
-    // Update Class
     public function update(Request $request, $id)
     {
-        $class = FitnessClass::findOrFail($id);
+        $class = FitnessClass::withCount('bookings')->findOrFail($id);
 
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
             'class_time' => 'required|date',
             'capacity' => 'required|integer|min:1',
         ]);
 
-        $class->update($request->all());
+        // 🔒 Prevent reducing capacity below current bookings
+        if ($validated['capacity'] < $class->bookings_count) {
+            return back()->with('error',
+                'Capacity cannot be lower than current bookings ('
+                . $class->bookings_count . ').'
+            );
+        }
+
+        $class->update($validated);
 
         return redirect()->route('admin.dashboard')
             ->with('success', 'Class updated successfully.');
     }
 
-    // Delete Class
+    /*
+    |--------------------------------------------------------------------------
+    | Delete Class
+    |--------------------------------------------------------------------------
+    */
+
     public function destroy($id)
     {
-        $class = FitnessClass::findOrFail($id);
+        $class = FitnessClass::withCount('bookings')->findOrFail($id);
+
+        // 🔒 Prevent deleting class if members are booked
+        if ($class->bookings_count > 0) {
+            return back()->with('error',
+                'Cannot delete class. Members are currently booked.'
+            );
+        }
+
         $class->delete();
 
         return redirect()->route('admin.dashboard')
