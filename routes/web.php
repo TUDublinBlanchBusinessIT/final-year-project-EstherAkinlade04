@@ -74,11 +74,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
-    // ✅ Create class form
+    // Create
     Route::get('/admin/classes/create', [AdminController::class, 'create'])
         ->name('admin.classes.create');
 
-    // ✅ Store class
     Route::post('/admin/classes', [AdminController::class, 'store'])
         ->name('admin.classes.store');
+
+    // Edit
+    Route::get('/admin/classes/{id}/edit', [AdminController::class, 'edit'])
+        ->name('admin.classes.edit');
+
+    Route::put('/admin/classes/{id}', [AdminController::class, 'update'])
+        ->name('admin.classes.update');
+
+    // Delete
+    Route::delete('/admin/classes/{id}', [AdminController::class, 'destroy'])
+        ->name('admin.classes.delete');
 });
