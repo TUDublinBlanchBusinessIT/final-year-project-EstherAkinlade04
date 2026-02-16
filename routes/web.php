@@ -5,13 +5,25 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\AdminController;
 
-// Home page (public)
+/*
+|--------------------------------------------------------------------------
+| Public Route
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Guest routes
+
+/*
+|--------------------------------------------------------------------------
+| Guest Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('guest')->group(function () {
 
     Route::get('/register', [AuthController::class, 'showRegister'])
@@ -25,7 +37,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// Authenticated routes
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Member Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -42,4 +60,18 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])
         ->name('cancel.booking');
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'admin'])->group(function () {
+
+    Route::get('/admin', [AdminController::class, 'index'])
+        ->name('admin.dashboard');
+
 });

@@ -23,15 +23,16 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
         ]);
-        
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'member', // ✅ default role
         ]);
 
-        return redirect('/login')->with('success', 'Registration successful. Please log in.');
+        return redirect()->route('login')
+            ->with('success', 'Registration successful. Please log in.');
     }
 
     // Show login page
@@ -49,8 +50,15 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+
             $request->session()->regenerate();
-            return redirect('/dashboard');
+
+            // ✅ ROLE-BASED REDIRECT
+            if (Auth::user()->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+
+            return redirect()->route('dashboard');
         }
 
         return back()->withErrors([
@@ -62,9 +70,10 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect()->route('home');
     }
 }

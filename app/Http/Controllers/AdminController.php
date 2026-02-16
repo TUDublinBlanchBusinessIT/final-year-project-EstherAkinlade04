@@ -8,9 +8,10 @@ class AdminController extends Controller
 {
     public function index()
     {
-        // Load classes with booking count
-        $classes = FitnessClass::withCount('bookings')->get();
+        $classes = FitnessClass::withCount('bookings')
+            ->orderBy('class_time')
+            ->get();
 
-        return view('admin.index', compact('classes'));
+        return view('admin.dashboard', compact('classes'));
     }
 }
