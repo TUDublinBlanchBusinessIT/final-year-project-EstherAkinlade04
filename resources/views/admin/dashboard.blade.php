@@ -5,178 +5,135 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100">
 
-<div class="max-w-7xl mx-auto p-8">
+<div class="flex min-h-screen">
 
-    <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
+    <!-- SIDEBAR -->
+    <aside id="sidebar"
+           class="bg-purple-700 text-white flex flex-col transition-all duration-300 w-64">
 
-    {{-- Flash Messages --}}
-    @if(session('success'))
-        <div class="bg-green-100 text-green-700 p-4 rounded mb-6">
-            {{ session('success') }}
-        </div>
-    @endif
+        <!-- Logo + Toggle -->
+        <div class="flex items-center justify-between p-6 border-b border-purple-500">
+            <span id="logoText" class="text-2xl font-bold">The Vault</span>
 
-    @if(session('error'))
-        <div class="bg-red-100 text-red-700 p-4 rounded mb-6">
-            {{ session('error') }}
-        </div>
-    @endif
-
-    {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-
-        <div class="bg-white shadow rounded-xl p-6">
-            <p class="text-gray-500">Total Users</p>
-            <h2 class="text-3xl font-bold">{{ $totalUsers }}</h2>
-        </div>
-
-        <div class="bg-white shadow rounded-xl p-6">
-            <p class="text-gray-500">Total Classes</p>
-            <h2 class="text-3xl font-bold">{{ $totalClasses }}</h2>
-        </div>
-
-        <div class="bg-white shadow rounded-xl p-6">
-            <p class="text-gray-500">Total Bookings</p>
-            <h2 class="text-3xl font-bold">{{ $totalBookings }}</h2>
-        </div>
-
-    </div>
-
-    {{-- Chart --}}
-    <div class="bg-white shadow rounded-xl p-6 mb-10">
-        <h2 class="text-xl font-semibold mb-4">System Overview</h2>
-        <canvas id="statsChart"></canvas>
-    </div>
-
-    {{-- Filters --}}
-    <div class="flex justify-between items-center mb-6">
-        <form method="GET" action="{{ route('admin.dashboard') }}" class="flex gap-3">
-
-            <input type="text"
-                   name="search"
-                   value="{{ $search }}"
-                   placeholder="Search class..."
-                   class="border px-3 py-2 rounded">
-
-            <select name="status" class="border px-3 py-2 rounded">
-                <option value="">All</option>
-                <option value="upcoming" {{ $status=='upcoming'?'selected':'' }}>Upcoming</option>
-                <option value="completed" {{ $status=='completed'?'selected':'' }}>Completed</option>
-                <option value="full" {{ $status=='full'?'selected':'' }}>Full</option>
-            </select>
-
-            <button class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
-                Filter
+            <button onclick="toggleSidebar()"
+                    class="text-white text-xl focus:outline-none">
+                ☰
             </button>
+        </div>
 
-        </form>
+        <!-- Navigation -->
+        <nav class="flex-1 p-4 space-y-2">
 
-        <a href="{{ route('admin.classes.create') }}"
-           class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
-            + Create Class
-        </a>
-    </div>
+            <a href="{{ route('admin.dashboard') }}"
+               class="flex items-center gap-3 px-4 py-2 rounded bg-purple-900 hover:bg-purple-600 transition">
+                <span>🏠</span>
+                <span class="linkText">Dashboard</span>
+            </a>
 
-    {{-- Classes Table --}}
-    <div class="bg-white shadow rounded-xl overflow-hidden">
+            <a href="{{ route('admin.classes.create') }}"
+               class="flex items-center gap-3 px-4 py-2 rounded hover:bg-purple-600 transition">
+                <span>➕</span>
+                <span class="linkText">Create Class</span>
+            </a>
 
-        <table class="w-full text-left">
-            <thead class="bg-gray-200">
-                <tr>
-                    <th class="p-4">Class</th>
-                    <th class="p-4">Date</th>
-                    <th class="p-4">Capacity</th>
-                    <th class="p-4">Booked</th>
-                    <th class="p-4">Status</th>
-                    <th class="p-4">Actions</th>
-                </tr>
-            </thead>
+            <a href="{{ route('classes.index') }}"
+               class="flex items-center gap-3 px-4 py-2 rounded hover:bg-purple-600 transition">
+                <span>📋</span>
+                <span class="linkText">Member Classes</span>
+            </a>
 
-            <tbody>
+            <a href="{{ route('dashboard') }}"
+               class="flex items-center gap-3 px-4 py-2 rounded hover:bg-purple-600 transition">
+                <span>👤</span>
+                <span class="linkText">Member Dashboard</span>
+            </a>
 
-            @foreach($classes as $class)
+        </nav>
 
-                @php
-                    $remaining = $class->capacity - $class->bookings_count;
-                    $isPast = \Carbon\Carbon::parse($class->class_time)->isPast();
-                @endphp
+        <!-- Logout -->
+        <div class="p-4 border-t border-purple-500">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button class="w-full bg-purple-900 py-2 rounded hover:bg-purple-800 transition">
+                    <span class="linkText">Logout</span>
+                </button>
+            </form>
+        </div>
 
-                <tr class="border-t hover:bg-gray-50">
+    </aside>
 
-                    <td class="p-4 font-semibold">
-                        {{ $class->name }}
-                    </td>
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 p-10 transition-all duration-300">
 
-                    <td class="p-4">
-                        {{ \Carbon\Carbon::parse($class->class_time)->format('d M Y H:i') }}
-                    </td>
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold">Admin Dashboard</h1>
+            <p class="text-gray-600">
+                Welcome, {{ auth()->user()->name }}
+            </p>
+        </div>
 
-                    <td class="p-4">{{ $class->capacity }}</td>
-                    <td class="p-4">{{ $class->bookings_count }}</td>
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-white shadow rounded-xl p-6">
+                <p class="text-gray-500">Total Users</p>
+                <h2 class="text-3xl font-bold">{{ $totalUsers }}</h2>
+            </div>
 
-                    <td class="p-4">
-                        @if($isPast)
-                            <span class="text-gray-500 font-semibold">Completed</span>
-                        @elseif($remaining <= 0)
-                            <span class="text-red-600 font-semibold">Full</span>
-                        @else
-                            <span class="text-green-600 font-semibold">Upcoming</span>
-                        @endif
-                    </td>
+            <div class="bg-white shadow rounded-xl p-6">
+                <p class="text-gray-500">Total Classes</p>
+                <h2 class="text-3xl font-bold">{{ $totalClasses }}</h2>
+            </div>
 
-                    <td class="p-4 flex gap-3">
+            <div class="bg-white shadow rounded-xl p-6">
+                <p class="text-gray-500">Total Bookings</p>
+                <h2 class="text-3xl font-bold">{{ $totalBookings }}</h2>
+            </div>
+        </div>
 
-                        <a href="{{ route('admin.classes.edit', $class->id) }}"
-                           class="text-blue-600 hover:underline">
-                            Edit
-                        </a>
+        <!-- Chart -->
+        <div class="bg-white shadow rounded-xl p-6 mb-10">
+            <h2 class="text-xl font-semibold mb-4">System Overview</h2>
+            <canvas id="statsChart"></canvas>
+        </div>
 
-                        <form method="POST"
-                              action="{{ route('admin.classes.destroy', $class->id) }}">
-                            @csrf
-                            @method('DELETE')
-                            <button class="text-red-600 hover:underline">
-                                Delete
-                            </button>
-                        </form>
-
-                    </td>
-
-                </tr>
-
-            @endforeach
-
-            </tbody>
-        </table>
-
-    </div>
-
-    <div class="mt-6">
-        {{ $classes->links() }}
-    </div>
-
+    </main>
 </div>
 
 <script>
-    const ctx = document.getElementById('statsChart');
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const texts = document.querySelectorAll('.linkText');
+    const logo = document.getElementById('logoText');
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Users', 'Classes', 'Bookings'],
-            datasets: [{
-                label: 'System Data',
-                data: [{{ $totalUsers }}, {{ $totalClasses }}, {{ $totalBookings }}],
-                backgroundColor: [
-                    '#6f54c6',
-                    '#9b7edc',
-                    '#4c1d95'
-                ]
-            }]
-        }
-    });
+    if (sidebar.classList.contains('w-64')) {
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-20');
+
+        texts.forEach(text => text.style.display = 'none');
+        logo.style.display = 'none';
+    } else {
+        sidebar.classList.remove('w-20');
+        sidebar.classList.add('w-64');
+
+        texts.forEach(text => text.style.display = 'inline');
+        logo.style.display = 'inline';
+    }
+}
+
+// Chart
+new Chart(document.getElementById('statsChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Users', 'Classes', 'Bookings'],
+        datasets: [{
+            label: 'System Data',
+            data: [{{ $totalUsers }}, {{ $totalClasses }}, {{ $totalBookings }}],
+            backgroundColor: ['#6f54c6','#9b7edc','#4c1d95']
+        }]
+    }
+});
 </script>
 
 </body>
