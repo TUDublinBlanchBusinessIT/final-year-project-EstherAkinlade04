@@ -3,90 +3,98 @@
 <head>
     <title>Admin Dashboard</title>
 </head>
-<body style="font-family: Arial; background:#f4f4f4; margin:40px;">
+<body style="font-family:Arial; background:#f5f6fa; padding:40px;">
 
 <h1>Admin Dashboard</h1>
 
 @if(session('success'))
-    <p style="color:green; font-weight:bold;">{{ session('success') }}</p>
+    <div style="background:#d4edda; padding:15px; border-radius:6px; margin-bottom:20px;">
+        {{ session('success') }}
+    </div>
 @endif
 
-<!-- SYSTEM STATS -->
+<hr>
+
+<h2>System Stats</h2>
+
 <div style="display:flex; gap:20px; margin-bottom:30px;">
-    <div style="background:white; padding:20px; border-radius:8px; flex:1;">
-        <h3>Total Users</h3>
-        <p style="font-size:22px; font-weight:bold;">{{ $totalUsers }}</p>
+    <div style="background:white; padding:20px; border-radius:8px; width:200px;">
+        <strong>Total Users</strong><br>
+        {{ $totalUsers }}
     </div>
 
-    <div style="background:white; padding:20px; border-radius:8px; flex:1;">
-        <h3>Total Classes</h3>
-        <p style="font-size:22px; font-weight:bold;">{{ $totalClasses }}</p>
+    <div style="background:white; padding:20px; border-radius:8px; width:200px;">
+        <strong>Total Classes</strong><br>
+        {{ $totalClasses }}
     </div>
 
-    <div style="background:white; padding:20px; border-radius:8px; flex:1;">
-        <h3>Total Bookings</h3>
-        <p style="font-size:22px; font-weight:bold;">{{ $totalBookings }}</p>
+    <div style="background:white; padding:20px; border-radius:8px; width:200px;">
+        <strong>Total Bookings</strong><br>
+        {{ $totalBookings }}
     </div>
 </div>
 
 <hr>
 
-<a href="{{ route('admin.classes.create') }}"
-   style="padding:10px 20px; background:#6f54c6; color:white; text-decoration:none; border-radius:6px;">
-   + Create New Class
+<h2>Search Classes</h2>
+
+<form method="GET" action="{{ route('admin.dashboard') }}">
+    <input type="text" name="search" value="{{ $search }}" placeholder="Search class name">
+    <button type="submit">Search</button>
+</form>
+
+<br>
+
+<a href="{{ route('admin.classes.create') }}" 
+   style="background:#6f54c6; color:white; padding:10px 15px; text-decoration:none; border-radius:5px;">
+   + Create Class
 </a>
 
 <hr>
 
-<h2>Manage Classes</h2>
+<h2>Classes</h2>
 
 @foreach($classes as $class)
 
-    @php
-        $remaining = $class->capacity - $class->bookings_count;
-    @endphp
+@php
+    $capacity = $class->capacity;
+    $booked = $class->bookings_count;
+    $remaining = $capacity - $booked;
+@endphp
 
-    <div style="background:white; padding:20px; margin-bottom:20px; border-radius:8px;">
+<div style="background:white; padding:20px; margin-bottom:20px; border-radius:8px;">
 
-        <h3>{{ $class->name }}</h3>
+    <h3>{{ $class->name }}</h3>
 
-        <p>
-            <strong>Date:</strong>
-            {{ \Carbon\Carbon::parse($class->class_time)->format('d M Y H:i') }}
-        </p>
+    <p>
+        {{ \Carbon\Carbon::parse($class->class_time)->format('d M Y H:i') }}
+    </p>
 
-        <p>
-            Capacity: {{ $class->capacity }} |
-            Booked: {{ $class->bookings_count }} |
-            Remaining: {{ $remaining }}
-        </p>
+    <p>
+        Capacity: {{ $capacity }} <br>
+        Booked: {{ $booked }} <br>
+        Remaining: {{ $remaining }}
+    </p>
 
-        <div style="margin-top:10px;">
-            <a href="{{ route('admin.classes.edit', $class->id) }}"
-               style="padding:6px 12px; background:#3490dc; color:white; text-decoration:none; border-radius:4px;">
-               Edit
-            </a>
+    <a href="{{ route('admin.classes.edit', $class->id) }}">Edit</a>
 
-            <form method="POST"
-                  action="{{ route('admin.classes.destroy', $class->id) }}"
-                  style="display:inline;"
-                  onsubmit="return confirm('Are you sure you want to delete this class?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit"
-                        style="padding:6px 12px; background:#e3342f; color:white; border:none; border-radius:4px; cursor:pointer;">
-                    Delete
-                </button>
-            </form>
-        </div>
+    <form method="POST" 
+          action="{{ route('admin.classes.destroy', $class->id) }}" 
+          style="display:inline;"
+          onsubmit="return confirm('Are you sure you want to delete this class?');">
+        @csrf
+        @method('DELETE')
+        <button type="submit">Delete</button>
+    </form>
 
-    </div>
+</div>
 
 @endforeach
 
-<hr>
+{{ $classes->links() }}
 
-<a href="{{ route('dashboard') }}">← Back to Member Dashboard</a>
+<br>
+<a href="{{ route('dashboard') }}">Back to Member Dashboard</a>
 
 </body>
 </html>
