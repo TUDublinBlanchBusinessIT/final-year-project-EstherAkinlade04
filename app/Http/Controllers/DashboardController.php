@@ -10,9 +10,20 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Get classes user has booked
-        $bookings = $user->fitnessClasses()->orderBy('class_time')->get();
+        $bookings = $user->fitnessClasses()
+            ->orderBy('class_time')
+            ->get();
 
         return view('dashboard', compact('user', 'bookings'));
+    }
+
+    public function history()
+    {
+        $bookings = Auth::user()
+            ->fitnessClasses()
+            ->orderBy('class_time')
+            ->get();
+
+        return view('bookings.history', compact('bookings'));
     }
 }

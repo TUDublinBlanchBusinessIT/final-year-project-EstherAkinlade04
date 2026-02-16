@@ -13,6 +13,12 @@
     </div>
 @endif
 
+@if(session('error'))
+    <div style="background:#f8d7da; padding:15px; border-radius:6px; margin-bottom:20px;">
+        {{ session('error') }}
+    </div>
+@endif
+
 <hr>
 
 <h2>System Stats</h2>
@@ -36,16 +42,22 @@
 
 <hr>
 
-<h2>Search Classes</h2>
+<h2>Filter & Search</h2>
 
-<form method="GET" action="{{ route('admin.dashboard') }}">
+<form method="GET" action="{{ route('admin.dashboard') }}" style="margin-bottom:20px;">
     <input type="text" name="search" value="{{ $search }}" placeholder="Search class name">
-    <button type="submit">Search</button>
+
+    <select name="status">
+        <option value="">All</option>
+        <option value="upcoming" {{ $status=='upcoming'?'selected':'' }}>Upcoming</option>
+        <option value="completed" {{ $status=='completed'?'selected':'' }}>Completed</option>
+        <option value="full" {{ $status=='full'?'selected':'' }}>Fully Booked</option>
+    </select>
+
+    <button type="submit">Apply</button>
 </form>
 
-<br>
-
-<a href="{{ route('admin.classes.create') }}" 
+<a href="{{ route('admin.classes.create') }}"
    style="background:#6f54c6; color:white; padding:10px 15px; text-decoration:none; border-radius:5px;">
    + Create Class
 </a>
@@ -60,11 +72,21 @@
     $capacity = $class->capacity;
     $booked = $class->bookings_count;
     $remaining = $capacity - $booked;
+    $isPast = \Carbon\Carbon::parse($class->class_time)->isPast();
 @endphp
 
 <div style="background:white; padding:20px; margin-bottom:20px; border-radius:8px;">
 
     <h3>{{ $class->name }}</h3>
+
+    {{-- Status Badge --}}
+    @if($isPast)
+        <span style="color:gray; font-weight:bold;">Completed</span>
+    @elseif($remaining <= 0)
+        <span style="color:red; font-weight:bold;">Full</span>
+    @else
+        <span style="color:green; font-weight:bold;">Upcoming</span>
+    @endif
 
     <p>
         {{ \Carbon\Carbon::parse($class->class_time)->format('d M Y H:i') }}
@@ -78,10 +100,10 @@
 
     <a href="{{ route('admin.classes.edit', $class->id) }}">Edit</a>
 
-    <form method="POST" 
-          action="{{ route('admin.classes.destroy', $class->id) }}" 
+    <form method="POST"
+          action="{{ route('admin.classes.destroy', $class->id) }}"
           style="display:inline;"
-          onsubmit="return confirm('Are you sure you want to delete this class?');">
+          onsubmit="return confirm('Are you sure?');">
         @csrf
         @method('DELETE')
         <button type="submit">Delete</button>
@@ -93,7 +115,7 @@
 
 {{ $classes->links() }}
 
-<br>
+<br><br>
 <a href="{{ route('dashboard') }}">Back to Member Dashboard</a>
 
 </body>

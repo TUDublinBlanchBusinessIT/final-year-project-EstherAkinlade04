@@ -15,12 +15,35 @@ class AdminController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index()
+    public function index(Request $request)
     {
-        $classes = FitnessClass::withCount('bookings')
-            ->with('users')
-            ->orderBy('class_time')
-            ->get();
+        $search = $request->query('search');
+        $status = $request->query('status');
+
+        $query = FitnessClass::withCount('bookings')
+            ->with('users');
+
+        // 🔎 Search
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // 📊 Status Filter
+        if ($status === 'upcoming') {
+            $query->where('class_time', '>=', now());
+        }
+
+        if ($status === 'completed') {
+            $query->where('class_time', '<', now());
+        }
+
+        if ($status === 'full') {
+            $query->havingRaw('bookings_count >= capacity');
+        }
+
+        $classes = $query->orderBy('class_time')
+            ->paginate(5)
+            ->withQueryString();
 
         $totalUsers = User::count();
         $totalBookings = Booking::count();
@@ -30,7 +53,9 @@ class AdminController extends Controller
             'classes',
             'totalUsers',
             'totalBookings',
-            'totalClasses'
+            'totalClasses',
+            'search',
+            'status'
         ));
     }
 
@@ -68,13 +93,25 @@ class AdminController extends Controller
 
     public function edit($id)
     {
-        $class = FitnessClass::findOrFail($id);
+        $class = FitnessClass::withCount('bookings')->findOrFail($id);
+
+        // ❌ Prevent editing past classes
+        if ($class->class_time < now()) {
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Cannot edit past classes.');
+        }
+
         return view('admin.edit', compact('class'));
     }
 
     public function update(Request $request, $id)
     {
         $class = FitnessClass::withCount('bookings')->findOrFail($id);
+
+        // ❌ Prevent editing past classes
+        if ($class->class_time < now()) {
+            return back()->with('error', 'Cannot edit past classes.');
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -83,11 +120,10 @@ class AdminController extends Controller
             'capacity' => 'required|integer|min:1',
         ]);
 
-        // 🔒 Prevent reducing capacity below current bookings
         if ($validated['capacity'] < $class->bookings_count) {
             return back()->with('error',
-                'Capacity cannot be lower than current bookings ('
-                . $class->bookings_count . ').'
+                'Capacity cannot be lower than current bookings (' .
+                $class->bookings_count . ').'
             );
         }
 
@@ -107,7 +143,11 @@ class AdminController extends Controller
     {
         $class = FitnessClass::withCount('bookings')->findOrFail($id);
 
-        // 🔒 Prevent deleting class if members are booked
+        // ❌ Prevent deleting past classes
+        if ($class->class_time < now()) {
+            return back()->with('error', 'Cannot delete past classes.');
+        }
+
         if ($class->bookings_count > 0) {
             return back()->with('error',
                 'Cannot delete class. Members are currently booked.'

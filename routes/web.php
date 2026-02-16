@@ -40,7 +40,7 @@ Route::middleware('guest')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated Member Routes
+| Authenticated Routes
 |--------------------------------------------------------------------------
 */
 
@@ -48,6 +48,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+
+    Route::get('/my-bookings', [DashboardController::class, 'history'])
+        ->name('bookings.history');
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
@@ -71,25 +74,21 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
 
-    // Admin Dashboard
     Route::get('/admin', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
-    // Create Class
     Route::get('/admin/classes/create', [AdminController::class, 'create'])
         ->name('admin.classes.create');
 
     Route::post('/admin/classes', [AdminController::class, 'store'])
         ->name('admin.classes.store');
 
-    // Edit Class
     Route::get('/admin/classes/{id}/edit', [AdminController::class, 'edit'])
         ->name('admin.classes.edit');
 
     Route::put('/admin/classes/{id}', [AdminController::class, 'update'])
         ->name('admin.classes.update');
 
-    // Delete Class
     Route::delete('/admin/classes/{id}', [AdminController::class, 'destroy'])
         ->name('admin.classes.destroy');
 });

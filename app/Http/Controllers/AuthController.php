@@ -18,17 +18,17 @@ class AuthController extends Controller
     // Handle registration
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
         ]);
 
         User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'member', // ✅ default role
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'member', // default role
         ]);
 
         return redirect()->route('login')
@@ -53,8 +53,7 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            // ✅ ROLE-BASED REDIRECT
-            if (Auth::user()->role === 'admin') {
+            if (Auth::user()->isAdmin()) {
                 return redirect()->route('admin.dashboard');
             }
 
