@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Http;
 
 class AuthController extends Controller
 {
@@ -23,7 +24,7 @@ class AuthController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Handle Registration (STRONG PASSWORD ENFORCED)
+    | Handle Registration (STRONG + BREACH CHECK)
     |--------------------------------------------------------------------------
     */
 
@@ -42,6 +43,27 @@ class AuthController extends Controller
             ],
         ]);
 
+        // 🔐 Password Breach Check (Have I Been Pwned API)
+        $sha1 = strtoupper(sha1($validated['password']));
+        $prefix = substr($sha1, 0, 5);
+        $suffix = substr($sha1, 5);
+
+        $response = Http::withHeaders([
+            'User-Agent' => 'TheVaultApp'
+        ])->get("https://api.pwnedpasswords.com/range/{$prefix}");
+
+        if ($response->successful()) {
+            $breaches = explode("\n", $response->body());
+
+            foreach ($breaches as $breach) {
+                if (str_starts_with($breach, $suffix)) {
+                    return back()->withErrors([
+                        'password' => 'This password has appeared in a data breach. Please choose a different one.'
+                    ])->withInput();
+                }
+            }
+        }
+
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -50,7 +72,7 @@ class AuthController extends Controller
         ]);
 
         return redirect()->route('login')
-            ->with('success', 'Registration successful. Please log in.');
+            ->with('success', 'Registration successful.');
     }
 
     /*
