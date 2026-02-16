@@ -6,42 +6,70 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
-    // Show register page
+    /*
+    |--------------------------------------------------------------------------
+    | Show Register Page
+    |--------------------------------------------------------------------------
+    */
+
     public function showRegister()
     {
         return view('register');
     }
 
-    // Handle registration
+    /*
+    |--------------------------------------------------------------------------
+    | Handle Registration (STRONG PASSWORD ENFORCED)
+    |--------------------------------------------------------------------------
+    */
+
     public function register(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6|confirmed',
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+            ],
         ]);
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'member', // default role
+            'role' => 'member',
         ]);
 
         return redirect()->route('login')
             ->with('success', 'Registration successful. Please log in.');
     }
 
-    // Show login page
+    /*
+    |--------------------------------------------------------------------------
+    | Show Login Page
+    |--------------------------------------------------------------------------
+    */
+
     public function showLogin()
     {
         return view('login');
     }
 
-    // Handle login
+    /*
+    |--------------------------------------------------------------------------
+    | Handle Login
+    |--------------------------------------------------------------------------
+    */
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -65,7 +93,12 @@ class AuthController extends Controller
         ]);
     }
 
-    // Logout
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
+
     public function logout(Request $request)
     {
         Auth::logout();
