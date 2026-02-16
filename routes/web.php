@@ -71,24 +71,25 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
 
+    // Admin Dashboard
     Route::get('/admin', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
-    // Create
+    // Create Class
     Route::get('/admin/classes/create', [AdminController::class, 'create'])
         ->name('admin.classes.create');
 
     Route::post('/admin/classes', [AdminController::class, 'store'])
         ->name('admin.classes.store');
 
-    // Edit
+    // Edit Class
     Route::get('/admin/classes/{id}/edit', [AdminController::class, 'edit'])
         ->name('admin.classes.edit');
 
     Route::put('/admin/classes/{id}', [AdminController::class, 'update'])
         ->name('admin.classes.update');
 
-    // Delete
+    // Delete Class
     Route::delete('/admin/classes/{id}', [AdminController::class, 'destroy'])
-        ->name('admin.classes.delete');
+        ->name('admin.classes.destroy');
 });
