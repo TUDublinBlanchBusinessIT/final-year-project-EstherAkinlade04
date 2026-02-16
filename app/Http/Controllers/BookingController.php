@@ -5,20 +5,32 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\FitnessClass;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Store Booking
+    |--------------------------------------------------------------------------
+    */
+
     public function store($id)
     {
         $user = Auth::user();
         $class = FitnessClass::findOrFail($id);
+
+        // 🔴 Prevent booking past classes
+        if (Carbon::parse($class->class_time)->isPast()) {
+            return back()->with('error', 'You cannot book a past class.');
+        }
 
         // 🔒 Prevent duplicate booking
         if ($class->bookings()->where('user_id', $user->id)->exists()) {
             return back()->with('error', 'You have already booked this class.');
         }
 
-        // 🔴 Capacity check (LIVE count from DB)
+        // 🔴 Capacity check (live DB count)
         $currentBookings = $class->bookings()->count();
 
         if ($currentBookings >= $class->capacity) {
@@ -34,7 +46,12 @@ class BookingController extends Controller
         return back()->with('success', 'Class booked successfully!');
     }
 
-    // ✅ Cancel Booking
+    /*
+    |--------------------------------------------------------------------------
+    | Cancel Booking
+    |--------------------------------------------------------------------------
+    */
+
     public function destroy($id)
     {
         $user = Auth::user();

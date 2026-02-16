@@ -1,133 +1,60 @@
-<?php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-purple-50 flex items-center justify-center min-h-screen">
 
-namespace App\Http\Controllers;
+<div class="bg-white p-10 rounded-xl shadow-xl w-full max-w-md">
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Http;
+    <h2 class="text-2xl font-bold mb-6 text-center text-purple-700">
+        Login
+    </h2>
 
-class AuthController extends Controller
-{
-    /*
-    |--------------------------------------------------------------------------
-    | Show Register Page
-    |--------------------------------------------------------------------------
-    */
+    @if ($errors->any())
+        <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
+            {{ $errors->first() }}
+        </div>
+    @endif
 
-    public function showRegister()
-    {
-        return view('register');
-    }
+    @if (session('success'))
+        <div class="bg-green-100 text-green-700 p-3 rounded mb-4 flex items-center gap-2">
+            <span class="text-2xl">✔</span>
+            {{ session('success') }}
+        </div>
+    @endif
 
-    /*
-    |--------------------------------------------------------------------------
-    | Handle Registration (STRONG + BREACH CHECK)
-    |--------------------------------------------------------------------------
-    */
+    <form method="POST" action="/login" class="space-y-4">
+        @csrf
 
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => [
-                'required',
-                'confirmed',
-                Password::min(8)
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols()
-            ],
-        ]);
+        <input type="email"
+               name="email"
+               placeholder="Email"
+               value="{{ old('email') }}"
+               required
+               class="w-full border p-3 rounded focus:ring-2 focus:ring-purple-500">
 
-        // 🔐 Password Breach Check (Have I Been Pwned API)
-        $sha1 = strtoupper(sha1($validated['password']));
-        $prefix = substr($sha1, 0, 5);
-        $suffix = substr($sha1, 5);
+        <input type="password"
+               name="password"
+               placeholder="Password"
+               required
+               class="w-full border p-3 rounded focus:ring-2 focus:ring-purple-500">
 
-        $response = Http::withHeaders([
-            'User-Agent' => 'TheVaultApp'
-        ])->get("https://api.pwnedpasswords.com/range/{$prefix}");
+        <button type="submit"
+                class="w-full bg-purple-600 text-white py-3 rounded hover:bg-purple-700 transition">
+            Login
+        </button>
+    </form>
 
-        if ($response->successful()) {
-            $breaches = explode("\n", $response->body());
+    <p class="mt-6 text-center text-sm">
+        No account?
+        <a href="/register" class="text-purple-600 font-semibold">
+            Register
+        </a>
+    </p>
 
-            foreach ($breaches as $breach) {
-                if (str_starts_with($breach, $suffix)) {
-                    return back()->withErrors([
-                        'password' => 'This password has appeared in a data breach. Please choose a different one.'
-                    ])->withInput();
-                }
-            }
-        }
+</div>
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'member',
-        ]);
-
-        return redirect()->route('login')
-            ->with('success', 'Registration successful.');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Show Login Page
-    |--------------------------------------------------------------------------
-    */
-
-    public function showLogin()
-    {
-        return view('login');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Handle Login
-    |--------------------------------------------------------------------------
-    */
-
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        if (Auth::attempt($credentials)) {
-
-            $request->session()->regenerate();
-
-            if (Auth::user()->isAdmin()) {
-                return redirect()->route('admin.dashboard');
-            }
-
-            return redirect()->route('dashboard');
-        }
-
-        return back()->withErrors([
-            'email' => 'Invalid email or password.',
-        ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Logout
-    |--------------------------------------------------------------------------
-    */
-
-    public function logout(Request $request)
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('home');
-    }
-}
+</body>
+</html>
