@@ -8,7 +8,11 @@ class ClassesController extends Controller
 {
     public function index()
     {
-        $classes = FitnessClass::orderBy('class_time')->get();
+        // Load bookings with each class (prevents N+1 query problem)
+        $classes = FitnessClass::with('bookings')
+            ->orderBy('class_time')
+            ->get();
+
         return view('classes.index', compact('classes'));
     }
 }

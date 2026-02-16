@@ -39,12 +39,18 @@
         <p><strong>Remaining Spots:</strong> {{ $remaining }}</p>
 
         @if($remaining <= 0)
-            <p style="color:red; font-weight:bold;">Class Full</p>
+
+            <button disabled style="background-color:grey; color:white; padding:8px 15px;">
+                Fully Booked
+            </button>
+
         @else
+
             <form method="POST" action="{{ route('book.class', $class->id) }}">
                 @csrf
                 <button type="submit">Book Class</button>
             </form>
+
         @endif
 
     </div>
