@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Booking;
-use App\Models\User;
 use Carbon\Carbon;
 
 class FitnessClass extends Model
@@ -16,44 +14,44 @@ class FitnessClass extends Model
         'capacity',
     ];
 
+    protected $casts = [
+        'class_time' => 'datetime',
+    ];
+
     /*
     |--------------------------------------------------------------------------
     | Relationships
     |--------------------------------------------------------------------------
     */
 
-    // A class has many bookings
     public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
 
-    // A class has many users through bookings
     public function users()
     {
-        return $this->belongsToMany(User::class, 'bookings');
+        return $this->belongsToMany(User::class, 'bookings')
+                    ->withPivot('payment_status', 'attended')
+                    ->withTimestamps();
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Computed Status Attribute
+    | Computed Status
     |--------------------------------------------------------------------------
-    | Returns: upcoming | full | past
     */
 
     public function getStatusAttribute()
     {
-        // If class date has passed
-        if (Carbon::parse($this->class_time)->isPast()) {
+        if ($this->class_time->isPast()) {
             return 'past';
         }
 
-        // If capacity reached
-        if ($this->bookings()->count() >= $this->capacity) {
+        if ($this->bookings_count >= $this->capacity) {
             return 'full';
         }
 
-        // Otherwise
         return 'upcoming';
     }
 }

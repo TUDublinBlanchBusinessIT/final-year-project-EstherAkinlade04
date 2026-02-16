@@ -9,15 +9,19 @@ class Booking extends Model
     protected $fillable = [
         'user_id',
         'fitness_class_id',
+        'payment_status',
+        'attended',
     ];
 
-    // A booking belongs to a user
+    protected $casts = [
+        'attended' => 'boolean',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // A booking belongs to a fitness class
     public function fitnessClass()
     {
         return $this->belongsTo(FitnessClass::class);

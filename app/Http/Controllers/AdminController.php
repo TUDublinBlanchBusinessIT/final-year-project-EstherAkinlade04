@@ -11,39 +11,16 @@ class AdminController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | Admin Dashboard
+    | Dashboard
     |--------------------------------------------------------------------------
     */
 
-    public function index(Request $request)
+    public function index()
     {
-        $search = $request->query('search');
-        $status = $request->query('status');
-
-        $query = FitnessClass::withCount('bookings')
-            ->with('users');
-
-        // 🔎 Search
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        // 📊 Status Filter
-        if ($status === 'upcoming') {
-            $query->where('class_time', '>=', now());
-        }
-
-        if ($status === 'completed') {
-            $query->where('class_time', '<', now());
-        }
-
-        if ($status === 'full') {
-            $query->havingRaw('bookings_count >= capacity');
-        }
-
-        $classes = $query->orderBy('class_time')
-            ->paginate(5)
-            ->withQueryString();
+        $classes = FitnessClass::withCount('bookings')
+            ->with(['bookings.user'])
+            ->orderBy('class_time')
+            ->paginate(5);
 
         $totalUsers = User::count();
         $totalBookings = Booking::count();
@@ -53,9 +30,7 @@ class AdminController extends Controller
             'classes',
             'totalUsers',
             'totalBookings',
-            'totalClasses',
-            'search',
-            'status'
+            'totalClasses'
         ));
     }
 
@@ -75,7 +50,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'class_time' => 'required|date',
+            'class_time' => 'required|date|after:now',
             'capacity' => 'required|integer|min:1',
         ]);
 
@@ -93,13 +68,7 @@ class AdminController extends Controller
 
     public function edit($id)
     {
-        $class = FitnessClass::withCount('bookings')->findOrFail($id);
-
-        // ❌ Prevent editing past classes
-        if ($class->class_time < now()) {
-            return redirect()->route('admin.dashboard')
-                ->with('error', 'Cannot edit past classes.');
-        }
+        $class = FitnessClass::findOrFail($id);
 
         return view('admin.edit', compact('class'));
     }
@@ -107,11 +76,6 @@ class AdminController extends Controller
     public function update(Request $request, $id)
     {
         $class = FitnessClass::withCount('bookings')->findOrFail($id);
-
-        // ❌ Prevent editing past classes
-        if ($class->class_time < now()) {
-            return back()->with('error', 'Cannot edit past classes.');
-        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -141,22 +105,77 @@ class AdminController extends Controller
 
     public function destroy($id)
     {
-        $class = FitnessClass::withCount('bookings')->findOrFail($id);
-
-        // ❌ Prevent deleting past classes
-        if ($class->class_time < now()) {
-            return back()->with('error', 'Cannot delete past classes.');
-        }
-
-        if ($class->bookings_count > 0) {
-            return back()->with('error',
-                'Cannot delete class. Members are currently booked.'
-            );
-        }
-
+        $class = FitnessClass::findOrFail($id);
         $class->delete();
 
         return redirect()->route('admin.dashboard')
             ->with('success', 'Class deleted successfully.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Remove Member From Class
+    |--------------------------------------------------------------------------
+    */
+
+    public function removeBooking($id)
+    {
+        $booking = Booking::findOrFail($id);
+        $booking->delete();
+
+        return back()->with('success', 'Member removed successfully.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Toggle Attendance
+    |--------------------------------------------------------------------------
+    */
+
+    public function toggleAttendance($id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        $booking->attended = !$booking->attended;
+        $booking->save();
+
+        return back()->with('success', 'Attendance updated successfully.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Export Class Attendees to CSV
+    |--------------------------------------------------------------------------
+    */
+
+    public function exportCsv($id)
+    {
+        $class = FitnessClass::with('bookings.user')->findOrFail($id);
+
+        $filename = 'class_'.$class->id.'_attendees.csv';
+
+        $headers = [
+            "Content-Type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+        ];
+
+        $callback = function () use ($class) {
+            $file = fopen('php://output', 'w');
+
+            fputcsv($file, ['Name', 'Email', 'Payment Status', 'Attended']);
+
+            foreach ($class->bookings as $booking) {
+                fputcsv($file, [
+                    $booking->user->name,
+                    $booking->user->email,
+                    $booking->payment_status ?? 'paid',
+                    $booking->attended ? 'Yes' : 'No',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

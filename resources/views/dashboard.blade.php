@@ -9,12 +9,14 @@
     <p style="color:green;">{{ session('success') }}</p>
 @endif
 
+@if(session('error'))
+    <p style="color:red;">{{ session('error') }}</p>
+@endif
+
 <h1>Dashboard</h1>
 
 <p>Welcome, {{ $user->name }}!</p>
 <p>Email: {{ $user->email }}</p>
-
-<!-- ✅ ROLE DISPLAY ADDED HERE -->
 <p><strong>Role:</strong> {{ auth()->user()->role }}</p>
 
 <hr>
@@ -24,8 +26,15 @@
 @if($bookings->isEmpty())
     <p>You have not booked any classes yet.</p>
 @else
+
     @foreach($bookings as $class)
-        <div style="border:1px solid #ccc; padding:15px; margin-bottom:10px;">
+
+        @php
+            $isPast = \Carbon\Carbon::parse($class->class_time)->isPast();
+        @endphp
+
+        <div style="border:1px solid #ccc; padding:15px; margin-bottom:10px; border-radius:6px;">
+
             <h3>{{ $class->name }}</h3>
 
             <p>
@@ -36,14 +45,32 @@
                 {{ \Carbon\Carbon::parse($class->class_time)->format('H:i') }}
             </p>
 
-            <!-- ✅ CANCEL BUTTON -->
-            <form method="POST" action="{{ route('cancel.booking', $class->id) }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit">Cancel Booking</button>
-            </form>
+            <!-- ✅ STATUS BADGE -->
+            @if($isPast)
+                <span style="background:#ccc; padding:5px 10px; border-radius:5px;">
+                    Completed
+                </span>
+            @else
+                <span style="background:#4CAF50; color:white; padding:5px 10px; border-radius:5px;">
+                    Upcoming
+                </span>
+            @endif
+
+            <br><br>
+
+            <!-- ❌ Disable cancel if class is past -->
+            @if(!$isPast)
+                <form method="POST" action="{{ route('cancel.booking', $class->id) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit">Cancel Booking</button>
+                </form>
+            @endif
+
         </div>
+
     @endforeach
+
 @endif
 
 <hr>

@@ -9,7 +9,7 @@ use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
-| Public Route
+| Public
 |--------------------------------------------------------------------------
 */
 
@@ -17,78 +17,59 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-
 /*
 |--------------------------------------------------------------------------
-| Guest Routes
+| Guest
 |--------------------------------------------------------------------------
 */
 
 Route::middleware('guest')->group(function () {
 
-    Route::get('/register', [AuthController::class, 'showRegister'])
-        ->name('register');
-
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    Route::get('/login', [AuthController::class, 'showLogin'])
-        ->name('login');
-
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-
 /*
 |--------------------------------------------------------------------------
-| Authenticated Routes
+| Authenticated
 |--------------------------------------------------------------------------
 */
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/my-bookings', [DashboardController::class, 'history'])
-        ->name('bookings.history');
-
-    Route::post('/logout', [AuthController::class, 'logout'])
-        ->name('logout');
-
-    Route::get('/classes', [ClassesController::class, 'index'])
-        ->name('classes.index');
-
-    Route::post('/book/{id}', [BookingController::class, 'store'])
-        ->name('book.class');
-
-    Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])
-        ->name('cancel.booking');
+    Route::get('/classes', [ClassesController::class, 'index'])->name('classes.index');
+    Route::post('/book/{id}', [BookingController::class, 'store'])->name('book.class');
+    Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])->name('cancel.booking');
 });
-
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes
+| Admin
 |--------------------------------------------------------------------------
 */
 
 Route::middleware(['auth', 'admin'])->group(function () {
 
-    Route::get('/admin', [AdminController::class, 'index'])
-        ->name('admin.dashboard');
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
 
-    Route::get('/admin/classes/create', [AdminController::class, 'create'])
-        ->name('admin.classes.create');
+    Route::get('/admin/classes/create', [AdminController::class, 'create'])->name('admin.classes.create');
+    Route::post('/admin/classes', [AdminController::class, 'store'])->name('admin.classes.store');
+    Route::get('/admin/classes/{id}/edit', [AdminController::class, 'edit'])->name('admin.classes.edit');
+    Route::put('/admin/classes/{id}', [AdminController::class, 'update'])->name('admin.classes.update');
+    Route::delete('/admin/classes/{id}', [AdminController::class, 'destroy'])->name('admin.classes.destroy');
 
-    Route::post('/admin/classes', [AdminController::class, 'store'])
-        ->name('admin.classes.store');
+    Route::delete('/admin/bookings/{id}', [AdminController::class, 'removeBooking'])
+        ->name('admin.bookings.remove');
 
-    Route::get('/admin/classes/{id}/edit', [AdminController::class, 'edit'])
-        ->name('admin.classes.edit');
+    Route::patch('/admin/bookings/{id}/attendance', [AdminController::class, 'toggleAttendance'])
+        ->name('admin.bookings.attendance');
 
-    Route::put('/admin/classes/{id}', [AdminController::class, 'update'])
-        ->name('admin.classes.update');
-
-    Route::delete('/admin/classes/{id}', [AdminController::class, 'destroy'])
-        ->name('admin.classes.destroy');
+    Route::get('/admin/classes/{id}/export', [AdminController::class, 'exportCsv'])
+        ->name('admin.classes.export');
 });
