@@ -85,5 +85,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/classes/{id}/export', [AdminController::class, 'exportCsv'])
         ->name('admin.classes.export');
+    
+    Route::patch('/admin/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
+        ->name('admin.classes.cancel');
+    
 });
 

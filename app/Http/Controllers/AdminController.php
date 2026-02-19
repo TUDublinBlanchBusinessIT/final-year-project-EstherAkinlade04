@@ -17,9 +17,9 @@ class AdminController extends Controller
         $query = FitnessClass::withCount('bookings')
             ->with(['bookings.user']);
 
-        // Filters
         if ($status === 'upcoming') {
-            $query->where('class_time', '>=', now());
+            $query->where('class_time', '>=', now())
+                  ->where('is_cancelled', false);
         }
 
         if ($status === 'past') {
@@ -28,6 +28,10 @@ class AdminController extends Controller
 
         if ($status === 'full') {
             $query->havingRaw('bookings_count >= capacity');
+        }
+
+        if ($status === 'cancelled') {
+            $query->where('is_cancelled', true);
         }
 
         if ($search) {
@@ -40,13 +44,10 @@ class AdminController extends Controller
         $totalBookings = Booking::count();
         $totalClasses = FitnessClass::count();
 
-        // REAL revenue (paid bookings × class price)
         $totalRevenue = Booking::where('payment_status', 'paid')
             ->with('fitnessClass')
             ->get()
-            ->sum(function ($booking) {
-                return $booking->fitnessClass->price ?? 0;
-            });
+            ->sum(fn($booking) => $booking->fitnessClass->price ?? 0);
 
         return view('admin.dashboard', compact(
             'classes',
@@ -65,17 +66,26 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'name' => 'required',
+            'description' => 'required',
             'class_time' => 'required|date|after:now',
             'capacity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0'
+            'price' => 'required|numeric|min:0',
+            'admin_notes' => 'nullable|string'
         ]);
 
         FitnessClass::create($validated);
 
         return redirect()->route('admin.dashboard')
             ->with('success', 'Class created successfully.');
+    }
+
+    public function cancelClass($id)
+    {
+        FitnessClass::findOrFail($id)
+            ->update(['is_cancelled' => true]);
+
+        return back()->with('success', 'Class cancelled.');
     }
 
     public function removeBooking($id)
@@ -93,26 +103,11 @@ class AdminController extends Controller
         return back()->with('success', 'Attendance updated.');
     }
 
-    public function markAllAttended($id)
-    {
-        Booking::where('fitness_class_id', $id)
-            ->update(['attended' => true]);
-
-        return back()->with('success', 'All marked present.');
-    }
-
     public function exportCsv($id)
     {
         $class = FitnessClass::with('bookings.user')->findOrFail($id);
 
-        $filename = 'class_'.$class->id.'_attendees.csv';
-
-        $headers = [
-            "Content-Type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=$filename",
-        ];
-
-        $callback = function () use ($class) {
+        return response()->stream(function () use ($class) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['Name', 'Email', 'Payment', 'Attended']);
 
@@ -126,8 +121,9 @@ class AdminController extends Controller
             }
 
             fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        }, 200, [
+            "Content-Type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=class_{$class->id}_attendees.csv",
+        ]);
     }
 }
