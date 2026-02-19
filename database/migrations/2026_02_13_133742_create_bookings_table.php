@@ -6,34 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
 
-            // Link to users table
-            $table->foreignId('user_id')
-                  ->constrained()
-                  ->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('fitness_class_id')->constrained()->cascadeOnDelete();
 
-            // Link to fitness_classes table
-            $table->foreignId('fitness_class_id')
-                  ->constrained()
-                  ->onDelete('cascade');
+            // Payment system foundation
+            $table->string('payment_status')->default('unpaid'); 
+            // unpaid | paid | refunded
+
+            // Attendance tracking
+            $table->boolean('attended')->default(false);
 
             $table->timestamps();
-
-            // Prevent duplicate bookings
-            $table->unique(['user_id', 'fitness_class_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('bookings');

@@ -56,13 +56,23 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
 
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin', [AdminController::class, 'index'])
+        ->name('admin.dashboard');
 
-    Route::get('/admin/classes/create', [AdminController::class, 'create'])->name('admin.classes.create');
-    Route::post('/admin/classes', [AdminController::class, 'store'])->name('admin.classes.store');
-    Route::get('/admin/classes/{id}/edit', [AdminController::class, 'edit'])->name('admin.classes.edit');
-    Route::put('/admin/classes/{id}', [AdminController::class, 'update'])->name('admin.classes.update');
-    Route::delete('/admin/classes/{id}', [AdminController::class, 'destroy'])->name('admin.classes.destroy');
+    Route::get('/admin/classes/create', [AdminController::class, 'create'])
+        ->name('admin.classes.create');
+
+    Route::post('/admin/classes', [AdminController::class, 'store'])
+        ->name('admin.classes.store');
+
+    Route::get('/admin/classes/{id}/edit', [AdminController::class, 'edit'])
+        ->name('admin.classes.edit');
+
+    Route::put('/admin/classes/{id}', [AdminController::class, 'update'])
+        ->name('admin.classes.update');
+
+    Route::delete('/admin/classes/{id}', [AdminController::class, 'destroy'])
+        ->name('admin.classes.destroy');
 
     Route::delete('/admin/bookings/{id}', [AdminController::class, 'removeBooking'])
         ->name('admin.bookings.remove');
@@ -76,3 +86,4 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/classes/{id}/export', [AdminController::class, 'exportCsv'])
         ->name('admin.classes.export');
 });
+

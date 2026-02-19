@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('fitness_classes', function (Blueprint $table) {
@@ -16,14 +13,15 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->dateTime('class_time');
-            $table->integer('capacity')->default(20);
+            $table->integer('capacity');
+
+            // Stripe-ready foundation
+            $table->decimal('price', 8, 2)->default(20.00);
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('fitness_classes');
