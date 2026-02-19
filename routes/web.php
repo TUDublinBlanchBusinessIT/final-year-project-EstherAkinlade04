@@ -70,6 +70,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/admin/bookings/{id}/attendance', [AdminController::class, 'toggleAttendance'])
         ->name('admin.bookings.attendance');
 
+    Route::patch('/admin/classes/{id}/mark-all', [AdminController::class, 'markAllAttended'])
+        ->name('admin.classes.markAll');
+
     Route::get('/admin/classes/{id}/export', [AdminController::class, 'exportCsv'])
         ->name('admin.classes.export');
 });
