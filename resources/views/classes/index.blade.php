@@ -5,98 +5,62 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 p-10">
+<body class="bg-gradient-to-br from-purple-50 to-indigo-100 p-10">
 
-<h1 class="text-3xl font-bold mb-8">Available Fitness Classes</h1>
+<h1 class="text-4xl font-bold text-indigo-900 mb-10">
+    🏋️ Available Fitness Classes
+</h1>
 
 @if(session('success'))
-    <div class="bg-green-100 text-green-700 p-4 rounded mb-6">
+    <div class="bg-green-100 text-green-700 p-4 rounded mb-6 shadow">
         {{ session('success') }}
     </div>
 @endif
 
 @if(session('error'))
-    <div class="bg-red-100 text-red-700 p-4 rounded mb-6">
+    <div class="bg-red-100 text-red-700 p-4 rounded mb-6 shadow">
         {{ session('error') }}
     </div>
 @endif
 
 @if($classes->isEmpty())
-    <p>No classes available yet.</p>
+    <p>No classes available right now.</p>
 @endif
 
-<div class="grid md:grid-cols-2 gap-6">
+<div class="grid md:grid-cols-2 gap-8">
 
 @foreach($classes as $class)
 
-    @php
-        $bookedCount = $class->bookings->count();
-        $remaining = $class->capacity - $bookedCount;
-        $status = $class->status;
-    @endphp
+<div class="bg-white p-6 rounded-2xl shadow-xl hover:scale-105 transition duration-300">
 
-    <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+    <h2 class="text-2xl font-bold text-indigo-800 mb-2">
+        {{ $class->name }}
+    </h2>
 
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">{{ $class->name }}</h2>
+    <p class="text-gray-600 mb-4">
+        {{ $class->description }}
+    </p>
 
-            <!-- STATUS BADGE -->
-            @if($status === 'upcoming')
-                <span class="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
-                    Upcoming
-                </span>
-            @elseif($status === 'full')
-                <span class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">
-                    Full
-                </span>
-            @elseif($status === 'past')
-                <span class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">
-                    Past
-                </span>
-            @endif
-        </div>
+    <p class="text-sm mb-2">
+        📅 {{ $class->class_time->format('d M Y H:i') }}
+    </p>
 
-        <!-- Details -->
-        <p class="text-gray-600 mb-3">
-            {{ $class->description }}
-        </p>
+    <p class="text-sm mb-2">
+        💰 €{{ $class->price }}
+    </p>
 
-        <p class="text-sm text-gray-700 mb-2">
-            <strong>Date:</strong>
-            {{ \Carbon\Carbon::parse($class->class_time)->format('d M Y') }}
-        </p>
+    <p class="text-sm mb-4">
+        👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked
+    </p>
 
-        <p class="text-sm text-gray-700 mb-2">
-            <strong>Time:</strong>
-            {{ \Carbon\Carbon::parse($class->class_time)->format('H:i') }}
-        </p>
+    <form method="POST" action="{{ route('book.class', $class->id) }}">
+        @csrf
+        <button class="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition">
+            Pay & Book
+        </button>
+    </form>
 
-        <p class="text-sm text-gray-700 mb-4">
-            <strong>Remaining Spots:</strong> {{ $remaining }}
-        </p>
-
-        <!-- Booking Button -->
-        @if($status === 'upcoming')
-            <form method="POST" action="{{ route('book.class', $class->id) }}">
-                @csrf
-                <button class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 transition">
-                    Book Class
-                </button>
-            </form>
-        @elseif($status === 'full')
-            <button disabled
-                class="w-full bg-red-300 text-white py-2 rounded cursor-not-allowed">
-                Class Full
-            </button>
-        @else
-            <button disabled
-                class="w-full bg-gray-300 text-white py-2 rounded cursor-not-allowed">
-                Class Finished
-            </button>
-        @endif
-
-    </div>
+</div>
 
 @endforeach
 

@@ -11,7 +11,7 @@ class BookingController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | Store Booking
+    | Store Booking (WITH PAYMENT SIMULATION)
     |--------------------------------------------------------------------------
     */
 
@@ -19,6 +19,11 @@ class BookingController extends Controller
     {
         $user = Auth::user();
         $class = FitnessClass::findOrFail($id);
+
+        // 🚫 Prevent booking cancelled class
+        if ($class->is_cancelled) {
+            return back()->with('error', 'This class has been cancelled.');
+        }
 
         // 🔴 Prevent booking past classes
         if (Carbon::parse($class->class_time)->isPast()) {
@@ -30,20 +35,30 @@ class BookingController extends Controller
             return back()->with('error', 'You have already booked this class.');
         }
 
-        // 🔴 Capacity check (live DB count)
-        $currentBookings = $class->bookings()->count();
-
-        if ($currentBookings >= $class->capacity) {
+        // 🔴 Capacity check
+        if ($class->bookings()->count() >= $class->capacity) {
             return back()->with('error', 'Sorry, this class is fully booked.');
         }
 
-        // ✅ Create booking
+        /*
+        |--------------------------------------------------------------------------
+        | 💳 PAYMENT SIMULATION
+        |--------------------------------------------------------------------------
+        | For now:
+        | - Payment always succeeds
+        | - Status automatically becomes "paid"
+        */
+
+        $paymentStatus = 'paid';
+
         Booking::create([
             'user_id' => $user->id,
             'fitness_class_id' => $class->id,
+            'payment_status' => $paymentStatus,
+            'attended' => false,
         ]);
 
-        return back()->with('success', 'Class booked successfully!');
+        return back()->with('success', 'Payment successful! Class booked 🎉');
     }
 
     /*

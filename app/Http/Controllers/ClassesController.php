@@ -8,8 +8,9 @@ class ClassesController extends Controller
 {
     public function index()
     {
-        // Load bookings with each class (prevents N+1 query problem)
-        $classes = FitnessClass::with('bookings')
+        $classes = FitnessClass::withCount('bookings')
+            ->where('is_cancelled', false)
+            ->where('class_time', '>=', now())
             ->orderBy('class_time')
             ->get();
 

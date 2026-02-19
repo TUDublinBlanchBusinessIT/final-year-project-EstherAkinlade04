@@ -62,32 +62,4 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/classes/create', [AdminController::class, 'create'])
         ->name('admin.classes.create');
 
-    Route::post('/admin/classes', [AdminController::class, 'store'])
-        ->name('admin.classes.store');
-
-    Route::get('/admin/classes/{id}/edit', [AdminController::class, 'edit'])
-        ->name('admin.classes.edit');
-
-    Route::put('/admin/classes/{id}', [AdminController::class, 'update'])
-        ->name('admin.classes.update');
-
-    Route::delete('/admin/classes/{id}', [AdminController::class, 'destroy'])
-        ->name('admin.classes.destroy');
-
-    Route::delete('/admin/bookings/{id}', [AdminController::class, 'removeBooking'])
-        ->name('admin.bookings.remove');
-
-    Route::patch('/admin/bookings/{id}/attendance', [AdminController::class, 'toggleAttendance'])
-        ->name('admin.bookings.attendance');
-
-    Route::patch('/admin/classes/{id}/mark-all', [AdminController::class, 'markAllAttended'])
-        ->name('admin.classes.markAll');
-
-    Route::get('/admin/classes/{id}/export', [AdminController::class, 'exportCsv'])
-        ->name('admin.classes.export');
-    
-    Route::patch('/admin/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
-        ->name('admin.classes.cancel');
-    
-});
-
+    Route::post('/admin/classes',
