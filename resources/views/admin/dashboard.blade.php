@@ -1,128 +1,196 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Dashboard</title>
+    <title>Vault Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FullCalendar CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 </head>
 
-<body class="bg-gradient-to-br from-purple-50 to-indigo-100 min-h-screen p-10">
+<body class="bg-gradient-to-br from-purple-100 via-indigo-100 to-purple-200 min-h-screen">
 
-<h1 class="text-4xl font-bold text-indigo-900 mb-10">
-    Welcome back, {{ $user->name }} 👋
+<div class="flex">
+
+<!-- SIDEBAR -->
+<aside id="sidebar"
+       class="bg-indigo-900 text-white w-64 min-h-screen p-6 transition-all duration-300 shadow-2xl">
+
+    <div class="flex justify-between items-center mb-10">
+        <h2 class="text-2xl font-bold tracking-wide">💎 Vault Admin</h2>
+        <button onclick="toggleSidebar()"
+            class="text-white text-xl hover:scale-110 transition">
+            ☰
+        </button>
+    </div>
+
+    <a href="{{ route('admin.dashboard') }}"
+       class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 hover:shadow-lg transition">
+        📊 Dashboard
+    </a>
+
+    <a href="{{ route('admin.classes.create') }}"
+       class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 hover:shadow-lg transition">
+        ➕ Create Class
+    </a>
+
+    <form method="POST" action="{{ route('logout') }}" class="mt-10">
+        @csrf
+        <button class="w-full bg-purple-600 py-2 rounded-lg 
+                       hover:bg-purple-500 hover:shadow-xl hover:scale-105 transition">
+            🚪 Logout
+        </button>
+    </form>
+
+</aside>
+
+
+<!-- MAIN -->
+<main class="flex-1 p-10">
+
+<h1 class="text-4xl font-extrabold text-indigo-900 mb-12">
+    Welcome back, {{ auth()->user()->name }} 👑
 </h1>
 
 <!-- STATS -->
-<div class="grid md:grid-cols-4 gap-6 mb-12">
+<div class="grid grid-cols-4 gap-8 mb-14">
 
-    <div class="bg-white p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-500">Total Bookings</p>
-        <h2 class="text-3xl font-bold text-indigo-700">
-            {{ $bookings->count() }}
-        </h2>
+    @foreach([
+        ['Total Users', $totalUsers],
+        ['Total Classes', $totalClasses],
+        ['Total Bookings', $totalBookings]
+    ] as $stat)
+    <div class="bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-xl
+                hover:scale-105 hover:shadow-2xl transition duration-300 text-center">
+        <p class="text-gray-500 mb-2">{{ $stat[0] }}</p>
+        <h2 class="text-4xl font-bold text-indigo-700">{{ $stat[1] }}</h2>
     </div>
+    @endforeach
 
-    <div class="bg-white p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-500">Upcoming</p>
-        <h2 class="text-3xl font-bold text-green-600">
-            {{ $upcoming->count() }}
-        </h2>
-    </div>
-
-    <div class="bg-white p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-500">Past Classes</p>
-        <h2 class="text-3xl font-bold text-gray-600">
-            {{ $past->count() }}
-        </h2>
-    </div>
-
-    <div class="bg-white p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-500">Total Spent</p>
-        <h2 class="text-3xl font-bold text-indigo-800">
-            €{{ number_format($totalSpent, 2) }}
+    <div class="bg-gradient-to-r from-green-200 to-emerald-300 p-8 rounded-3xl shadow-xl
+                hover:scale-105 hover:shadow-2xl transition duration-300 text-center">
+        <p class="text-gray-700 mb-2">Total Revenue</p>
+        <h2 class="text-4xl font-bold text-green-800">
+            €{{ number_format($totalRevenue, 2) }}
         </h2>
     </div>
 
 </div>
 
-<!-- UPCOMING BOOKINGS -->
-<h2 class="text-2xl font-bold text-indigo-800 mb-4">Upcoming Classes</h2>
+<!-- 📅 Calendar Section -->
+<div class="bg-white p-8 rounded-3xl shadow-xl mb-14">
+    <h2 class="text-2xl font-bold text-indigo-800 mb-6">
+        📅 Class Schedule Overview
+    </h2>
+    <div id="calendar"></div>
+</div>
 
-@if($upcoming->isEmpty())
-    <div class="bg-white p-6 rounded-xl shadow mb-10 text-gray-500">
-        No upcoming bookings.
-    </div>
-@endif
+<h2 class="text-3xl font-bold text-indigo-900 mb-8">
+    📚 Manage Classes
+</h2>
 
-@foreach($upcoming as $class)
-<div class="bg-white p-6 rounded-2xl shadow mb-6">
+@foreach($classes as $class)
 
-    <div class="flex justify-between items-center">
+<div class="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-xl mb-10
+            hover:-translate-y-1 hover:shadow-2xl transition duration-300">
+
+    <div class="flex justify-between">
 
         <div>
-            <h3 class="text-xl font-bold text-indigo-800">
+            <h3 class="text-2xl font-bold text-indigo-800 mb-2">
                 {{ $class->name }}
             </h3>
-            <p class="text-gray-500">
-                {{ $class->class_time->format('d M Y H:i') }}
+
+            <p class="text-gray-500 mb-2">
+                📅 {{ $class->class_time->format('d M Y H:i') }}
             </p>
 
-            <span class="px-3 py-1 text-sm rounded-full
-                {{ $class->pivot->payment_status == 'paid'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-700' }}">
-                {{ strtoupper($class->pivot->payment_status) }}
+            <p class="font-semibold mb-2">
+                💰 €{{ $class->price }}
+            </p>
+
+            <span class="px-3 py-1 rounded-full text-sm
+                @if($class->status == 'full') bg-red-100 text-red-700
+                @elseif($class->status == 'past') bg-gray-200 text-gray-600
+                @elseif($class->status == 'cancelled') bg-black text-white
+                @else bg-green-100 text-green-700
+                @endif">
+                {{ strtoupper($class->status) }}
             </span>
 
+            <!-- Capacity Bar -->
+            <div class="w-72 bg-gray-200 rounded-full h-3 mt-4 overflow-hidden">
+                <div class="bg-indigo-600 h-3 rounded-full transition-all duration-700"
+                     style="width: {{ $class->fill_percentage }}%">
+                </div>
+            </div>
+
+            <p class="text-sm mt-2">
+                👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked
+            </p>
         </div>
 
-        <form method="POST" action="{{ route('cancel.booking', $class->id) }}">
-            @csrf
-            @method('DELETE')
-            <button class="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600">
-                Cancel
+        <div class="flex flex-col gap-3">
+
+            <button onclick="toggleMembers({{ $class->id }})"
+                    class="bg-indigo-600 text-white px-5 py-2 rounded-xl
+                           hover:bg-indigo-700 hover:scale-105 hover:shadow-xl transition">
+                👥 View Members
             </button>
-        </form>
 
-    </div>
+            @if(!$class->is_cancelled)
+            <form method="POST"
+                  action="{{ route('admin.classes.cancel', $class->id) }}">
+                @csrf
+                @method('PATCH')
+                <button class="bg-red-600 text-white px-5 py-2 rounded-xl
+                               hover:bg-red-700 hover:scale-105 hover:shadow-xl transition">
+                    Cancel Class
+                </button>
+            </form>
+            @endif
 
-</div>
-@endforeach
-
-<!-- PAST BOOKINGS -->
-<h2 class="text-2xl font-bold text-indigo-800 mt-10 mb-4">Past Classes</h2>
-
-@if($past->isEmpty())
-    <div class="bg-white p-6 rounded-xl shadow text-gray-500">
-        No past bookings yet.
-    </div>
-@endif
-
-@foreach($past as $class)
-<div class="bg-white p-6 rounded-2xl shadow mb-6">
-
-    <div class="flex justify-between items-center">
-
-        <div>
-            <h3 class="text-xl font-bold text-indigo-800">
-                {{ $class->name }}
-            </h3>
-            <p class="text-gray-500">
-                {{ $class->class_time->format('d M Y H:i') }}
-            </p>
-
-            <span class="px-3 py-1 text-sm rounded-full bg-gray-200 text-gray-700">
-                Completed
-            </span>
         </div>
 
-        <span class="text-green-600 font-semibold">
-            €{{ number_format($class->price, 2) }}
-        </span>
-
     </div>
 
 </div>
+
 @endforeach
+
+{{ $classes->links() }}
+
+</main>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('w-20');
+}
+
+function toggleMembers(id) {
+    document.getElementById('members-' + id)?.classList.toggle('hidden');
+}
+
+// Calendar
+document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 500,
+        events: [
+            @foreach($classes as $class)
+            {
+                title: "{{ $class->name }}",
+                start: "{{ $class->class_time }}"
+            },
+            @endforeach
+        ]
+    });
+    calendar.render();
+});
+</script>
 
 </body>
 </html>
