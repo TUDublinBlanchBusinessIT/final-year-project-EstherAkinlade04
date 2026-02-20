@@ -11,7 +11,7 @@ class BookingController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | Store Booking (WITH PAYMENT SIMULATION)
+    | Store Booking (Creates UNPAID booking)
     |--------------------------------------------------------------------------
     */
 
@@ -20,45 +20,53 @@ class BookingController extends Controller
         $user = Auth::user();
         $class = FitnessClass::findOrFail($id);
 
-        // 🚫 Prevent booking cancelled class
         if ($class->is_cancelled) {
             return back()->with('error', 'This class has been cancelled.');
         }
 
-        // 🔴 Prevent booking past classes
         if (Carbon::parse($class->class_time)->isPast()) {
             return back()->with('error', 'You cannot book a past class.');
         }
 
-        // 🔒 Prevent duplicate booking
         if ($class->bookings()->where('user_id', $user->id)->exists()) {
-            return back()->with('error', 'You have already booked this class.');
+            return back()->with('error', 'You already booked this class.');
         }
 
-        // 🔴 Capacity check
         if ($class->bookings()->count() >= $class->capacity) {
-            return back()->with('error', 'Sorry, this class is fully booked.');
+            return back()->with('error', 'This class is full.');
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | 💳 PAYMENT SIMULATION
-        |--------------------------------------------------------------------------
-        | For now:
-        | - Payment always succeeds
-        | - Status automatically becomes "paid"
-        */
-
-        $paymentStatus = 'paid';
 
         Booking::create([
             'user_id' => $user->id,
             'fitness_class_id' => $class->id,
-            'payment_status' => $paymentStatus,
-            'attended' => false,
+            'payment_status' => 'unpaid'
         ]);
 
-        return back()->with('success', 'Payment successful! Class booked 🎉');
+        return back()->with('success', 'Class reserved! Please complete payment.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Simulated Payment
+    |--------------------------------------------------------------------------
+    */
+
+    public function pay($id)
+    {
+        $booking = Booking::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if ($booking->payment_status === 'paid') {
+            return back()->with('error', 'Already paid.');
+        }
+
+        // 🔥 Simulate Stripe success
+        $booking->update([
+            'payment_status' => 'paid'
+        ]);
+
+        return back()->with('success', 'Payment successful! 🎉');
     }
 
     /*
@@ -69,9 +77,7 @@ class BookingController extends Controller
 
     public function destroy($id)
     {
-        $user = Auth::user();
-
-        $booking = Booking::where('user_id', $user->id)
+        $booking = Booking::where('user_id', Auth::id())
             ->where('fitness_class_id', $id)
             ->first();
 
@@ -81,6 +87,6 @@ class BookingController extends Controller
 
         $booking->delete();
 
-        return back()->with('success', 'Booking cancelled successfully.');
+        return back()->with('success', 'Booking cancelled.');
     }
 }

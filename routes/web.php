@@ -17,6 +17,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+
 /*
 |--------------------------------------------------------------------------
 | Guest
@@ -32,9 +33,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
+
 /*
 |--------------------------------------------------------------------------
-| Authenticated
+| Authenticated Users
 |--------------------------------------------------------------------------
 */
 
@@ -44,9 +46,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/classes', [ClassesController::class, 'index'])->name('classes.index');
+
+    // BOOK (creates unpaid booking first)
     Route::post('/book/{id}', [BookingController::class, 'store'])->name('book.class');
+
+    // 💳 PAYMENT SIMULATION
+    Route::post('/pay/{booking}', [BookingController::class, 'pay'])->name('booking.pay');
+
     Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])->name('cancel.booking');
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -62,4 +71,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/classes/create', [AdminController::class, 'create'])
         ->name('admin.classes.create');
 
-    Route::post('/admin/classes',
+    Route::post('/admin/classes', [AdminController::class, 'store'])
+        ->name('admin.classes.store');
+
+    Route::patch('/admin/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
+        ->name('admin.classes.cancel');
+
+    Route::patch('/admin/bookings/{id}/attendance', [AdminController::class, 'toggleAttendance'])
+        ->name('admin.bookings.attendance');
+
+    Route::delete('/admin/bookings/{id}', [AdminController::class, 'removeBooking'])
+        ->name('admin.bookings.remove');
+
+    Route::patch('/admin/classes/{id}/mark-all', [AdminController::class, 'markAllAttended'])
+        ->name('admin.classes.markAll');
+
+    Route::get('/admin/classes/{id}/export', [AdminController::class, 'exportCsv'])
+        ->name('admin.classes.export');
+});

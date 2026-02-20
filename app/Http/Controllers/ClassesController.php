@@ -9,8 +9,9 @@ class ClassesController extends Controller
     public function index()
     {
         $classes = FitnessClass::withCount('bookings')
-            ->where('is_cancelled', false)
-            ->where('class_time', '>=', now())
+            ->with(['bookings' => function ($query) {
+                $query->select('id', 'user_id', 'fitness_class_id', 'payment_status');
+            }])
             ->orderBy('class_time')
             ->get();
 
