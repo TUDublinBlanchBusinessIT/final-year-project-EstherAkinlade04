@@ -11,43 +11,20 @@ class AdminController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->query('status');
-        $search = $request->query('search');
-
         $query = FitnessClass::withCount('bookings')
-            ->with(['bookings.user']);
+            ->with(['bookings.user'])
+            ->orderBy('class_time');
 
-        if ($status === 'upcoming') {
-            $query->where('class_time', '>=', now())
-                  ->where('is_cancelled', false);
-        }
-
-        if ($status === 'past') {
-            $query->where('class_time', '<', now());
-        }
-
-        if ($status === 'full') {
-            $query->havingRaw('bookings_count >= capacity');
-        }
-
-        if ($status === 'cancelled') {
-            $query->where('is_cancelled', true);
-        }
-
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        $classes = $query->orderBy('class_time')->paginate(5);
+        $classes = $query->paginate(5);
 
         $totalUsers = User::count();
         $totalBookings = Booking::count();
         $totalClasses = FitnessClass::count();
 
+        // Optimised revenue calculation
         $totalRevenue = Booking::where('payment_status', 'paid')
-            ->with('fitnessClass')
-            ->get()
-            ->sum(fn($booking) => $booking->fitnessClass->price ?? 0);
+            ->join('fitness_classes', 'bookings.fitness_class_id', '=', 'fitness_classes.id')
+            ->sum('fitness_classes.price');
 
         return view('admin.dashboard', compact(
             'classes',
@@ -101,29 +78,5 @@ class AdminController extends Controller
         $booking->save();
 
         return back()->with('success', 'Attendance updated.');
-    }
-
-    public function exportCsv($id)
-    {
-        $class = FitnessClass::with('bookings.user')->findOrFail($id);
-
-        return response()->stream(function () use ($class) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Name', 'Email', 'Payment', 'Attended']);
-
-            foreach ($class->bookings as $booking) {
-                fputcsv($file, [
-                    $booking->user->name,
-                    $booking->user->email,
-                    $booking->payment_status,
-                    $booking->attended ? 'Yes' : 'No',
-                ]);
-            }
-
-            fclose($file);
-        }, 200, [
-            "Content-Type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=class_{$class->id}_attendees.csv",
-        ]);
     }
 }

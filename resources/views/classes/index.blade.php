@@ -5,10 +5,53 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gradient-to-br from-purple-50 via-white to-indigo-100 min-h-screen p-10">
+<body class="bg-gradient-to-br from-purple-50 via-white to-indigo-100 min-h-screen">
 
-<h1 class="text-4xl font-extrabold text-indigo-900 mb-12 flex items-center gap-3">
-    🏋️‍♀️ The Vault – Premium Classes
+<!-- ================= NAVBAR ================= -->
+
+<nav class="bg-white shadow-lg px-10 py-5 flex justify-between items-center border-b border-indigo-100">
+
+    <div class="flex items-center gap-8">
+        <div>
+            <h1 class="text-2xl font-bold text-indigo-800 tracking-wide">
+                💎 Vault Fitness
+            </h1>
+            <p class="text-xs text-gray-400 uppercase tracking-widest">
+                Premium Class Booking
+            </p>
+        </div>
+
+        <a href="{{ route('dashboard') }}"
+           class="text-indigo-600 font-semibold hover:text-indigo-800 hover:underline transition">
+            🏠 Dashboard
+        </a>
+    </div>
+
+    <div class="flex items-center gap-6">
+
+        <div class="text-right">
+            <p class="text-sm text-gray-400">Welcome back,</p>
+            <p class="font-semibold text-indigo-800 text-lg">
+                {{ auth()->user()->name }}
+            </p>
+        </div>
+
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button class="bg-red-500 text-white px-4 py-2 rounded-xl
+                           hover:bg-red-600 hover:scale-105 hover:shadow-lg transition">
+                🚪 Logout
+            </button>
+        </form>
+
+    </div>
+
+</nav>
+
+<div class="p-10">
+
+<h1 class="text-4xl font-extrabold text-indigo-900 mb-12">
+    🏋️‍♀️ Available Classes
 </h1>
 
 {{-- SUCCESS / ERROR MESSAGES --}}
@@ -42,13 +85,12 @@
 
 <div class="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition duration-300 border border-indigo-100">
 
-    {{-- TITLE --}}
+    <!-- TITLE + STATUS -->
     <div class="flex justify-between items-center mb-3">
         <h2 class="text-2xl font-bold text-indigo-800">
             {{ $class->name }}
         </h2>
 
-        {{-- STATUS BADGE --}}
         @if($class->is_cancelled)
             <span class="bg-black text-white text-xs px-3 py-1 rounded-full">
                 CANCELLED
@@ -68,26 +110,26 @@
         @endif
     </div>
 
-    {{-- DESCRIPTION --}}
+    <!-- DESCRIPTION -->
     <p class="text-gray-600 mb-4">
         {{ $class->description }}
     </p>
 
-    {{-- DETAILS --}}
+    <!-- DETAILS -->
     <div class="text-sm space-y-2 mb-4 text-gray-700">
         <p>📅 {{ $class->class_time->format('d M Y H:i') }}</p>
         <p>💰 €{{ number_format($class->price, 2) }}</p>
         <p>👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked</p>
     </div>
 
-    {{-- PROGRESS BAR --}}
+    <!-- PROGRESS BAR -->
     <div class="w-full bg-gray-200 rounded-full h-2 mb-5">
         <div class="bg-indigo-600 h-2 rounded-full"
              style="width: {{ min(100, ($class->bookings_count / $class->capacity) * 100) }}%">
         </div>
     </div>
 
-    {{-- BOOKING / PAYMENT SECTION --}}
+    <!-- BOOKING BUTTONS -->
     @if($alreadyBooked)
         <button disabled
             class="w-full bg-green-200 text-green-800 py-3 rounded-xl font-semibold cursor-not-allowed">
@@ -113,10 +155,8 @@
         </button>
 
     @else
-        {{-- PAYMENT SIMULATION --}}
         <form method="POST" action="{{ route('book.class', $class->id) }}">
             @csrf
-
             <button
                 onclick="this.innerHTML='Processing Payment... 💳'; this.disabled=true;"
                 class="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-semibold">
@@ -128,6 +168,8 @@
 </div>
 
 @endforeach
+
+</div>
 
 </div>
 
