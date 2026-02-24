@@ -32,7 +32,7 @@ class AuthController extends Controller
             'name'             => 'required|string|max:255',
             'email'            => 'required|email|unique:users',
             'password'         => 'required|min:6|confirmed',
-            'membership_type'  => 'required|in:basic,pro,elite',
+            'membership_type'  => 'required|string|max:255',
             'gym_location'     => 'required|string|max:255',
         ]);
 
@@ -46,7 +46,7 @@ class AuthController extends Controller
         ]);
 
         return redirect()->route('login')
-            ->with('success', 'Welcome to Vault Fitness! Please login.');
+            ->with('success', 'Registration successful! Please log in.');
     }
 
     /*

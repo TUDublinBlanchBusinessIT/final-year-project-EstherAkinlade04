@@ -5,142 +5,144 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gradient-to-br from-purple-50 via-white to-indigo-100 min-h-screen flex items-center justify-center">
+<body class="bg-white min-h-screen">
 
-<div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-2xl">
+<div class="max-w-6xl mx-auto py-16 px-6">
 
+    <!-- HEADER -->
     <div class="text-center mb-10">
-        <h1 class="text-3xl font-extrabold text-indigo-800">
-            💎 Let's Get Started
+        <h1 class="text-3xl font-light tracking-wide">
+            LET'S GET STARTED
         </h1>
-        <p class="text-gray-500 mt-2">Join Vault Fitness Today</p>
+
+        <p class="text-sm text-gray-500 mt-3">
+            Already a member?
+            <a href="{{ route('login') }}" class="text-purple-600 font-semibold">
+                Log In Here
+            </a>
+        </p>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="mb-8">
-        <div class="flex justify-between text-sm font-semibold mb-2">
-            <span id="step1Text">1. Select Plan</span>
-            <span id="step2Text" class="text-gray-400">2. Your Details</span>
-            <span id="step3Text" class="text-gray-400">3. Payment</span>
-        </div>
-        <div class="h-2 bg-gray-200 rounded-full">
+    <!-- PROGRESS -->
+    <div class="mb-14">
+        <div class="w-full bg-gray-200 rounded-full h-3">
             <div id="progressBar"
-                 class="h-2 bg-indigo-600 rounded-full transition-all duration-500"
-                 style="width:33%">
+                 class="bg-purple-600 h-3 rounded-full transition-all duration-500"
+                 style="width: 33%">
             </div>
         </div>
-    </div>
 
-    @if ($errors->any())
-        <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
-            {{ $errors->first() }}
+        <div class="flex justify-between text-sm text-gray-500 mt-3">
+            <span>1. SELECT GYM AND PLAN</span>
+            <span>2. YOUR DETAILS</span>
+            <span>3. COMPLETE</span>
         </div>
-    @endif
+    </div>
 
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
-        <!-- STEP 1 -->
+        <!-- ================= STEP 1 ================= -->
         <div id="step1">
 
-            <label class="block font-semibold mb-2">Select Your Gym</label>
+            <h2 class="text-2xl font-semibold mb-6">
+                Select a Gym
+            </h2>
+
             <select name="gym_location"
-                    class="w-full p-3 border rounded mb-6"
+                    id="gym_location"
+                    class="w-full p-4 border rounded-xl mb-10"
                     required>
-                <option value="">Choose Location</option>
-                <option value="Dublin City">Dublin City</option>
-                <option value="Cork Central">Cork Central</option>
-                <option value="Galway West">Galway West</option>
+                <option value="">Select a Gym</option>
+                <option value="Dublin">Dublin</option>
+                <option value="Cork">Cork</option>
+                <option value="Galway">Galway</option>
             </select>
 
-            <label class="block font-semibold mb-4">Choose Membership</label>
+            <h2 class="text-2xl font-semibold mb-6">
+                Choose Your Plan
+            </h2>
 
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid md:grid-cols-3 gap-6 mb-10">
 
-                <label class="border p-4 rounded-xl cursor-pointer hover:shadow-xl transition">
-                    <input type="radio" name="membership_type" value="basic" required>
-                    <h3 class="font-bold text-indigo-700 mt-2">Basic</h3>
-                    <p class="text-sm text-gray-500">Standard Access</p>
-                </label>
+                <div onclick="choosePlan('standard_monthly')"
+                     class="border p-6 rounded-xl cursor-pointer hover:shadow-xl">
+                    <p class="text-3xl font-bold">€38</p>
+                    <p>Monthly</p>
+                    <p class="text-sm text-gray-500">+ €25 Joining Fee</p>
+                </div>
 
-                <label class="border p-4 rounded-xl cursor-pointer hover:shadow-xl transition">
-                    <input type="radio" name="membership_type" value="pro">
-                    <h3 class="font-bold text-purple-600 mt-2">Pro</h3>
-                    <p class="text-sm text-gray-500">10% Discount</p>
-                </label>
+                <div onclick="choosePlan('standard_3month')"
+                     class="border p-6 rounded-xl cursor-pointer hover:shadow-xl">
+                    <p class="text-3xl font-bold">€114</p>
+                    <p>3 x Monthly</p>
+                    <p class="text-sm text-gray-500">+ €25 Joining Fee</p>
+                </div>
 
-                <label class="border p-4 rounded-xl cursor-pointer hover:shadow-xl transition">
-                    <input type="radio" name="membership_type" value="elite">
-                    <h3 class="font-bold text-yellow-500 mt-2">Elite</h3>
-                    <p class="text-sm text-gray-500">20% Discount + Priority</p>
-                </label>
+                <div onclick="choosePlan('standard_annual')"
+                     class="border p-6 rounded-xl cursor-pointer hover:shadow-xl">
+                    <p class="text-3xl font-bold">€355</p>
+                    <p>Annually</p>
+                    <p class="text-sm text-gray-500">+ €25 Joining Fee</p>
+                </div>
 
             </div>
+
+            <input type="hidden" name="membership_type" id="membership_type">
 
             <button type="button"
-                    onclick="nextStep(2)"
-                    class="mt-8 w-full bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition">
+                    onclick="goToStep2()"
+                    class="w-full bg-purple-700 text-white py-4 rounded-xl">
                 Continue
             </button>
+
         </div>
 
-        <!-- STEP 2 -->
-        <div id="step2" class="hidden space-y-4">
+        <!-- ================= STEP 2 ================= -->
+        <div id="step2" class="hidden">
 
-            <input type="text" name="name" placeholder="Full Name"
-                   class="w-full p-3 border rounded" required>
+            <h2 class="text-2xl font-semibold mb-6">
+                Your Details
+            </h2>
 
-            <input type="email" name="email" placeholder="Email Address"
-                   class="w-full p-3 border rounded" required>
+            <div class="space-y-4">
 
-            <input type="password" name="password"
-                   placeholder="Password"
-                   class="w-full p-3 border rounded" required>
+                <input type="text" name="name"
+                       placeholder="Full Name"
+                       class="w-full p-4 border rounded-xl"
+                       required>
 
-            <input type="password" name="password_confirmation"
-                   placeholder="Confirm Password"
-                   class="w-full p-3 border rounded" required>
+                <input type="email" name="email"
+                       placeholder="Email Address"
+                       class="w-full p-4 border rounded-xl"
+                       required>
 
-            <div class="flex gap-4">
-                <button type="button"
-                        onclick="nextStep(1)"
-                        class="w-1/2 bg-gray-300 p-3 rounded-xl">
-                    Back
-                </button>
+                <input type="password"
+                       name="password"
+                       placeholder="Password"
+                       class="w-full p-4 border rounded-xl"
+                       required>
 
-                <button type="button"
-                        onclick="nextStep(3)"
-                        class="w-1/2 bg-indigo-600 text-white p-3 rounded-xl">
-                    Continue
-                </button>
-            </div>
-        </div>
+                <input type="password"
+                       name="password_confirmation"
+                       placeholder="Confirm Password"
+                       class="w-full p-4 border rounded-xl"
+                       required>
 
-        <!-- STEP 3 -->
-        <div id="step3" class="hidden space-y-4">
+                <input type="date"
+                       name="membership_start_date"
+                       class="w-full p-4 border rounded-xl"
+                       required>
 
-            <input type="text" placeholder="Card Number"
-                   class="w-full p-3 border rounded" required>
-
-            <div class="grid grid-cols-2 gap-4">
-                <input type="text" placeholder="Expiry Date"
-                       class="p-3 border rounded" required>
-                <input type="text" placeholder="CVC"
-                       class="p-3 border rounded" required>
             </div>
 
-            <div class="flex gap-4">
-                <button type="button"
-                        onclick="nextStep(2)"
-                        class="w-1/2 bg-gray-300 p-3 rounded-xl">
-                    Back
-                </button>
-
+            <div class="mt-10">
                 <button type="submit"
-                        class="w-1/2 bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition">
+                        class="w-full bg-purple-700 text-white py-4 rounded-xl">
                     Complete Registration
                 </button>
             </div>
+
         </div>
 
     </form>
@@ -148,17 +150,25 @@
 </div>
 
 <script>
-function nextStep(step) {
+function choosePlan(plan) {
+    document.getElementById('membership_type').value = plan;
+}
+
+function goToStep2() {
+
+    if (!document.getElementById('gym_location').value) {
+        alert("Please select a gym first.");
+        return;
+    }
+
+    if (!document.getElementById('membership_type').value) {
+        alert("Please select a membership plan.");
+        return;
+    }
+
     document.getElementById('step1').classList.add('hidden');
-    document.getElementById('step2').classList.add('hidden');
-    document.getElementById('step3').classList.add('hidden');
-
-    document.getElementById('step' + step).classList.remove('hidden');
-
-    const progress = document.getElementById('progressBar');
-    if (step === 1) progress.style.width = "33%";
-    if (step === 2) progress.style.width = "66%";
-    if (step === 3) progress.style.width = "100%";
+    document.getElementById('step2').classList.remove('hidden');
+    document.getElementById('progressBar').style.width = "66%";
 }
 </script>
 
