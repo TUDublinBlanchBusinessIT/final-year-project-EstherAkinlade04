@@ -33,10 +33,8 @@
         </h1>
     </div>
 
-
-    <!-- PROGRESS BAR (RESTORED) -->
+    <!-- PROGRESS BAR -->
     <div class="mb-24">
-
         <div class="relative w-full h-12 bg-purple-700 rounded-full flex items-center px-10">
             <div class="absolute left-10 right-10 h-[2px] bg-purple-400 rounded-full"></div>
 
@@ -67,14 +65,12 @@
         </div>
     </div>
 
-
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
         <!-- STEP 1 -->
         <div id="step1">
 
-            <!-- Gym -->
             <h2 class="text-2xl font-semibold mb-6">Select a Gym</h2>
 
             <select name="gym_location"
@@ -87,77 +83,81 @@
                 <option value="Galway">Galway</option>
             </select>
 
-
             <!-- CATEGORY BUTTONS -->
             <div class="flex justify-center gap-16 mb-16">
-
                 <div onclick="showMembership()"
-                     class="w-96 h-28 bg-purple-700 text-white rounded-full 
-                            flex items-center justify-center cursor-pointer hover:scale-105 transition shadow-xl">
+                     class="w-96 h-28 bg-purple-700 text-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition shadow-xl">
                     <span class="text-xl font-semibold tracking-wider">MEMBERSHIPS</span>
                 </div>
 
                 <div onclick="showStudent()"
-                     class="w-96 h-28 bg-purple-500 text-white rounded-full 
-                            flex items-center justify-center cursor-pointer hover:scale-105 transition shadow-xl">
+                     class="w-96 h-28 bg-purple-500 text-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition shadow-xl">
                     <span class="text-xl font-semibold tracking-wider">STUDENTS</span>
                 </div>
-
             </div>
-
 
             <!-- STUDENT NOTICE -->
             <div id="studentNotice"
-                 class="hidden max-w-4xl mx-auto mb-12 bg-yellow-50 border border-yellow-400 
-                        text-yellow-900 p-8 rounded-2xl shadow">
+                 class="hidden max-w-4xl mx-auto mb-12 bg-yellow-50 border border-yellow-400 text-yellow-900 p-8 rounded-2xl shadow">
                 <h3 class="text-xl font-bold mb-4">⚠ Student ID Required</h3>
                 <p>You must show valid Student ID on first entry.</p>
                 <p class="mt-2 font-semibold">No ID, no membership.</p>
             </div>
 
+            <!-- VERTICAL PLAN CARDS -->
+            <div id="plans" class="hidden grid md:grid-cols-3 gap-12">
 
-            <!-- PLANS -->
-            <div id="plans" class="hidden space-y-8">
-
-                <!-- LONG CARD -->
-                <div class="bg-gradient-to-r from-purple-700 to-purple-900 
-                            text-white rounded-3xl p-10 shadow-2xl flex justify-between items-center">
-
+                <!-- PAYG -->
+                <div class="bg-gradient-to-b from-purple-600 to-purple-800 text-white rounded-3xl p-10 shadow-2xl min-h-[520px] flex flex-col justify-between">
                     <div>
-                        <h3 class="text-xl font-semibold">FLYE ROAMING</h3>
-                        <p class="mt-2">Access to all gyms</p>
-                        <p class="mt-4 text-4xl font-bold">€41</p>
-                        <p>Monthly + €25 Joining Fee</p>
+                        <h3 class="text-xl font-semibold text-center mb-6">PAY AS YOU GO</h3>
+                        <p class="text-center text-5xl font-bold">€14</p>
+                        <p class="text-center mb-6">1 Day</p>
+                        <p class="text-center">€22 – 2 Days</p>
+                        <p class="text-center">€29 – 3 Days</p>
                     </div>
-
                     <button type="button"
-                            onclick="selectPlan('roaming')"
-                            class="bg-white text-purple-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
+                            onclick="selectPlan('payg')"
+                            class="mt-10 bg-white text-purple-800 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
                         Select
                     </button>
                 </div>
 
-
-                <!-- LONG CARD -->
-                <div class="bg-gradient-to-r from-purple-500 to-purple-700 
-                            text-white rounded-3xl p-10 shadow-2xl flex justify-between items-center">
-
+                <!-- ROAMING -->
+                <div class="bg-gradient-to-b from-purple-700 to-purple-900 text-white rounded-3xl p-10 shadow-2xl min-h-[520px] flex flex-col justify-between scale-105">
                     <div>
-                        <h3 class="text-xl font-semibold">MEMBERSHIP</h3>
-                        <p class="mt-2">Access to 1 Flyefit gym</p>
-                        <p class="mt-4 text-4xl font-bold">€38</p>
-                        <p>Monthly + €25 Joining Fee</p>
+                        <h3 class="text-xl font-semibold text-center mb-6">FLYE ROAMING</h3>
+                        <p class="text-center">Access to all gyms</p>
+                        <p class="text-center text-5xl font-bold mt-4">€41</p>
+                        <p class="text-center mb-6">Monthly + €25 Joining Fee</p>
+                        <p class="text-center">€123 – 3 x Monthly</p>
+                        <p class="text-center">€395 – Annually</p>
                     </div>
+                    <button type="button"
+                            onclick="selectPlan('roaming')"
+                            class="mt-10 bg-white text-purple-900 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
+                        Select
+                    </button>
+                </div>
 
+                <!-- MEMBERSHIP -->
+                <div class="bg-gradient-to-b from-purple-500 to-purple-700 text-white rounded-3xl p-10 shadow-2xl min-h-[520px] flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-semibold text-center mb-6">MEMBERSHIP</h3>
+                        <p class="text-center">Access to 1 Flyefit gym</p>
+                        <p class="text-center text-5xl font-bold mt-4">€38</p>
+                        <p class="text-center mb-6">Monthly + €25 Joining Fee</p>
+                        <p class="text-center">€114 – 3 x Monthly</p>
+                        <p class="text-center">€355 – Annually</p>
+                    </div>
                     <button type="button"
                             onclick="selectPlan('membership')"
-                            class="bg-white text-purple-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
+                            class="mt-10 bg-white text-purple-800 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
                         Select
                     </button>
                 </div>
 
             </div>
-
 
             <!-- START DATE -->
             <div id="startDateSection"
@@ -183,12 +183,9 @@
 
         </div>
 
-
         <!-- STEP 2 -->
         <div id="step2" class="hidden mt-20">
-
             <h2 class="text-2xl font-semibold mb-8">Your Details</h2>
-
             <div class="space-y-5">
                 <input type="text" name="name" placeholder="Full Name"
                        class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600" required>
@@ -209,13 +206,10 @@
                     Complete Registration
                 </button>
             </div>
-
         </div>
 
     </form>
-
 </div>
-
 
 <script>
 
