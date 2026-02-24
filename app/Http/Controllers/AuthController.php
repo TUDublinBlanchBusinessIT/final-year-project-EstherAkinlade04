@@ -22,27 +22,31 @@ class AuthController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Handle Registration (SIMPLE VERSION)
+    | Handle Registration (Membership + Gym)
     |--------------------------------------------------------------------------
     */
 
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6|confirmed',
+            'name'             => 'required|string|max:255',
+            'email'            => 'required|email|unique:users',
+            'password'         => 'required|min:6|confirmed',
+            'membership_type'  => 'required|in:basic,pro,elite',
+            'gym_location'     => 'required|string|max:255',
         ]);
 
         User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'member', // default role
+            'name'            => $validated['name'],
+            'email'           => $validated['email'],
+            'password'        => Hash::make($validated['password']),
+            'role'            => 'member',
+            'membership_type' => $validated['membership_type'],
+            'gym_location'    => $validated['gym_location'],
         ]);
 
         return redirect()->route('login')
-            ->with('success', 'Registration successful. Please login.');
+            ->with('success', 'Welcome to Vault Fitness! Please login.');
     }
 
     /*
@@ -65,7 +69,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 

@@ -1,15 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register</title>
+    <title>Join Vault Fitness</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gradient-to-br from-purple-50 via-white to-indigo-100 min-h-screen flex items-center justify-center">
 
-<div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+<div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-2xl">
 
-    <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
+    <div class="text-center mb-10">
+        <h1 class="text-3xl font-extrabold text-indigo-800">
+            💎 Let's Get Started
+        </h1>
+        <p class="text-gray-500 mt-2">Join Vault Fitness Today</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="mb-8">
+        <div class="flex justify-between text-sm font-semibold mb-2">
+            <span id="step1Text">1. Select Plan</span>
+            <span id="step2Text" class="text-gray-400">2. Your Details</span>
+            <span id="step3Text" class="text-gray-400">3. Payment</span>
+        </div>
+        <div class="h-2 bg-gray-200 rounded-full">
+            <div id="progressBar"
+                 class="h-2 bg-indigo-600 rounded-full transition-all duration-500"
+                 style="width:33%">
+            </div>
+        </div>
+    </div>
 
     @if ($errors->any())
         <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
@@ -17,146 +37,128 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+    <form method="POST" action="{{ route('register') }}">
         @csrf
 
-        <input type="text" name="name"
-               placeholder="Full Name"
-               class="w-full p-3 border rounded"
-               required>
+        <!-- STEP 1 -->
+        <div id="step1">
 
-        <input type="email" name="email"
-               placeholder="Email Address"
-               class="w-full p-3 border rounded"
-               required>
+            <label class="block font-semibold mb-2">Select Your Gym</label>
+            <select name="gym_location"
+                    class="w-full p-3 border rounded mb-6"
+                    required>
+                <option value="">Choose Location</option>
+                <option value="Dublin City">Dublin City</option>
+                <option value="Cork Central">Cork Central</option>
+                <option value="Galway West">Galway West</option>
+            </select>
 
-        <!-- PASSWORD -->
-        <div>
-            <div class="relative">
-                <input type="password"
-                       id="password"
-                       name="password"
-                       placeholder="Password"
-                       class="w-full p-3 border rounded"
-                       oninput="checkStrength()"
-                       required>
+            <label class="block font-semibold mb-4">Choose Membership</label>
 
-                <button type="button"
-                        onclick="togglePassword()"
-                        class="absolute right-3 top-3 text-gray-500">
-                    👁
-                </button>
-            </div>
+            <div class="grid grid-cols-3 gap-4">
 
-            <!-- Strength Bar -->
-            <div class="mt-2">
-                <div class="h-2 bg-gray-200 rounded">
-                    <div id="strengthBar"
-                         class="h-2 rounded transition-all duration-300"
-                         style="width:0%">
-                    </div>
-                </div>
-                <p id="strengthText"
-                   class="text-sm mt-1 font-semibold">
-                </p>
+                <label class="border p-4 rounded-xl cursor-pointer hover:shadow-xl transition">
+                    <input type="radio" name="membership_type" value="basic" required>
+                    <h3 class="font-bold text-indigo-700 mt-2">Basic</h3>
+                    <p class="text-sm text-gray-500">Standard Access</p>
+                </label>
+
+                <label class="border p-4 rounded-xl cursor-pointer hover:shadow-xl transition">
+                    <input type="radio" name="membership_type" value="pro">
+                    <h3 class="font-bold text-purple-600 mt-2">Pro</h3>
+                    <p class="text-sm text-gray-500">10% Discount</p>
+                </label>
+
+                <label class="border p-4 rounded-xl cursor-pointer hover:shadow-xl transition">
+                    <input type="radio" name="membership_type" value="elite">
+                    <h3 class="font-bold text-yellow-500 mt-2">Elite</h3>
+                    <p class="text-sm text-gray-500">20% Discount + Priority</p>
+                </label>
+
             </div>
 
             <button type="button"
-                    onclick="generatePassword()"
-                    class="mt-2 text-purple-600 text-sm font-semibold">
-                🔐 Generate Secure Password
+                    onclick="nextStep(2)"
+                    class="mt-8 w-full bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition">
+                Continue
             </button>
         </div>
 
-        <input type="password"
-               id="confirmPassword"
-               name="password_confirmation"
-               placeholder="Confirm Password"
-               class="w-full p-3 border rounded"
-               required>
+        <!-- STEP 2 -->
+        <div id="step2" class="hidden space-y-4">
 
-        <button type="submit"
-                class="w-full bg-purple-600 text-white p-3 rounded font-bold hover:bg-purple-700 transition">
-            Register
-        </button>
+            <input type="text" name="name" placeholder="Full Name"
+                   class="w-full p-3 border rounded" required>
+
+            <input type="email" name="email" placeholder="Email Address"
+                   class="w-full p-3 border rounded" required>
+
+            <input type="password" name="password"
+                   placeholder="Password"
+                   class="w-full p-3 border rounded" required>
+
+            <input type="password" name="password_confirmation"
+                   placeholder="Confirm Password"
+                   class="w-full p-3 border rounded" required>
+
+            <div class="flex gap-4">
+                <button type="button"
+                        onclick="nextStep(1)"
+                        class="w-1/2 bg-gray-300 p-3 rounded-xl">
+                    Back
+                </button>
+
+                <button type="button"
+                        onclick="nextStep(3)"
+                        class="w-1/2 bg-indigo-600 text-white p-3 rounded-xl">
+                    Continue
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div id="step3" class="hidden space-y-4">
+
+            <input type="text" placeholder="Card Number"
+                   class="w-full p-3 border rounded" required>
+
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" placeholder="Expiry Date"
+                       class="p-3 border rounded" required>
+                <input type="text" placeholder="CVC"
+                       class="p-3 border rounded" required>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="button"
+                        onclick="nextStep(2)"
+                        class="w-1/2 bg-gray-300 p-3 rounded-xl">
+                    Back
+                </button>
+
+                <button type="submit"
+                        class="w-1/2 bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition">
+                    Complete Registration
+                </button>
+            </div>
+        </div>
+
     </form>
 
-    <p class="text-sm text-center mt-4">
-        Already have an account?
-        <a href="{{ route('login') }}"
-           class="text-purple-600 font-semibold">
-           Login
-        </a>
-    </p>
 </div>
 
 <script>
-// PASSWORD STRENGTH CHECK
-function checkStrength() {
-    const password = document.getElementById("password").value;
-    const bar = document.getElementById("strengthBar");
-    const text = document.getElementById("strengthText");
+function nextStep(step) {
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('step3').classList.add('hidden');
 
-    let strength = 0;
+    document.getElementById('step' + step).classList.remove('hidden');
 
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-    switch (strength) {
-        case 0:
-        case 1:
-            bar.style.width = "20%";
-            bar.className = "h-2 rounded bg-red-500 transition-all duration-300";
-            text.innerText = "Weak";
-            text.className = "text-sm mt-1 font-semibold text-red-600";
-            break;
-
-        case 2:
-        case 3:
-            bar.style.width = "60%";
-            bar.className = "h-2 rounded bg-yellow-500 transition-all duration-300";
-            text.innerText = "Medium";
-            text.className = "text-sm mt-1 font-semibold text-yellow-600";
-            break;
-
-        case 4:
-        case 5:
-            bar.style.width = "100%";
-            bar.className = "h-2 rounded bg-green-500 transition-all duration-300";
-            text.innerText = "Strong";
-            text.className = "text-sm mt-1 font-semibold text-green-600";
-            break;
-    }
-}
-
-// GENERATE PASSWORD
-function generatePassword() {
-    const chars =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-        "abcdefghijklmnopqrstuvwxyz" +
-        "0123456789" +
-        "!@#$%^&*()_+[]{}";
-
-    let password = "";
-    for (let i = 0; i < 12; i++) {
-        password += chars.charAt(
-            Math.floor(Math.random() * chars.length)
-        );
-    }
-
-    document.getElementById("password").value = password;
-    document.getElementById("confirmPassword").value = password;
-
-    checkStrength();
-}
-
-// SHOW / HIDE PASSWORD
-function togglePassword() {
-    const input = document.getElementById("password");
-    input.type = input.type === "password" ? "text" : "password";
+    const progress = document.getElementById('progressBar');
+    if (step === 1) progress.style.width = "33%";
+    if (step === 2) progress.style.width = "66%";
+    if (step === 3) progress.style.width = "100%";
 }
 </script>
 
