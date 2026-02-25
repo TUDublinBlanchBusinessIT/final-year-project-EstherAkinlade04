@@ -19,10 +19,7 @@
 
     <div class="flex justify-between items-center mb-10">
         <h2 class="text-2xl font-bold tracking-wide">💎 Vault Admin</h2>
-        <button onclick="toggleSidebar()"
-            class="text-white text-xl hover:scale-110 transition">
-            ☰
-        </button>
+        <button onclick="toggleSidebar()" class="text-white text-xl hover:scale-110 transition">☰</button>
     </div>
 
     <a href="{{ route('admin.dashboard') }}"
@@ -37,14 +34,12 @@
 
     <form method="POST" action="{{ route('logout') }}" class="mt-10">
         @csrf
-        <button class="w-full bg-purple-600 py-2 rounded-lg 
-                       hover:bg-purple-500 hover:shadow-xl hover:scale-105 transition">
+        <button class="w-full bg-purple-600 py-2 rounded-lg hover:bg-purple-500 hover:shadow-xl hover:scale-105 transition">
             🚪 Logout
         </button>
     </form>
 
 </aside>
-
 
 <!-- MAIN -->
 <main class="flex-1 p-10">
@@ -61,15 +56,13 @@
         ['Total Classes', $totalClasses],
         ['Total Bookings', $totalBookings]
     ] as $stat)
-    <div class="bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-xl
-                hover:scale-105 hover:shadow-2xl transition duration-300 text-center">
+    <div class="bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-xl hover:scale-105 hover:shadow-2xl transition duration-300 text-center">
         <p class="text-gray-500 mb-2">{{ $stat[0] }}</p>
         <h2 class="text-4xl font-bold text-indigo-700">{{ $stat[1] }}</h2>
     </div>
     @endforeach
 
-    <div class="bg-gradient-to-r from-green-200 to-emerald-300 p-8 rounded-3xl shadow-xl
-                hover:scale-105 hover:shadow-2xl transition duration-300 text-center">
+    <div class="bg-gradient-to-r from-green-200 to-emerald-300 p-8 rounded-3xl shadow-xl hover:scale-105 hover:shadow-2xl transition duration-300 text-center">
         <p class="text-gray-700 mb-2">Total Revenue</p>
         <h2 class="text-4xl font-bold text-green-800">
             €{{ number_format($totalRevenue, 2) }}
@@ -78,22 +71,17 @@
 
 </div>
 
-<!-- 📅 Calendar Section -->
+<!-- Calendar -->
 <div class="bg-white p-8 rounded-3xl shadow-xl mb-14">
-    <h2 class="text-2xl font-bold text-indigo-800 mb-6">
-        📅 Class Schedule Overview
-    </h2>
+    <h2 class="text-2xl font-bold text-indigo-800 mb-6">📅 Class Schedule Overview</h2>
     <div id="calendar"></div>
 </div>
 
-<h2 class="text-3xl font-bold text-indigo-900 mb-8">
-    📚 Manage Classes
-</h2>
+<h2 class="text-3xl font-bold text-indigo-900 mb-8">📚 Manage Classes</h2>
 
 @foreach($classes as $class)
 
-<div class="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-xl mb-10
-            hover:-translate-y-1 hover:shadow-2xl transition duration-300">
+<div class="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-xl mb-4 hover:-translate-y-1 hover:shadow-2xl transition duration-300">
 
     <div class="flex justify-between">
 
@@ -132,28 +120,57 @@
         </div>
 
         <div class="flex flex-col gap-3">
-
             <button onclick="toggleMembers({{ $class->id }})"
-                    class="bg-indigo-600 text-white px-5 py-2 rounded-xl
-                           hover:bg-indigo-700 hover:scale-105 hover:shadow-xl transition">
+                    class="bg-indigo-600 text-white px-5 py-2 rounded-xl hover:bg-indigo-700 hover:scale-105 hover:shadow-xl transition">
                 👥 View Members
             </button>
 
             @if(!$class->is_cancelled)
-            <form method="POST"
-                  action="{{ route('admin.classes.cancel', $class->id) }}">
+            <form method="POST" action="{{ route('admin.classes.cancel', $class->id) }}">
                 @csrf
                 @method('PATCH')
-                <button class="bg-red-600 text-white px-5 py-2 rounded-xl
-                               hover:bg-red-700 hover:scale-105 hover:shadow-xl transition">
+                <button class="bg-red-600 text-white px-5 py-2 rounded-xl hover:bg-red-700 hover:scale-105 hover:shadow-xl transition">
                     Cancel Class
                 </button>
             </form>
             @endif
-
         </div>
 
     </div>
+
+</div>
+
+<!-- ✅ MEMBERS SECTION ADDED -->
+<div id="members-{{ $class->id }}" class="hidden bg-indigo-50 p-6 rounded-2xl shadow-inner mb-10">
+
+    <h4 class="text-lg font-bold text-indigo-800 mb-4">
+        👥 Booked Members
+    </h4>
+
+    @if($class->bookings->count() > 0)
+
+        <ul class="space-y-3">
+            @foreach($class->bookings as $booking)
+                <li class="flex justify-between bg-white p-4 rounded-xl shadow-sm">
+                    <div>
+                        <p class="font-semibold text-indigo-900">
+                            {{ $booking->user->name }}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            {{ $booking->user->email }}
+                        </p>
+                    </div>
+
+                    <span class="text-sm text-gray-400">
+                        {{ $booking->created_at->format('d M Y') }}
+                    </span>
+                </li>
+            @endforeach
+        </ul>
+
+    @else
+        <p class="text-gray-500">No members booked yet.</p>
+    @endif
 
 </div>
 
@@ -173,10 +190,8 @@ function toggleMembers(id) {
     document.getElementById('members-' + id)?.classList.toggle('hidden');
 }
 
-// Calendar
 document.addEventListener('DOMContentLoaded', function () {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         initialView: 'dayGridMonth',
         height: 500,
         events: [
