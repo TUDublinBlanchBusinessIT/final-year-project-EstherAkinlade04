@@ -228,32 +228,57 @@
         </div>
 
         <!-- STEP 2 -->
-        <div id="step2" class="hidden mt-20">
-            <h2 class="text-2xl font-semibold mb-8">Your Details</h2>
+<div id="step2" class="hidden mt-20">
+    <h2 class="text-2xl font-semibold mb-8">Your Details</h2>
 
-            <div class="space-y-5">
-                <input type="text" name="name" placeholder="Full Name"
-                       class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600" required>
+    <div class="space-y-5">
+        <input type="text" name="name" placeholder="Full Name"
+               class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600" required>
 
-                <input type="email" name="email" placeholder="Email Address"
-                       class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600" required>
+        <input type="email" name="email" placeholder="Email Address"
+               class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600" required>
 
-                <input type="password" name="password" placeholder="Password"
-                       class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600" required>
+        <div class="relative">
+            <input type="password"
+                   name="password"
+                   id="password"
+                   minlength="8"
+                   pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
+                   title="Must contain 8+ characters, 1 uppercase, 1 lowercase and 1 number"
+                   placeholder="Password"
+                   class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600"
+                   required>
 
-                <input type="password" name="password_confirmation" placeholder="Confirm Password"
-                       class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600" required>
-            </div>
-
-            <div class="mt-12">
-                <button type="submit"
-                        class="w-full bg-purple-700 text-white py-4 rounded-lg hover:bg-purple-800 transition text-lg">
-                    Complete Registration
-                </button>
-            </div>
+            <button type="button"
+                    onclick="togglePassword()"
+                    class="absolute right-4 top-4 text-sm text-purple-600">
+                Show
+            </button>
         </div>
 
-    </form>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="strengthBar" class="h-2 rounded-full transition-all duration-300"></div>
+        </div>
+        <p id="strengthText" class="text-sm"></p>
+
+        <button type="button"
+                onclick="generatePassword()"
+                class="text-purple-700 font-semibold">
+            Generate Secure Password
+        </button>
+
+        <input type="password" name="password_confirmation"
+               placeholder="Confirm Password"
+               class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-600"
+               required>
+    </div>
+
+    <div class="mt-12">
+        <button type="submit"
+                class="w-full bg-purple-700 text-white py-4 rounded-lg hover:bg-purple-800 transition text-lg">
+            Complete Registration
+        </button>
+    </div>
 </div>
 
 <script>
@@ -303,6 +328,43 @@ function goToStep2() {
     document.getElementById('progressBar').style.width = "66%";
     document.getElementById('progressDot').style.left = "calc(66% - 10px)";
 }
+function togglePassword() {
+    const field = document.getElementById('password');
+    field.type = field.type === 'password' ? 'text' : 'password';
+}
+
+function generatePassword() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < 12; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('password').value = password;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const password = document.getElementById('password');
+    const bar = document.getElementById('strengthBar');
+    const text = document.getElementById('strengthText');
+
+    password.addEventListener('input', function () {
+        const val = this.value;
+        let strength = 0;
+
+        if (val.length >= 8) strength++;
+        if (/[A-Z]/.test(val)) strength++;
+        if (/[a-z]/.test(val)) strength++;
+        if (/[0-9]/.test(val)) strength++;
+
+        const widths = ["0%", "25%", "50%", "75%", "100%"];
+        const colors = ["", "bg-red-500", "bg-yellow-500", "bg-blue-500", "bg-green-500"];
+        const labels = ["", "Weak", "Fair", "Good", "Strong"];
+
+        bar.style.width = widths[strength];
+        bar.className = "h-2 rounded-full " + colors[strength];
+        text.innerText = labels[strength];
+    });
+});
 
 </script>
 
