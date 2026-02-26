@@ -74,14 +74,40 @@
             <h2 class="text-2xl font-semibold mb-6">Select a Gym</h2>
 
             <select name="gym_location"
-                    id="gym_location"
-                    class="w-full p-4 border border-gray-300 rounded-lg mb-16 focus:ring-2 focus:ring-purple-600"
-                    required>
-                <option value="">Select a Gym</option>
-                <option value="Dublin">Dublin</option>
-                <option value="Cork">Cork</option>
-                <option value="Galway">Galway</option>
-            </select>
+        id="gym_location"
+        class="w-full p-4 border border-gray-300 rounded-lg mb-16 focus:ring-2 focus:ring-purple-600"
+        required>
+
+    <option value="">Select a Gym</option>
+
+    <!-- Priority Locations -->
+    <option value="Tallaght">Tallaght</option>
+    <option value="Dundrum">Dundrum</option>
+    <option value="Stillorgan">Stillorgan</option>
+    <option value="Sandyford">Sandyford</option>
+    <option value="Foxrock">Foxrock</option>
+    <option value="Crumlin">Crumlin</option>
+
+    <!-- Remaining Locations -->
+    <option value="Baggot Street">Baggot Street</option>
+    <option value="Blanchardstown">Blanchardstown</option>
+    <option value="CHQ">CHQ</option>
+    <option value="Cork City">Cork City</option>
+    <option value="Drumcondra">Drumcondra</option>
+    <option value="Finglas">Finglas</option>
+    <option value="Galway">Galway</option>
+    <option value="Georges Street">Georges Street</option>
+    <option value="Inchicore">Inchicore</option>
+    <option value="Jervis Street">Jervis Street</option>
+    <option value="Liffey Valley">Liffey Valley</option>
+    <option value="Macken Street">Macken Street</option>
+    <option value="Northside SC">Northside SC</option>
+    <option value="Portobello">Portobello</option>
+    <option value="Ranelagh">Ranelagh</option>
+    <option value="Sallynoggin">Sallynoggin</option>
+    <option value="Swords">Swords</option>
+
+</select>
 
             <!-- CATEGORY BUTTONS -->
             <div class="flex justify-center gap-16 mb-16">
