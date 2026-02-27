@@ -13,11 +13,22 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'membership_type',
+        'gym_location',
+        'plan_duration',
+        'start_date',
+        'end_date',
+        'price_paid',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
     ];
 
     public function bookings()

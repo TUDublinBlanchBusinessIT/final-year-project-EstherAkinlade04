@@ -4,11 +4,9 @@
     <title>Member Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- FullCalendar -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
-    <!-- QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
@@ -23,19 +21,19 @@
 <body class="bg-gradient-to-br from-purple-50 via-indigo-50 to-purple-100 min-h-screen">
 
 @php
-$daysLeft = $user->end_date
-    ? \Carbon\Carbon::now()->diffInDays($user->end_date, false)
-    : null;
+    $isExpired = true;
+    $daysLeft = null;
 
-$isExpired = !$user->end_date || $user->end_date < now();
+    if ($user->end_date) {
+        $endDate = \Carbon\Carbon::parse($user->end_date);
+        $isExpired = $endDate->isPast();
+        $daysLeft = now()->diffInDays($endDate, false);
+    }
 @endphp
-
-<!-- ================= NAVIGATION ================= -->
 
 <nav class="bg-white shadow-lg px-10 py-5 flex justify-between items-center border-b border-indigo-100">
 
     <div class="flex items-center gap-8">
-
         <div>
             <h1 class="text-2xl font-bold text-indigo-800 tracking-wide">
                 💎 Vault Fitness
@@ -49,7 +47,6 @@ $isExpired = !$user->end_date || $user->end_date < now();
            class="text-indigo-600 font-semibold hover:text-indigo-800 hover:underline transition">
             🔎 Browse Classes
         </a>
-
     </div>
 
     <div class="flex items-center gap-6">
@@ -60,18 +57,18 @@ $isExpired = !$user->end_date || $user->end_date < now();
             </span>
         @else
             <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold shadow">
-                🏅 {{ ucfirst($user->membership_type) }} Membership
+                🏅 {{ ucfirst($user->membership_type ?? 'standard') }} Membership
                 @if($daysLeft !== null)
                     ({{ $daysLeft }} days left)
                 @endif
             </span>
         @endif
 
-        <button onclick="openPass()"
-            class="bg-indigo-600 text-white px-4 py-2 rounded-xl
-                   hover:bg-indigo-700 hover:scale-105 hover:shadow-lg transition">
-            🎟 Digital Pass
-        </button>
+        <a href="{{ route('checkout') }}"
+           class="bg-indigo-600 text-white px-4 py-2 rounded-xl
+                  hover:bg-indigo-700 hover:scale-105 hover:shadow-lg transition">
+            🔄 Renew
+        </a>
 
         <div class="text-right">
             <p class="text-sm text-gray-400">Welcome back,</p>
@@ -89,7 +86,6 @@ $isExpired = !$user->end_date || $user->end_date < now();
         </form>
 
     </div>
-
 </nav>
 
 <div class="p-10">
@@ -102,12 +98,7 @@ $isExpired = !$user->end_date || $user->end_date < now();
 
 @if($isExpired)
     <div class="bg-red-100 text-red-800 p-6 rounded-xl mb-8 shadow">
-        <p class="mb-4 font-semibold">Your membership has expired.</p>
-
-        <a href="{{ route('checkout') }}"
-           class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition">
-            🔄 Renew Membership
-        </a>
+        <p class="font-semibold">Your membership has expired.</p>
     </div>
 @endif
 
@@ -119,8 +110,6 @@ $attendanceRate = $bookings->count() > 0
     ? round(($completed->count() / $bookings->count()) * 100)
     : 0;
 @endphp
-
-<!-- ================= STATS ================= -->
 
 <div class="grid md:grid-cols-3 gap-8 mb-12">
 
