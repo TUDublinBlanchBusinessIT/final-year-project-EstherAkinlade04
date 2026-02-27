@@ -22,6 +22,14 @@
 
 <body class="bg-gradient-to-br from-purple-50 via-indigo-50 to-purple-100 min-h-screen">
 
+@php
+$daysLeft = $user->end_date
+    ? \Carbon\Carbon::now()->diffInDays($user->end_date, false)
+    : null;
+
+$isExpired = !$user->end_date || $user->end_date < now();
+@endphp
+
 <!-- ================= NAVIGATION ================= -->
 
 <nav class="bg-white shadow-lg px-10 py-5 flex justify-between items-center border-b border-indigo-100">
@@ -46,9 +54,18 @@
 
     <div class="flex items-center gap-6">
 
-        <span class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full text-sm font-semibold shadow">
-            🏅 Standard Membership
-        </span>
+        @if($isExpired)
+            <span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold shadow">
+                ❌ Membership Expired
+            </span>
+        @else
+            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold shadow">
+                🏅 {{ ucfirst($user->membership_type) }} Membership
+                @if($daysLeft !== null)
+                    ({{ $daysLeft }} days left)
+                @endif
+            </span>
+        @endif
 
         <button onclick="openPass()"
             class="bg-indigo-600 text-white px-4 py-2 rounded-xl
@@ -77,6 +94,23 @@
 
 <div class="p-10">
 
+@if($daysLeft !== null && $daysLeft <= 3 && $daysLeft > 0)
+    <div class="bg-yellow-100 text-yellow-800 p-4 rounded-xl mb-6 shadow">
+        ⚠ Your membership expires in {{ $daysLeft }} day(s).
+    </div>
+@endif
+
+@if($isExpired)
+    <div class="bg-red-100 text-red-800 p-6 rounded-xl mb-8 shadow">
+        <p class="mb-4 font-semibold">Your membership has expired.</p>
+
+        <a href="{{ route('checkout') }}"
+           class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition">
+            🔄 Renew Membership
+        </a>
+    </div>
+@endif
+
 @php
 $upcoming = $bookings->where('class_time', '>=', now());
 $completed = $bookings->where('class_time', '<', now());
@@ -90,16 +124,15 @@ $attendanceRate = $bookings->count() > 0
 
 <div class="grid md:grid-cols-3 gap-8 mb-12">
 
-    <div class="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition">
+    <div class="bg-white p-6 rounded-3xl shadow-xl">
         <p class="text-gray-500 text-sm">🔥 Upcoming Sessions</p>
         <h2 class="text-3xl font-bold text-indigo-700 mt-2">
             {{ $upcoming->count() }}
         </h2>
     </div>
 
-    <div class="bg-white p-6 rounded-3xl shadow-xl text-center hover:shadow-2xl transition">
+    <div class="bg-white p-6 rounded-3xl shadow-xl text-center">
         <p class="text-gray-500 text-sm mb-3">Attendance Rate</p>
-
         <div class="relative w-24 h-24 mx-auto">
             <svg class="w-24 h-24 transform -rotate-90">
                 <circle cx="50%" cy="50%" r="40"
@@ -118,7 +151,7 @@ $attendanceRate = $bookings->count() > 0
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition">
+    <div class="bg-white p-6 rounded-3xl shadow-xl">
         <p class="text-gray-500 text-sm">Total Bookings</p>
         <h2 class="text-3xl font-bold text-indigo-700 mt-2">
             {{ $bookings->count() }}
@@ -127,8 +160,6 @@ $attendanceRate = $bookings->count() > 0
 
 </div>
 
-<!-- ================= NEXT SESSION ================= -->
-
 @if($nextClass)
 <div class="bg-indigo-600 text-white p-8 rounded-3xl shadow-xl mb-10">
     <h2 class="text-xl font-bold mb-2">🔥 Your Next Session</h2>
@@ -136,8 +167,6 @@ $attendanceRate = $bookings->count() > 0
     <p>{{ \Carbon\Carbon::parse($nextClass->class_time)->format('d M Y H:i') }}</p>
 </div>
 @endif
-
-<!-- ================= BOOKING HISTORY ================= -->
 
 <h2 class="text-3xl font-bold text-indigo-900 mb-8">
     📚 Booking History
@@ -154,7 +183,7 @@ $attendanceRate = $bookings->count() > 0
 
 @php $isPast = \Carbon\Carbon::parse($class->class_time)->isPast(); @endphp
 
-<div class="bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition">
+<div class="bg-white p-8 rounded-3xl shadow-xl">
     <h3 class="text-xl font-bold text-indigo-800 mb-2">
         {{ $class->name }}
     </h3>
@@ -168,7 +197,7 @@ $attendanceRate = $bookings->count() > 0
         {{ $isPast ? 'Completed' : 'Upcoming' }}
     </span>
 
-    @if(!$isPast)
+    @if(!$isPast && !$isExpired)
         <form method="POST"
               action="{{ route('cancel.booking', $class->id) }}"
               class="mt-4">
@@ -188,96 +217,6 @@ $attendanceRate = $bookings->count() > 0
 @endif
 
 </div>
-
-<!-- ================= DIGITAL PASS SLIDE PANEL ================= -->
-
-<div id="passOverlay"
-     class="fixed inset-0 bg-black/50 hidden z-40"
-     onclick="closePass()"></div>
-
-<div id="passPanel"
-     class="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl
-            transform translate-x-full transition-transform duration-500 z-50 p-8">
-
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-xl font-bold text-indigo-800">
-            🎟 Digital Access Pass
-        </h2>
-        <button onclick="closePass()" class="text-gray-500 hover:text-red-500 text-xl">✕</button>
-    </div>
-
-    <div class="perspective w-full">
-
-        <div id="card"
-             class="relative w-full h-52 transition-transform duration-700 transform-style preserve-3d cursor-pointer"
-             onclick="flipCard()">
-
-            <!-- FRONT -->
-            <div class="absolute w-full h-full bg-gradient-to-r from-indigo-600 to-purple-600
-                        text-white rounded-3xl shadow-2xl p-6 backface-hidden">
-
-                <h3 class="text-lg font-semibold">Vault Fitness</h3>
-                <p class="mt-6 text-2xl font-bold">{{ $user->name }}</p>
-                <p class="mt-2 text-sm opacity-80">
-                    {{ $user->member_number ?? 'VLT-'.strtoupper(substr(md5($user->email),0,10)) }}
-                </p>
-
-            </div>
-
-            <!-- BACK -->
-            <div class="absolute w-full h-full bg-white rounded-3xl shadow-2xl
-                        p-6 rotate-y-180 backface-hidden flex items-center justify-center">
-
-                <div id="qrcode"></div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="mt-8 space-y-4">
-
-        <button onclick="simulateNFC()"
-                class="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition">
-            📲 Tap to Check In
-        </button>
-
-        <button class="w-full bg-black text-white py-3 rounded-xl">
-             Add to Apple Wallet (Sprint 3)
-        </button>
-
-    </div>
-
-</div>
-
-<script>
-
-function openPass() {
-    document.getElementById('passPanel').classList.remove('translate-x-full');
-    document.getElementById('passOverlay').classList.remove('hidden');
-}
-
-function closePass() {
-    document.getElementById('passPanel').classList.add('translate-x-full');
-    document.getElementById('passOverlay').classList.add('hidden');
-}
-
-function flipCard() {
-    document.getElementById('card').classList.toggle('flipped');
-}
-
-new QRCode(document.getElementById("qrcode"), {
-    text: "VaultMember-{{ $user->member_number ?? md5($user->email) }}",
-    width: 140,
-    height: 140
-});
-
-function simulateNFC() {
-    alert("✅ NFC Tap Successful\nCheck-in recorded at " + new Date().toLocaleTimeString());
-}
-
-</script>
 
 </body>
 </html>
