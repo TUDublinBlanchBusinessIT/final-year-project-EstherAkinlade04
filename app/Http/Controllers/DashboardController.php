@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -14,7 +15,13 @@ class DashboardController extends Controller
             ->orderBy('class_time')
             ->get();
 
-        return view('dashboard', compact('user', 'bookings'));
+        $daysLeft = null;
+
+        if ($user->end_date) {
+            $daysLeft = Carbon::now()->diffInDays($user->end_date, false);
+        }
+
+        return view('dashboard', compact('user', 'bookings', 'daysLeft'));
     }
 
     public function history()
