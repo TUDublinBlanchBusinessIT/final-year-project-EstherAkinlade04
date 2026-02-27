@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,13 +48,25 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/classes', [ClassesController::class, 'index'])->name('classes.index');
 
-    // BOOK (creates unpaid booking first)
+    // BOOK CLASS
     Route::post('/book/{id}', [BookingController::class, 'store'])->name('book.class');
 
-    // 💳 PAYMENT SIMULATION
-    Route::post('/pay/{booking}', [BookingController::class, 'pay'])->name('booking.pay');
+    // REMOVE OLD PAYMENT SIMULATION (we are using Stripe now)
+    // Route::post('/pay/{booking}', [BookingController::class, 'pay'])->name('booking.pay');
 
     Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])->name('cancel.booking');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stripe Membership Payment
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/checkout', [PaymentController::class, 'checkout'])->name('checkout');
+
+    Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
+
+    Route::get('/payment-cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
 });
 
 

@@ -11,7 +11,7 @@ class BookingController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | Store Booking (Creates UNPAID booking)
+    | Store Booking
     |--------------------------------------------------------------------------
     */
 
@@ -19,6 +19,11 @@ class BookingController extends Controller
     {
         $user = Auth::user();
         $class = FitnessClass::findOrFail($id);
+
+        // 🚫 Membership check
+        if (!$user->end_date || $user->end_date < now()) {
+            return back()->with('error', 'Your membership has expired. Please renew.');
+        }
 
         if ($class->is_cancelled) {
             return back()->with('error', 'This class has been cancelled.');
@@ -39,34 +44,10 @@ class BookingController extends Controller
         Booking::create([
             'user_id' => $user->id,
             'fitness_class_id' => $class->id,
-            'payment_status' => 'unpaid'
+            'payment_status' => 'paid' // No more fake booking payment
         ]);
 
-        return back()->with('success', 'Class reserved! Please complete payment.');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Simulated Payment
-    |--------------------------------------------------------------------------
-    */
-
-    public function pay($id)
-    {
-        $booking = Booking::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        if ($booking->payment_status === 'paid') {
-            return back()->with('error', 'Already paid.');
-        }
-
-        // 🔥 Simulate Stripe success
-        $booking->update([
-            'payment_status' => 'paid'
-        ]);
-
-        return back()->with('success', 'Payment successful! 🎉');
+        return back()->with('success', 'Class booked successfully!');
     }
 
     /*
