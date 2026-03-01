@@ -3,20 +3,25 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\MembershipPlan;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
-use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
     public function checkout()
     {
-        // 🔥 Force load directly from .env (avoids config cache issue)
         Stripe::setApiKey(env('STRIPE_SECRET'));
 
         $user = Auth::user();
 
-        $amount = 4100; // €41 in cents
+        if (!$user->membership_plan_id) {
+            return redirect()->route('dashboard')
+                ->with('error', 'No membership plan selected.');
+        }
+
+        $plan = MembershipPlan::findOrFail($user->membership_plan_id);
 
         $session = Session::create([
             'payment_method_types' => ['card'],
@@ -25,9 +30,9 @@ class PaymentController extends Controller
                 'price_data' => [
                     'currency' => 'eur',
                     'product_data' => [
-                        'name' => 'Vault Fitness Membership',
+                        'name' => $plan->name,
                     ],
-                    'unit_amount' => $amount,
+                    'unit_amount' => $plan->price * 100,
                 ],
                 'quantity' => 1,
             ]],
@@ -42,11 +47,16 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
-        // Activate membership for 1 month
+        if (!$user->membership_plan_id) {
+            return redirect()->route('dashboard');
+        }
+
+        $plan = MembershipPlan::findOrFail($user->membership_plan_id);
+
         $user->update([
             'start_date' => now(),
-            'end_date' => now()->addMonth(),
-            'price_paid' => 41.00
+            'end_date' => now()->addDays($plan->duration_days),
+            'price_paid' => $plan->price,
         ]);
 
         return redirect()->route('dashboard')
