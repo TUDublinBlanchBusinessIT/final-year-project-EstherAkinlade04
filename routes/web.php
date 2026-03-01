@@ -27,9 +27,18 @@ Route::get('/', function () {
 
 Route::middleware('guest')->group(function () {
 
+    // Registration
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
+    // 🔥 Stripe Registration Flow
+    Route::get('/register-success', [AuthController::class, 'registrationSuccess'])
+        ->name('register.success');
+
+    Route::get('/register-cancel', [AuthController::class, 'registrationCancel'])
+        ->name('register.cancel');
+
+    // Login
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 });
@@ -48,25 +57,24 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/classes', [ClassesController::class, 'index'])->name('classes.index');
 
-    // BOOK CLASS
+    // Book Class
     Route::post('/book/{id}', [BookingController::class, 'store'])->name('book.class');
-
-    // REMOVE OLD PAYMENT SIMULATION (we are using Stripe now)
-    // Route::post('/pay/{booking}', [BookingController::class, 'pay'])->name('booking.pay');
 
     Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])->name('cancel.booking');
 
     /*
     |--------------------------------------------------------------------------
-    | Stripe Membership Payment
+    | Stripe Membership Renewal (Existing Users)
     |--------------------------------------------------------------------------
     */
 
     Route::get('/checkout', [PaymentController::class, 'checkout'])->name('checkout');
 
-    Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/payment-success', [PaymentController::class, 'success'])
+        ->name('payment.success');
 
-    Route::get('/payment-cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+    Route::get('/payment-cancel', [PaymentController::class, 'cancel'])
+        ->name('payment.cancel');
 });
 
 
