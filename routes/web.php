@@ -21,25 +21,28 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Guest
+| Guest (Registration + Login)
 |--------------------------------------------------------------------------
 */
 
 Route::middleware('guest')->group(function () {
 
-    // Registration
-    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    // Show registration page
+    Route::get('/register', [AuthController::class, 'showRegister'])
+        ->name('register');
 
-    // 🔥 Stripe Registration Flow
-    Route::get('/register-success', [AuthController::class, 'registrationSuccess'])
+    // 🔥 Stripe checkout BEFORE account creation
+    Route::post('/register/checkout', [PaymentController::class, 'registerCheckout'])
+        ->name('register.checkout');
+
+    // 🔥 Stripe success → create user
+    Route::get('/register/success', [PaymentController::class, 'registerSuccess'])
         ->name('register.success');
 
-    Route::get('/register-cancel', [AuthController::class, 'registrationCancel'])
-        ->name('register.cancel');
-
     // Login
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::get('/login', [AuthController::class, 'showLogin'])
+        ->name('login');
+
     Route::post('/login', [AuthController::class, 'login']);
 });
 
@@ -52,23 +55,29 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
-    Route::get('/classes', [ClassesController::class, 'index'])->name('classes.index');
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->name('logout');
 
-    // Book Class
-    Route::post('/book/{id}', [BookingController::class, 'store'])->name('book.class');
+    Route::get('/classes', [ClassesController::class, 'index'])
+        ->name('classes.index');
 
-    Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])->name('cancel.booking');
+    Route::post('/book/{id}', [BookingController::class, 'store'])
+        ->name('book.class');
+
+    Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])
+        ->name('cancel.booking');
 
     /*
     |--------------------------------------------------------------------------
-    | Stripe Membership Renewal (Existing Users)
+    | Membership Renewal (Existing Users)
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/checkout', [PaymentController::class, 'checkout'])->name('checkout');
+    Route::get('/checkout', [PaymentController::class, 'checkout'])
+        ->name('checkout');
 
     Route::get('/payment-success', [PaymentController::class, 'success'])
         ->name('payment.success');
