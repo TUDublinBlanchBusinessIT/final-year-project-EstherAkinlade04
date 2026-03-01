@@ -7,7 +7,12 @@
 
 <body class="bg-gradient-to-br from-purple-50 via-white to-indigo-100 min-h-screen">
 
-<!-- ================= HERO SLIDESHOW ================= -->
+@php
+    $user = auth()->user();
+    $membershipExpired = !$user->end_date || \Carbon\Carbon::parse($user->end_date)->isPast();
+@endphp
+
+<!-- ================= HERO ================= -->
 
 <div class="relative overflow-hidden h-[420px]">
 
@@ -27,7 +32,7 @@
 
 </div>
 
-<!-- ================= MAIN CONTENT ================= -->
+<!-- ================= CONTENT ================= -->
 
 <div class="p-10">
 
@@ -44,38 +49,21 @@
 </div>
 @endif
 
-<!-- ================= FEATURED CAROUSEL ================= -->
+@if($membershipExpired)
+<div class="bg-red-100 text-red-800 p-6 rounded-xl mb-10 shadow flex justify-between items-center">
+    <div>
+        <p class="font-semibold text-lg">Your membership has expired.</p>
+        <p class="text-sm">Renew to continue booking classes.</p>
+    </div>
 
-<h2 class="text-3xl font-bold text-indigo-900 mb-6">
-    ⭐ Featured Classes
-</h2>
-
-<div class="flex gap-6 overflow-x-auto pb-6 mb-12">
-
-@foreach($classes->take(5) as $class)
-
-<div class="min-w-[300px] bg-white p-6 rounded-3xl shadow-xl
-            hover:shadow-2xl hover:scale-105 transition duration-300">
-
-    <h3 class="text-xl font-bold text-indigo-800 mb-2">
-        {{ $class->name }}
-    </h3>
-
-    <p class="text-sm text-gray-600 mb-3">
-        {{ $class->class_time->format('d M Y H:i') }}
-    </p>
-
-    <span class="text-sm font-semibold text-indigo-700">
-        €{{ number_format($class->price,2) }}
-    </span>
-
+    <a href="{{ route('checkout') }}"
+       class="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition font-semibold">
+        🔄 Renew Membership
+    </a>
 </div>
+@endif
 
-@endforeach
-
-</div>
-
-<!-- ================= ALL CLASSES GRID ================= -->
+<!-- ================= ALL CLASSES ================= -->
 
 <h2 class="text-3xl font-bold text-indigo-900 mb-8">
     🏋️ All Classes
@@ -88,7 +76,7 @@
 @php
     $isPast = $class->class_time->isPast();
     $isFull = $class->bookings_count >= $class->capacity;
-    $alreadyBooked = $class->bookings->where('user_id', auth()->id())->count() > 0;
+    $alreadyBooked = $class->bookings->where('user_id', $user->id)->count() > 0;
     $fillPercent = $class->capacity > 0 
         ? min(100, ($class->bookings_count / $class->capacity) * 100) 
         : 0;
@@ -100,7 +88,7 @@
 
     @if($fillPercent > 80 && !$isFull)
         <span class="absolute top-4 right-4 bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full animate-pulse">
-            🔥 Trending
+            🔥 Filling Fast
         </span>
     @endif
 
@@ -114,7 +102,6 @@
 
     <div class="text-sm space-y-2 mb-4 text-gray-700">
         <p>📅 {{ $class->class_time->format('d M Y H:i') }}</p>
-        <p>💰 €{{ number_format($class->price, 2) }}</p>
         <p>👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked</p>
     </div>
 
@@ -123,6 +110,8 @@
              style="width: {{ $fillPercent }}%">
         </div>
     </div>
+
+    {{-- BOOKING LOGIC --}}
 
     @if($alreadyBooked)
         <button disabled class="w-full bg-green-200 text-green-800 py-3 rounded-xl font-semibold">
@@ -134,20 +123,21 @@
             Booking Unavailable
         </button>
 
+    @elseif($membershipExpired)
+        <a href="{{ route('checkout') }}"
+           class="block w-full text-center bg-red-500 text-white py-3 rounded-xl hover:bg-red-600 transition font-semibold">
+            🔄 Renew to Book
+        </a>
+
     @else
         <form method="POST" action="{{ route('book.class', $class->id) }}">
             @csrf
             <button
-                onclick="this.innerHTML='Processing Payment... 💳'; this.disabled=true;"
                 class="w-full bg-indigo-600 text-white py-3 rounded-xl 
                        hover:bg-indigo-700 hover:shadow-xl hover:scale-105 transition font-semibold">
-                💳 Pay €{{ number_format($class->price, 2) }} & Book
+                📅 Book Class
             </button>
         </form>
-
-        <p class="text-xs text-gray-400 mt-2 flex items-center gap-1">
-            🔒 Secure Checkout • SSL Encrypted
-        </p>
     @endif
 
 </div>
@@ -158,7 +148,7 @@
 
 </div>
 
-<!-- ================= SCRIPTS ================= -->
+<!-- ================= HERO SLIDESHOW SCRIPT ================= -->
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
