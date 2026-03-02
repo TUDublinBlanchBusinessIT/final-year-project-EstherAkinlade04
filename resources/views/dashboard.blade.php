@@ -9,50 +9,74 @@
 
     <style>
         body {
-            background: linear-gradient(135deg,#faf7ff,#f3f0ff);
+            background: linear-gradient(145deg,#fbfaff,#f3f0ff);
             font-family: ui-sans-serif, system-ui;
-            color: #1f2937;
-            animation: fadeIn 0.6s ease;
+            color:#1f2937;
+            overflow-x:hidden;
         }
 
-        @keyframes fadeIn {
-            from {opacity:0; transform:translateY(15px);}
-            to {opacity:1; transform:translateY(0);}
+        /* Smooth page fade */
+        body {
+            opacity:0;
+            animation:pageFade 0.8s ease forwards;
+        }
+
+        @keyframes pageFade {
+            to { opacity:1; }
         }
 
         .nav-blur {
-            backdrop-filter: blur(14px);
-            background: rgba(255,255,255,0.85);
-            border-bottom: 1px solid #ede9fe;
+            backdrop-filter: blur(18px);
+            background: rgba(255,255,255,0.8);
+            border-bottom:1px solid #ede9fe;
         }
 
         .lilac-text { color:#6d28d9; }
 
+        .btn-primary {
+            background:#6d28d9;
+            color:white;
+            padding:10px 18px;
+            border-radius:14px;
+            transition:all .3s ease;
+        }
+
+        .btn-primary:hover {
+            background:#5b21b6;
+            box-shadow:0 0 15px rgba(124,58,237,0.4);
+            transform:translateY(-2px);
+        }
+
+        /* LUX CARD */
         .lux-card {
-            background:white;
-            border-radius:22px;
+            background:rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px);
+            border-radius:24px;
             border:1px solid #ede9fe;
-            box-shadow:0 12px 30px rgba(124,58,237,0.08);
-            transition:0.3s ease;
+            box-shadow:0 20px 50px rgba(124,58,237,0.08);
+            transition:all .4s ease;
         }
 
         .lux-card:hover {
-            transform:translateY(-4px);
-            box-shadow:0 20px 40px rgba(124,58,237,0.15);
+            transform:translateY(-6px);
+            box-shadow:0 30px 70px rgba(124,58,237,0.18);
         }
 
         /* WALLET CARD */
         .wallet-card {
             background: linear-gradient(135deg,#c4b5fd,#a78bfa);
-            border-radius:28px;
+            border-radius:32px;
             color:#312e81;
-            box-shadow:0 30px 70px rgba(124,58,237,0.25);
+            box-shadow:0 40px 90px rgba(124,58,237,0.3);
             position:relative;
             overflow:hidden;
-            transition:0.4s ease;
+            transition:all .4s ease;
         }
 
-        /* metallic stripe */
+        .wallet-card:hover {
+            transform:translateY(-8px) scale(1.01);
+        }
+
         .wallet-card::before {
             content:"";
             position:absolute;
@@ -60,127 +84,114 @@
             left:0;
             width:100%;
             height:6px;
-            background: linear-gradient(90deg,#6d28d9,#c4b5fd,#6d28d9);
+            background:linear-gradient(90deg,#6d28d9,#ffffff,#6d28d9);
         }
 
-        /* glass shine */
         .wallet-card::after {
             content:"";
             position:absolute;
-            top:-40%;
-            left:-20%;
-            width:150%;
-            height:150%;
-            background: radial-gradient(circle at top left, rgba(255,255,255,0.35), transparent 60%);
-            transform: rotate(25deg);
+            top:-50%;
+            left:-50%;
+            width:200%;
+            height:200%;
+            background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,0.35),transparent 70%);
+            transform:rotate(25deg);
+            animation:shimmer 7s infinite;
         }
 
-        .wallet-card:hover {
-            transform: translateY(-6px);
-            box-shadow:0 40px 80px rgba(124,58,237,0.35);
-        }
-
-        .card-label {
-            font-size:11px;
-            letter-spacing:2px;
-            color:#4c1d95;
-        }
-
-        .membership-id {
-            font-size:12px;
-            opacity:0.7;
-        }
-
-        .btn-primary {
-            background:#6d28d9;
-            color:white;
-            padding:10px 18px;
-            border-radius:12px;
-            transition:0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background:#5b21b6;
-            transform:translateY(-2px);
+        @keyframes shimmer {
+            0% { transform:translateX(-100%) rotate(25deg); }
+            100% { transform:translateX(100%) rotate(25deg); }
         }
 
         .btn-wallet {
             background:black;
             color:white;
-            border-radius:14px;
-            padding:12px;
+            border-radius:16px;
+            padding:14px;
             font-weight:500;
-            transition:0.3s ease;
+            transition:.3s ease;
         }
 
         .btn-wallet:hover {
             background:#111;
-            transform:scale(1.02);
+            transform:scale(1.05);
+            box-shadow:0 15px 40px rgba(0,0,0,0.4);
         }
 
-        .sidebar {
-            transition:transform 0.3s ease;
+        /* FACE ID */
+        .face-overlay {
+            position:fixed;
+            inset:0;
             background:white;
-            border-right:1px solid #ede9fe;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+            z-index:9999;
+            animation:fadeOut 1s ease 2.5s forwards;
         }
 
-        .sidebar-hidden {
-            transform:translateX(-100%);
+        @keyframes fadeOut {
+            to { opacity:0; visibility:hidden; }
         }
 
-        .qr-badge {
-            background:white;
-            padding:10px;
-            border-radius:16px;
-            box-shadow:0 10px 20px rgba(0,0,0,0.1);
+        .face-circle {
+            width:110px;
+            height:110px;
+            border:3px solid #6d28d9;
+            border-radius:50%;
+            position:relative;
+            overflow:hidden;
         }
+
+        .scan-line {
+            position:absolute;
+            width:100%;
+            height:3px;
+            background:#6d28d9;
+            animation:scan 2s infinite;
+        }
+
+        @keyframes scan {
+            0%{top:0;}
+            100%{top:100%;}
+        }
+
+        /* Parallax subtle */
+        .parallax {
+            transition:transform 0.2s ease-out;
+        }
+
     </style>
 </head>
 
-<body class="min-h-screen">
+<body>
+
+<!-- FACE ID -->
+<div class="face-overlay">
+    <div class="face-circle">
+        <div class="scan-line"></div>
+    </div>
+    <p class="mt-6 lilac-text font-semibold">Authenticating</p>
+</div>
 
 <nav class="fixed top-0 left-0 right-0 nav-blur z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <h1 class="text-lg tracking-widest font-semibold lilac-text">
+            VAULT FITNESS
+        </h1>
 
-        <div class="flex items-center gap-4">
-            <button class="md:hidden text-2xl lilac-text" onclick="toggleSidebar()">☰</button>
-            <h1 class="text-lg tracking-widest font-semibold lilac-text">
-                VAULT FITNESS
-            </h1>
-        </div>
-
-        <div class="hidden md:flex gap-6 items-center text-sm">
-            <a href="{{ route('classes.index') }}" class="hover:text-black transition">
-                Browse Classes
-            </a>
-
-            <a href="{{ route('checkout') }}" class="btn-primary">
-                Renew
-            </a>
-
+        <div class="flex gap-6 items-center text-sm">
+            <a href="{{ route('classes.index') }}">Browse Classes</a>
+            <a href="{{ route('checkout') }}" class="btn-primary">Renew</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button class="hover:text-red-500 transition">
-                    Logout
-                </button>
+                <button class="hover:text-red-500">Logout</button>
             </form>
         </div>
     </div>
 </nav>
-
-<div id="sidebar"
-     class="sidebar sidebar-hidden fixed top-0 left-0 h-full w-64 p-6 z-50 md:hidden">
-
-    <h2 class="lilac-text text-lg font-semibold mb-6">Menu</h2>
-
-    <a href="{{ route('classes.index') }}" class="block mb-4">Browse Classes</a>
-    <a href="{{ route('checkout') }}" class="block mb-4">Renew</a>
-
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button class="text-red-500">Logout</button>
-    </form>
-</div>
 
 <div class="pt-28 px-6 max-w-6xl mx-auto">
 
@@ -190,47 +201,55 @@ $nextClass = $upcoming->sortBy('class_time')->first();
 $memberId = str_pad($user->id,6,'0',STR_PAD_LEFT);
 @endphp
 
-<!-- MEMBERSHIP CARD -->
-<div class="wallet-card p-8 mb-12">
+<!-- WALLET -->
+<div class="wallet-card p-8 mb-14 parallax">
 
     <div class="text-center mb-6">
-        <p class="card-label">VAULT MEMBERSHIP</p>
+        <p class="text-xs tracking-widest">VAULT MEMBERSHIP</p>
         <h2 class="text-3xl font-semibold mt-2">
             {{ ucfirst($user->membership_type ?? 'Elite') }}
         </h2>
-        <p class="membership-id mt-1">
-            ID #{{ $memberId }}
-        </p>
+        <p class="text-sm opacity-70">ID #{{ $memberId }}</p>
     </div>
 
     <div class="flex justify-between items-center mt-8">
-
         <div>
-            <p class="card-label">MEMBER</p>
-            <p class="text-lg font-semibold">
-                {{ $user->name }}
-            </p>
+            <p class="text-xs tracking-widest">MEMBER</p>
+            <p class="text-lg font-semibold">{{ $user->name }}</p>
         </div>
-
-        <div class="qr-badge">
+        <div class="bg-white p-3 rounded-xl shadow">
             <div id="qrcode"></div>
         </div>
-
     </div>
 
-    <div class="flex justify-between mt-8">
-        <div>
-            <p class="card-label">EXPIRES</p>
-            <p class="font-semibold">
-                {{ $user->end_date ? \Carbon\Carbon::parse($user->end_date)->format('d M Y') : 'N/A' }}
-            </p>
-        </div>
+    <div class="mt-8">
+        <p class="text-xs tracking-widest">EXPIRES</p>
+        <p class="font-semibold">
+            {{ $user->end_date ? \Carbon\Carbon::parse($user->end_date)->format('d M Y') : 'N/A' }}
+        </p>
     </div>
 
     <div class="mt-6">
-        <button class="btn-wallet w-full">
-             Add to Apple Wallet
-        </button>
+        <button class="btn-wallet w-full"> Add to Apple Wallet</button>
+    </div>
+
+</div>
+
+<!-- STATS -->
+<div class="grid md:grid-cols-2 gap-6 mb-10">
+
+    <div class="lux-card p-6 text-center">
+        <p class="text-gray-500">Upcoming Bookings</p>
+        <h2 class="text-4xl lilac-text font-bold">
+            {{ $upcoming->count() }}
+        </h2>
+    </div>
+
+    <div class="lux-card p-6 text-center">
+        <p class="text-gray-500">Total Bookings</p>
+        <h2 class="text-4xl lilac-text font-bold">
+            {{ $bookings->count() }}
+        </h2>
     </div>
 
 </div>
@@ -245,31 +264,7 @@ $memberId = str_pad($user->id,6,'0',STR_PAD_LEFT);
 </div>
 @endif
 
-<div class="grid md:grid-cols-2 gap-6 mb-10">
-
-    <div class="lux-card p-6 text-center">
-        <p class="text-gray-500">Upcoming Bookings</p>
-        <h2 class="text-4xl lilac-text font-bold counter">
-            {{ $upcoming->count() }}
-        </h2>
-    </div>
-
-    <div class="lux-card p-6 text-center">
-        <p class="text-gray-500">Total Bookings</p>
-        <h2 class="text-4xl lilac-text font-bold counter">
-            {{ $bookings->count() }}
-        </h2>
-    </div>
-
-</div>
-
 <h2 class="text-2xl lilac-text mb-6">Your Bookings</h2>
-
-@if($bookings->isEmpty())
-<div class="lux-card p-8 text-center">
-    No bookings yet.
-</div>
-@else
 
 <div class="grid md:grid-cols-2 gap-6">
 
@@ -279,9 +274,7 @@ $memberId = str_pad($user->id,6,'0',STR_PAD_LEFT);
 
 <div class="lux-card p-6">
 
-    <h3 class="text-lg font-semibold mb-2">
-        {{ $class->name }}
-    </h3>
+    <h3 class="text-lg font-semibold mb-2">{{ $class->name }}</h3>
 
     <p class="text-gray-500 mb-3">
         {{ \Carbon\Carbon::parse($class->class_time)->format('d M Y H:i') }}
@@ -309,36 +302,21 @@ $memberId = str_pad($user->id,6,'0',STR_PAD_LEFT);
 @endforeach
 </div>
 
-@endif
-
 </div>
 
 <script>
 new QRCode(document.getElementById("qrcode"), {
-    text: "{{ $user->email }}",
-    width: 70,
-    height: 70
+    text:"{{ $user->email }}",
+    width:70,
+    height:70
 });
 
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('sidebar-hidden');
-}
-
-document.querySelectorAll('.counter').forEach(counter => {
-    let target = +counter.innerText;
-    let count = 0;
-    let step = target / 20;
-
-    function update() {
-        count += step;
-        if(count < target) {
-            counter.innerText = Math.ceil(count);
-            setTimeout(update, 30);
-        } else {
-            counter.innerText = target;
-        }
-    }
-    update();
+/* Parallax effect */
+window.addEventListener('scroll', function(){
+    document.querySelectorAll('.parallax').forEach(el=>{
+        let offset = window.scrollY * 0.03;
+        el.style.transform = "translateY("+offset+"px)";
+    });
 });
 </script>
 
