@@ -8,18 +8,20 @@ use Stripe\Checkout\Session;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMemberMail;
 
 class PaymentController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | REGISTRATION CHECKOUT (PAY BEFORE ACCOUNT CREATION)
+    | REGISTRATION CHECKOUT
     |--------------------------------------------------------------------------
     */
 
     public function registerCheckout(Request $request)
     {
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('services.stripe.secret'));
 
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
@@ -55,7 +57,7 @@ class PaymentController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | CREATE USER AFTER STRIPE SUCCESS
+    | REGISTER SUCCESS
     |--------------------------------------------------------------------------
     */
 
@@ -81,23 +83,25 @@ class PaymentController extends Controller
             'price_paid'      => $price / 100,
         ]);
 
+       // Mail::to($user->email)->send(new WelcomeMemberMail($user));
+
         Auth::login($user);
 
         session()->forget('registration_data');
 
         return redirect()->route('dashboard')
-            ->with('success', 'Welcome to Vault Fitness! 🎉 Membership activated.');
+            ->with('success', 'Welcome to Vault Fitness! 🎉');
     }
 
     /*
     |--------------------------------------------------------------------------
-    | EXISTING USER RENEWAL CHECKOUT
+    | RENEWAL CHECKOUT
     |--------------------------------------------------------------------------
     */
 
     public function checkout()
     {
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('services.stripe.secret'));
 
         $user = Auth::user();
 
@@ -130,7 +134,7 @@ class PaymentController extends Controller
         $user->update([
             'start_date' => now(),
             'end_date'   => now()->addMonth(),
-            'price_paid' => $this->getPlanPrice($user->membership_type) / 100
+            'price_paid' => $this->getPlanPrice($user->membership_type) / 100,
         ]);
 
         return redirect()->route('dashboard')
@@ -145,7 +149,7 @@ class PaymentController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | PLAN PRICING
+    | PLAN PRICES
     |--------------------------------------------------------------------------
     */
 

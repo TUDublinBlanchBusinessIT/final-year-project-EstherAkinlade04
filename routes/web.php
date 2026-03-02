@@ -27,15 +27,15 @@ Route::get('/', function () {
 
 Route::middleware('guest')->group(function () {
 
-    // Show registration page
+    // Registration Page
     Route::get('/register', [AuthController::class, 'showRegister'])
         ->name('register');
 
-    // 🔥 Stripe checkout BEFORE account creation
+    // Stripe Registration Checkout
     Route::post('/register/checkout', [PaymentController::class, 'registerCheckout'])
         ->name('register.checkout');
 
-    // 🔥 Stripe success → create user
+    // Registration Success (after Stripe)
     Route::get('/register/success', [PaymentController::class, 'registerSuccess'])
         ->name('register.success');
 
@@ -72,7 +72,7 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Membership Renewal (Existing Users)
+    | Membership Renewal
     |--------------------------------------------------------------------------
     */
 
@@ -93,29 +93,31 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
-    Route::get('/admin', [AdminController::class, 'index'])
+    // Dashboard
+    Route::get('/', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
-    Route::get('/admin/classes/create', [AdminController::class, 'create'])
+    // Revenue Export
+    Route::get('/export-revenue', [AdminController::class, 'exportRevenue'])
+        ->name('admin.export.revenue');
+
+    // Classes
+    Route::get('/classes/create', [AdminController::class, 'create'])
         ->name('admin.classes.create');
 
-    Route::post('/admin/classes', [AdminController::class, 'store'])
+    Route::post('/classes', [AdminController::class, 'store'])
         ->name('admin.classes.store');
 
-    Route::patch('/admin/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
+    Route::patch('/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
         ->name('admin.classes.cancel');
 
-    Route::patch('/admin/bookings/{id}/attendance', [AdminController::class, 'toggleAttendance'])
+    // Bookings
+    Route::patch('/bookings/{id}/attendance', [AdminController::class, 'toggleAttendance'])
         ->name('admin.bookings.attendance');
 
-    Route::delete('/admin/bookings/{id}', [AdminController::class, 'removeBooking'])
+    Route::delete('/bookings/{id}', [AdminController::class, 'removeBooking'])
         ->name('admin.bookings.remove');
 
-    Route::patch('/admin/classes/{id}/mark-all', [AdminController::class, 'markAllAttended'])
-        ->name('admin.classes.markAll');
-
-    Route::get('/admin/classes/{id}/export', [AdminController::class, 'exportCsv'])
-        ->name('admin.classes.export');
 });

@@ -6,77 +6,92 @@ use App\Models\FitnessClass;
 use App\Models\User;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = FitnessClass::withCount('bookings')
+        $classes = FitnessClass::withCount('bookings')
             ->with(['bookings.user'])
-            ->orderBy('class_time');
-
-        $classes = $query->paginate(5);
+            ->orderBy('class_time')
+            ->paginate(5);
 
         $totalUsers = User::count();
         $totalBookings = Booking::count();
         $totalClasses = FitnessClass::count();
 
-        // Optimised revenue calculation
-        $totalRevenue = Booking::where('payment_status', 'paid')
+        // Revenue
+        $classRevenue = Booking::where('payment_status', 'paid')
             ->join('fitness_classes', 'bookings.fitness_class_id', '=', 'fitness_classes.id')
             ->sum('fitness_classes.price');
+
+        $membershipRevenue = User::sum('price_paid');
+        $totalRevenue = $classRevenue + $membershipRevenue;
+
+        // Monthly Membership Revenue Chart Data
+        $monthlyRevenue = User::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(price_paid) as total')
+            )
+            ->whereYear('created_at', now()->year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // Membership Breakdown
+        $membershipBreakdown = User::select(
+                'membership_type',
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('membership_type')
+            ->get();
+
+        $activeMembers = User::where('end_date', '>=', now())->count();
+        $expiredMembers = User::where('end_date', '<', now())->count();
 
         return view('admin.dashboard', compact(
             'classes',
             'totalUsers',
             'totalBookings',
             'totalClasses',
-            'totalRevenue'
+            'totalRevenue',
+            'classRevenue',
+            'membershipRevenue',
+            'monthlyRevenue',
+            'membershipBreakdown',
+            'activeMembers',
+            'expiredMembers'
         ));
     }
 
-    public function create()
+    // 🔥 CSV EXPORT
+    public function exportRevenue()
     {
-        return view('admin.create');
-    }
+        $users = User::select('name', 'email', 'membership_type', 'price_paid', 'created_at')->get();
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'class_time' => 'required|date|after:now',
-            'capacity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
-            'admin_notes' => 'nullable|string'
-        ]);
+        $response = new StreamedResponse(function () use ($users) {
+            $handle = fopen('php://output', 'w');
 
-        FitnessClass::create($validated);
+            fputcsv($handle, ['Name', 'Email', 'Membership Type', 'Amount Paid', 'Date']);
 
-        return redirect()->route('admin.dashboard')
-            ->with('success', 'Class created successfully.');
-    }
+            foreach ($users as $user) {
+                fputcsv($handle, [
+                    $user->name,
+                    $user->email,
+                    $user->membership_type,
+                    $user->price_paid,
+                    $user->created_at
+                ]);
+            }
 
-    public function cancelClass($id)
-    {
-        FitnessClass::findOrFail($id)
-            ->update(['is_cancelled' => true]);
+            fclose($handle);
+        });
 
-        return back()->with('success', 'Class cancelled.');
-    }
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment; filename="revenue.csv"');
 
-    public function removeBooking($id)
-    {
-        Booking::findOrFail($id)->delete();
-        return back()->with('success', 'Member removed.');
-    }
-
-    public function toggleAttendance($id)
-    {
-        $booking = Booking::findOrFail($id);
-        $booking->attended = !$booking->attended;
-        $booking->save();
-
-        return back()->with('success', 'Attendance updated.');
+        return $response;
     }
 }

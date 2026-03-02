@@ -4,14 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\MembershipPlan;
+use App\Mail\WelcomeMemberMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
 
 class AuthController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Show Register Page
+    |--------------------------------------------------------------------------
+    */
+
     public function showRegister()
     {
         $plans = MembershipPlan::where('is_active', 1)->get();
@@ -34,9 +42,9 @@ class AuthController extends Controller
             'membership_plan_id' => 'required|exists:membership_plans,id',
         ]);
 
-        $plan = MembershipPlan::find($validated['membership_plan_id']);
+        $plan = MembershipPlan::findOrFail($validated['membership_plan_id']);
 
-        // Store temporarily
+        // Store registration data temporarily before payment
         session([
             'registration_data' => $validated,
         ]);
@@ -65,7 +73,7 @@ class AuthController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Stripe Success → Create User
+    | Stripe Success → Create User + Queue Welcome Email
     |--------------------------------------------------------------------------
     */
 
@@ -78,7 +86,7 @@ class AuthController extends Controller
                 ->withErrors(['error' => 'Registration session expired.']);
         }
 
-        $plan = MembershipPlan::find($data['membership_plan_id']);
+        $plan = MembershipPlan::findOrFail($data['membership_plan_id']);
 
         $user = User::create([
             'name' => $data['name'],
@@ -92,6 +100,11 @@ class AuthController extends Controller
             'price_paid' => $plan->price,
         ]);
 
+        // 🔥 Queue Welcome Email (FORCED to database connection)
+        Mail::to($user->email)
+            ->send(new WelcomeMemberMail($user));
+
+        // Clear temporary registration data
         session()->forget('registration_data');
 
         Auth::login($user);
@@ -100,6 +113,12 @@ class AuthController extends Controller
             ->with('success', 'Welcome to Vault Fitness!');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Stripe Cancel
+    |--------------------------------------------------------------------------
+    */
+
     public function registrationCancel()
     {
         session()->forget('registration_data');
@@ -107,6 +126,12 @@ class AuthController extends Controller
         return redirect()->route('register')
             ->withErrors(['error' => 'Payment cancelled.']);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Login
+    |--------------------------------------------------------------------------
+    */
 
     public function showLogin()
     {
@@ -133,6 +158,12 @@ class AuthController extends Controller
             'email' => 'Invalid email or password.',
         ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
 
     public function logout(Request $request)
     {
