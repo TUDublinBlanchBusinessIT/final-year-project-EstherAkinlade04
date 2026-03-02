@@ -1,205 +1,232 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Member Dashboard</title>
+    <title>Vault Fitness Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
-        .glass {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.3);
+        body {
+            background: linear-gradient(135deg, #f3f4ff, #e0e7ff);
+        }
+
+        /* ========== FACE ID OVERLAY ========== */
+        .face-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #1e3a8a, #0f172a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            color: white;
+            animation: fadeOut 1s ease 3s forwards;
+        }
+
+        .face-box {
+            width: 120px;
+            height: 120px;
+            border: 3px solid #60a5fa;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: #60a5fa;
+            animation: scan 2s infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* ========== WALLET CARD ========== */
+        .wallet-wrapper {
+            perspective: 1400px;
+        }
+
+        .wallet-card {
+            border-radius: 32px;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+            background: linear-gradient(135deg,#2563eb,#1e3a8a);
+            animation: floatCard 6s ease-in-out infinite;
+        }
+
+        .wallet-card:hover {
+            transform: rotateY(8deg) rotateX(6deg) scale(1.04);
+        }
+
+        .wallet-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                120deg,
+                rgba(255,255,255,0.2),
+                rgba(255,255,255,0.05)
+            );
+            backdrop-filter: blur(12px);
+        }
+
+        @keyframes floatCard {
+            0%,100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* NFC pulse */
+        .nfc-ring {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.6);
+            animation: pulse 2.5s infinite;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+            70% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
+            100% { opacity: 0; }
         }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-purple-100 via-indigo-100 to-purple-200 min-h-screen">
+<body class="min-h-screen">
+
+<!-- FACE ID -->
+<div class="face-overlay">
+    <div class="face-box">
+        <div class="scan-line"></div>
+    </div>
+    <p class="mt-6 text-lg font-semibold">Authenticating with Face ID</p>
+</div>
 
 @php
-    $isExpired = false;
-    $daysLeft = null;
-    $isExpiringSoon = false;
+    $isExpired = $user->end_date && \Carbon\Carbon::parse($user->end_date)->isPast();
+    $daysLeft = $user->end_date ? now()->diffInDays($user->end_date, false) : null;
 
-    if ($user->end_date) {
-        $endDate = \Carbon\Carbon::parse($user->end_date);
-        $isExpired = $endDate->isPast();
-        $daysLeft = now()->diffInDays($endDate, false);
-        $isExpiringSoon = !$isExpired && $daysLeft <= 3;
-    }
+    $upcoming = $bookings->where('class_time', '>=', now());
+    $completed = $bookings->where('class_time', '<', now());
+    $nextClass = $upcoming->sortBy('class_time')->first();
+    $attendanceRate = $bookings->count() > 0
+        ? round(($completed->count() / $bookings->count()) * 100)
+        : 0;
 @endphp
 
-<nav class="bg-white shadow-lg px-10 py-5 flex justify-between items-center">
+<!-- NAV -->
+<nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-blue-900">💎 Vault Fitness</h1>
 
-    <div>
-        <h1 class="text-2xl font-bold text-indigo-800">💎 Vault Fitness</h1>
-        <p class="text-xs text-gray-400 uppercase tracking-widest">
-            Member Dashboard
-        </p>
-    </div>
-
-    <div class="flex items-center gap-6">
-
-        @if($isExpired)
-            <span class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold">
-                ❌ Expired
-            </span>
-        @elseif($isExpiringSoon)
-            <span class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-semibold">
-                ⚠ Expiring Soon ({{ $daysLeft }} days)
-            </span>
-        @else
-            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">
-                🏅 Active
-            </span>
-        @endif
-
-        @if($isExpired || $isExpiringSoon)
-        <a href="{{ route('checkout') }}"
-           class="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition">
-            🔄 Renew
-        </a>
-        @endif
-
+    <div class="flex gap-4">
+        <a href="{{ route('classes.index') }}" class="text-blue-600 font-semibold">Browse Classes</a>
+        <a href="{{ route('checkout') }}" class="bg-blue-600 text-white px-4 py-2 rounded-xl">Renew</a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button class="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition">
-                Logout
-            </button>
+            <button class="bg-red-500 text-white px-4 py-2 rounded-xl">Logout</button>
         </form>
-
     </div>
 </nav>
 
-<div class="p-10">
+<div class="p-6 max-w-6xl mx-auto">
 
-<!-- ================= DIGITAL MEMBERSHIP CARD ================= -->
+<!-- WALLET -->
+<div class="wallet-wrapper max-w-md mx-auto mb-12">
 
-<div class="mb-12">
+    <div class="wallet-card p-8 text-white relative">
 
-<div class="glass rounded-3xl p-8 shadow-2xl text-white relative overflow-hidden"
-     style="background: linear-gradient(135deg,#4f46e5,#7c3aed);">
+        <div class="nfc-ring"></div>
 
-    <div class="flex justify-between items-center">
-
-        <div>
-            <h2 class="text-2xl font-bold mb-2">
-                {{ $user->name }}
-            </h2>
-
-            <p class="text-sm opacity-90">
-                {{ ucfirst($user->membership_type ?? 'Standard') }} Membership
-            </p>
-
-            @if($user->end_date)
-                <p class="text-sm mt-2">
-                    Expires:
-                    {{ \Carbon\Carbon::parse($user->end_date)->format('d M Y') }}
+        <div class="relative z-10 flex justify-between items-start mb-6">
+            <div>
+                <p class="text-xs uppercase tracking-widest text-blue-100">
+                    Vault Fitness
                 </p>
-            @endif
+                <h2 class="text-lg font-semibold text-white">
+                    {{ ucfirst($user->membership_type ?? 'Standard') }} Member
+                </h2>
+            </div>
 
-            @if($isExpired)
-                <p class="mt-3 text-red-200 font-semibold">
-                    Membership Expired
-                </p>
-            @endif
-
+            <div id="qrcode" class="bg-white p-2 rounded-xl"></div>
         </div>
 
-        <div id="qrcode"></div>
+        <div class="relative z-10 mb-6">
+            <p class="text-sm text-blue-100">Member</p>
+            <h3 class="text-2xl font-bold text-white">
+                {{ $user->name }}
+            </h3>
+        </div>
 
+        <div class="relative z-10 flex justify-between">
+            <div>
+                <p class="text-xs text-blue-100">Expires</p>
+                <p class="font-semibold text-white">
+                    {{ $user->end_date ? \Carbon\Carbon::parse($user->end_date)->format('d M Y') : 'N/A' }}
+                </p>
+            </div>
+
+            <div class="text-right">
+                <p class="text-xs uppercase tracking-widest text-blue-100">
+                    Tap to Enter
+                </p>
+                <p class="text-xs text-blue-200">NFC Ready</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-6 text-center">
+        <button class="bg-black text-white px-6 py-3 rounded-xl font-semibold shadow-xl hover:scale-105 transition">
+             Add to Apple Wallet
+        </button>
     </div>
 
 </div>
 
-</div>
+<!-- STATS -->
+<div class="grid md:grid-cols-3 gap-6 mb-10">
 
-<!-- ================= STATS ================= -->
-
-@php
-$upcoming = $bookings->where('class_time', '>=', now());
-$completed = $bookings->where('class_time', '<', now());
-$attendanceRate = $bookings->count() > 0
-    ? round(($completed->count() / $bookings->count()) * 100)
-    : 0;
-@endphp
-
-<div class="grid md:grid-cols-3 gap-8 mb-12">
-
-    <div class="bg-white p-6 rounded-3xl shadow-xl">
-        <p class="text-gray-500 text-sm">Upcoming Sessions</p>
-        <h2 class="text-3xl font-bold text-indigo-700 mt-2">
-            {{ $upcoming->count() }}
-        </h2>
+    <div class="bg-white p-6 rounded-2xl shadow">
+        <p class="text-gray-500">Upcoming</p>
+        <h2 class="text-3xl font-bold text-blue-700">{{ $upcoming->count() }}</h2>
     </div>
 
-    <div class="bg-white p-6 rounded-3xl shadow-xl text-center">
-        <p class="text-gray-500 text-sm mb-3">Attendance Rate</p>
-        <h2 class="text-3xl font-bold text-indigo-700">
-            {{ $attendanceRate }}%
-        </h2>
+    <div class="bg-white p-6 rounded-2xl shadow text-center">
+        <p class="text-gray-500">Attendance</p>
+        <h2 class="text-3xl font-bold text-blue-700">{{ $attendanceRate }}%</h2>
     </div>
 
-    <div class="bg-white p-6 rounded-3xl shadow-xl">
-        <p class="text-gray-500 text-sm">Total Bookings</p>
-        <h2 class="text-3xl font-bold text-indigo-700 mt-2">
-            {{ $bookings->count() }}
-        </h2>
+    <div class="bg-white p-6 rounded-2xl shadow">
+        <p class="text-gray-500">Bookings</p>
+        <h2 class="text-3xl font-bold text-blue-700">{{ $bookings->count() }}</h2>
     </div>
 
 </div>
 
-<h2 class="text-3xl font-bold text-indigo-900 mb-8">
-    📚 Booking History
-</h2>
-
-@if($bookings->isEmpty())
-<div class="bg-white p-8 rounded-2xl shadow text-center">
-    <p class="text-gray-600">No bookings yet.</p>
+@if($nextClass)
+<div class="bg-blue-700 text-white p-6 rounded-3xl shadow mb-10">
+    <h2 class="text-xl font-bold">🔥 Next Session</h2>
+    <p class="text-lg">{{ $nextClass->name }}</p>
+    <p>{{ \Carbon\Carbon::parse($nextClass->class_time)->format('d M Y H:i') }}</p>
 </div>
-@else
-
-<div class="grid md:grid-cols-2 gap-8">
-@foreach($bookings as $class)
-
-@php $isPast = \Carbon\Carbon::parse($class->class_time)->isPast(); @endphp
-
-<div class="bg-white p-8 rounded-3xl shadow-xl">
-
-    <h3 class="text-xl font-bold text-indigo-800 mb-2">
-        {{ $class->name }}
-    </h3>
-
-    <p class="text-gray-500 mb-2">
-        📅 {{ \Carbon\Carbon::parse($class->class_time)->format('d M Y H:i') }}
-    </p>
-
-    <span class="px-3 py-1 rounded-full text-sm
-        {{ $isPast ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700' }}">
-        {{ $isPast ? 'Completed' : 'Upcoming' }}
-    </span>
-
-    @if(!$isPast && !$isExpired)
-        <form method="POST"
-              action="{{ route('cancel.booking', $class->id) }}"
-              class="mt-4">
-            @csrf
-            @method('DELETE')
-            <button class="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition">
-                Cancel Booking
-            </button>
-        </form>
-    @endif
-
-</div>
-
-@endforeach
-</div>
-
 @endif
 
 </div>
@@ -207,8 +234,8 @@ $attendanceRate = $bookings->count() > 0
 <script>
 new QRCode(document.getElementById("qrcode"), {
     text: "{{ $user->email }}",
-    width: 100,
-    height: 100
+    width: 80,
+    height: 80
 });
 </script>
 
