@@ -17,32 +17,25 @@
 <div class="flex">
 
 <!-- SIDEBAR -->
-<aside id="sidebar"
-       class="bg-indigo-900 text-white w-64 min-h-screen p-6 transition-all duration-300 shadow-2xl">
+<aside class="bg-indigo-900 text-white w-64 min-h-screen p-6 shadow-2xl">
 
-    <div class="flex justify-between items-center mb-10">
-        <h2 class="text-2xl font-bold tracking-wide">💎 Vault Admin</h2>
-        <button onclick="toggleSidebar()" class="text-white text-xl hover:scale-110 transition">☰</button>
-    </div>
+    <h2 class="text-2xl font-bold mb-10">💎 Vault Admin</h2>
 
-    <a href="{{ route('admin.dashboard') }}"
-       class="block mb-4 px-3 py-2 rounded-lg bg-indigo-700 shadow-lg">
+    <a href="{{ route('admin.dashboard') }}" class="block mb-4 px-3 py-2 rounded-lg bg-indigo-700">
         📊 Dashboard
     </a>
 
-    <a href="{{ route('admin.classes.create') }}"
-       class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 hover:shadow-lg transition">
+    <a href="{{ route('admin.classes.create') }}" class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700">
         ➕ Create Class
     </a>
 
-    <a href="{{ route('admin.export.revenue') }}"
-       class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 transition">
+    <a href="{{ route('admin.export.revenue') }}" class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700">
         📥 Export Revenue CSV
     </a>
 
     <form method="POST" action="{{ route('logout') }}" class="mt-10">
         @csrf
-        <button class="w-full bg-purple-600 py-2 rounded-lg hover:bg-purple-500 transition">
+        <button class="w-full bg-purple-600 py-2 rounded-lg hover:bg-purple-500">
             🚪 Logout
         </button>
     </form>
@@ -75,37 +68,46 @@
     </div>
 
     <div class="bg-green-100 p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-700">Membership Revenue</p>
-        <h2 class="text-2xl font-bold text-green-800">
-            €{{ number_format($membershipRevenue, 2) }}
-        </h2>
+        <p>Membership Revenue</p>
+        <h2 class="text-2xl font-bold text-green-800">€{{ number_format($membershipRevenue, 2) }}</h2>
     </div>
 
     <div class="bg-blue-100 p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-700">Class Revenue</p>
-        <h2 class="text-2xl font-bold text-blue-800">
-            €{{ number_format($classRevenue, 2) }}
-        </h2>
+        <p>Class Revenue</p>
+        <h2 class="text-2xl font-bold text-blue-800">€{{ number_format($classRevenue, 2) }}</h2>
     </div>
 
     <div class="bg-purple-200 p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-700">Total Revenue</p>
-        <h2 class="text-2xl font-bold text-purple-900">
-            €{{ number_format($totalRevenue, 2) }}
-        </h2>
+        <p>Total Revenue</p>
+        <h2 class="text-2xl font-bold text-purple-900">€{{ number_format($totalRevenue, 2) }}</h2>
     </div>
 
     <div class="bg-yellow-100 p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-700">Active Members</p>
-        <h2 class="text-2xl font-bold text-yellow-800">
-            {{ $activeMembers }}
-        </h2>
+        <p>Active Members</p>
+        <h2 class="text-2xl font-bold text-yellow-800">{{ $activeMembers }}</h2>
     </div>
 
     <div class="bg-red-100 p-6 rounded-2xl shadow text-center">
-        <p class="text-gray-700">Expired Members</p>
-        <h2 class="text-2xl font-bold text-red-800">
-            {{ $expiredMembers }}
+        <p>Expired Members</p>
+        <h2 class="text-2xl font-bold text-red-800">{{ $expiredMembers }}</h2>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow text-center">
+        <p>Growth (MoM)</p>
+        <h2 class="text-2xl font-bold {{ $growthRate >= 0 ? 'text-green-600' : 'text-red-600' }}">
+            {{ number_format($growthRate, 1) }}%
+        </h2>
+    </div>
+
+    <div class="bg-orange-100 p-6 rounded-2xl shadow text-center">
+        <p>Expiring (7 days)</p>
+        <h2 class="text-2xl font-bold text-orange-800">{{ $expiringSoon }}</h2>
+    </div>
+
+    <div class="bg-indigo-100 p-6 rounded-2xl shadow text-center">
+        <p>Next Month Forecast</p>
+        <h2 class="text-2xl font-bold text-indigo-800">
+            €{{ number_format($forecastNextMonth, 2) }}
         </h2>
     </div>
 
@@ -114,51 +116,40 @@
 <!-- ================= REVENUE CHART ================= -->
 <div class="bg-white p-8 rounded-3xl shadow-xl mb-14">
     <h2 class="text-2xl font-bold text-indigo-800 mb-6">📈 Monthly Membership Revenue</h2>
-    <canvas id="revenueChart" height="100"></canvas>
+    <canvas id="revenueChart"></canvas>
 </div>
 
 <!-- ================= MEMBERSHIP BREAKDOWN ================= -->
 <div class="bg-white p-8 rounded-3xl shadow-xl mb-14">
     <h2 class="text-2xl font-bold text-indigo-800 mb-6">🥧 Membership Breakdown</h2>
-    <canvas id="membershipChart" height="100"></canvas>
+    <canvas id="membershipChart"></canvas>
 </div>
 
 <!-- ================= CALENDAR ================= -->
 <div class="bg-white p-8 rounded-3xl shadow-xl mb-14">
-    <h2 class="text-2xl font-bold text-indigo-800 mb-6">📅 Class Schedule Overview</h2>
+    <h2 class="text-2xl font-bold text-indigo-800 mb-6">📅 Class Schedule</h2>
     <div id="calendar"></div>
 </div>
 
-<!-- ================= MANAGE CLASSES ================= -->
+<!-- ================= CLASS MANAGEMENT ================= -->
 <h2 class="text-3xl font-bold text-indigo-900 mb-8">📚 Manage Classes</h2>
 
 @foreach($classes as $class)
 
-<div class="bg-white p-8 rounded-3xl shadow-xl mb-4 hover:-translate-y-1 hover:shadow-2xl transition duration-300">
+<div class="bg-white p-8 rounded-3xl shadow-xl mb-4">
 
     <div class="flex justify-between">
 
         <div>
-            <h3 class="text-2xl font-bold text-indigo-800 mb-2">
-                {{ $class->name }}
-            </h3>
-
-            <p class="text-gray-500 mb-2">
-                📅 {{ $class->class_time->format('d M Y H:i') }}
-            </p>
-
-            <p class="font-semibold mb-2">
-                💰 €{{ $class->price }}
-            </p>
-
-            <p class="text-sm mt-2">
-                👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked
-            </p>
+            <h3 class="text-2xl font-bold text-indigo-800 mb-2">{{ $class->name }}</h3>
+            <p class="text-gray-500 mb-2">📅 {{ $class->class_time->format('d M Y H:i') }}</p>
+            <p class="font-semibold mb-2">💰 €{{ $class->price }}</p>
+            <p class="text-sm">👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked</p>
         </div>
 
         <div class="flex flex-col gap-3">
             <button onclick="toggleMembers({{ $class->id }})"
-                    class="bg-indigo-600 text-white px-5 py-2 rounded-xl hover:bg-indigo-700 transition">
+                class="bg-indigo-600 text-white px-5 py-2 rounded-xl">
                 👥 View Members
             </button>
 
@@ -166,7 +157,7 @@
             <form method="POST" action="{{ route('admin.classes.cancel', $class->id) }}">
                 @csrf
                 @method('PATCH')
-                <button class="bg-red-600 text-white px-5 py-2 rounded-xl hover:bg-red-700 transition">
+                <button class="bg-red-600 text-white px-5 py-2 rounded-xl">
                     Cancel Class
                 </button>
             </form>
@@ -174,34 +165,20 @@
         </div>
 
     </div>
-
 </div>
 
-<div id="members-{{ $class->id }}" class="hidden bg-indigo-50 p-6 rounded-2xl shadow-inner mb-10">
-    <h4 class="text-lg font-bold text-indigo-800 mb-4">👥 Booked Members</h4>
-
-    @if($class->bookings->count() > 0)
-        <ul class="space-y-3">
-            @foreach($class->bookings as $booking)
-                <li class="flex justify-between bg-white p-4 rounded-xl shadow-sm">
-                    <div>
-                        <p class="font-semibold text-indigo-900">
-                            {{ $booking->user->name }}
-                        </p>
-                        <p class="text-sm text-gray-500">
-                            {{ $booking->user->email }}
-                        </p>
-                    </div>
-
-                    <span class="text-sm text-gray-400">
-                        {{ $booking->created_at->format('d M Y') }}
-                    </span>
-                </li>
-            @endforeach
-        </ul>
-    @else
-        <p class="text-gray-500">No members booked yet.</p>
-    @endif
+<div id="members-{{ $class->id }}" class="hidden bg-indigo-50 p-6 rounded-2xl mb-10">
+    @foreach($class->bookings as $booking)
+        <div class="flex justify-between bg-white p-4 rounded-xl mb-2">
+            <div>
+                <p class="font-semibold">{{ $booking->user->name }}</p>
+                <p class="text-sm text-gray-500">{{ $booking->user->email }}</p>
+            </div>
+            <span class="text-sm text-gray-400">
+                {{ $booking->created_at->format('d M Y') }}
+            </span>
+        </div>
+    @endforeach
 </div>
 
 @endforeach
@@ -212,15 +189,12 @@
 </div>
 
 <script>
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('w-20');
-}
-
+// Toggle members
 function toggleMembers(id) {
     document.getElementById('members-' + id)?.classList.toggle('hidden');
 }
 
-// Revenue Line Chart
+// Revenue Chart
 new Chart(document.getElementById('revenueChart'), {
     type: 'line',
     data: {
@@ -234,7 +208,7 @@ new Chart(document.getElementById('revenueChart'), {
     }
 });
 
-// Membership Pie Chart
+// Pie Chart
 new Chart(document.getElementById('membershipChart'), {
     type: 'pie',
     data: {
