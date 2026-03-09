@@ -3,28 +3,28 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Models\User;
+use App\Mail\MembershipExpiryReminder;
+use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 
 class SendExpiryReminders extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:send-expiry-reminders';
+    protected $signature = 'memberships:reminders';
+    protected $description = 'Send membership expiry reminder emails';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
-
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        //
+        $targetDate = Carbon::now()->addDays(3)->startOfDay();
+
+        $users = User::whereDate('end_date', $targetDate)->get();
+
+        foreach ($users as $user) {
+            Mail::to($user->email)->send(
+                new MembershipExpiryReminder($user)
+            );
+        }
+
+        $this->info('Expiry reminders sent successfully.');
     }
 }
