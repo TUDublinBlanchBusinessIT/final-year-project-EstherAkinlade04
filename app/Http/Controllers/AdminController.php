@@ -119,6 +119,16 @@ class AdminController extends Controller
         $bookingLabels = $bookingChart->pluck('name');
         $bookingCounts = $bookingChart->pluck('bookings_count');
 
+        /*
+        |--------------------------------------------------------------------------
+        | MOST POPULAR CLASS
+        |--------------------------------------------------------------------------
+        */
+
+        $mostPopularClass = FitnessClass::withCount('bookings')
+            ->orderByDesc('bookings_count')
+            ->first();
+
         return view('admin.dashboard', compact(
             'classes',
             'totalUsers',
@@ -135,7 +145,8 @@ class AdminController extends Controller
             'expiringSoon',
             'forecastNextMonth',
             'bookingLabels',
-            'bookingCounts'
+            'bookingCounts',
+            'mostPopularClass'
         ));
     }
 
@@ -156,6 +167,7 @@ class AdminController extends Controller
         )->get();
 
         $response = new StreamedResponse(function () use ($users) {
+
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, [
@@ -167,6 +179,7 @@ class AdminController extends Controller
             ]);
 
             foreach ($users as $user) {
+
                 fputcsv($handle, [
                     $user->name,
                     $user->email,
@@ -174,13 +187,18 @@ class AdminController extends Controller
                     $user->price_paid,
                     $user->created_at->format('Y-m-d')
                 ]);
+
             }
 
             fclose($handle);
+
         });
 
         $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment; filename="vault_revenue_report.csv"');
+        $response->headers->set(
+            'Content-Disposition',
+            'attachment; filename="vault_revenue_report.csv"'
+        );
 
         return $response;
     }
