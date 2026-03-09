@@ -17,26 +17,26 @@
 <!-- SIDEBAR -->
 <aside class="bg-indigo-900 text-white w-64 min-h-screen p-6 shadow-2xl">
 
-    <h2 class="text-2xl font-bold mb-10">💎 Vault Admin</h2>
+<h2 class="text-2xl font-bold mb-10">💎 Vault Admin</h2>
 
-    <a href="{{ route('admin.dashboard') }}" class="block mb-4 px-3 py-2 rounded-lg bg-indigo-700">
-        📊 Dashboard
-    </a>
+<a href="{{ route('admin.dashboard') }}" class="block mb-4 px-3 py-2 rounded-lg bg-indigo-700">
+📊 Dashboard
+</a>
 
-    <a href="{{ route('admin.classes.create') }}" class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 transition">
-        ➕ Create Class
-    </a>
+<a href="{{ route('admin.classes.create') }}" class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 transition">
+➕ Create Class
+</a>
 
-    <a href="{{ route('admin.export.revenue') }}" class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 transition">
-        📥 Export Revenue CSV
-    </a>
+<a href="{{ route('admin.export.revenue') }}" class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 transition">
+📥 Export Revenue CSV
+</a>
 
-    <form method="POST" action="{{ route('logout') }}" class="mt-10">
-        @csrf
-        <button class="w-full bg-purple-600 py-2 rounded-lg hover:bg-purple-500 transition">
-            🚪 Logout
-        </button>
-    </form>
+<form method="POST" action="{{ route('logout') }}" class="mt-10">
+@csrf
+<button class="w-full bg-purple-600 py-2 rounded-lg hover:bg-purple-500 transition">
+🚪 Logout
+</button>
+</form>
 
 </aside>
 
@@ -44,22 +44,23 @@
 <main class="flex-1 p-10">
 
 <h1 class="text-4xl font-extrabold text-indigo-900 mb-8">
-    Welcome back, {{ auth()->user()->name }} 👑
+Welcome back, {{ auth()->user()->name }} 👑
 </h1>
 
 @if(session('success'))
 <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-6">
-    {{ session('success') }}
+{{ session('success') }}
 </div>
 @endif
 
 @if(session('error'))
 <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6">
-    {{ session('error') }}
+{{ session('error') }}
 </div>
 @endif
 
 <!-- ================= STATS ================= -->
+
 <div class="grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-14">
 
 @foreach([
@@ -155,13 +156,33 @@
 
 @foreach($classes as $class)
 
+@php
+$fillPercent = ($class->bookings_count / $class->capacity) * 100;
+@endphp
+
 <div class="bg-white p-8 rounded-3xl shadow-xl mb-6 hover:shadow-2xl transition">
 
 <div class="flex justify-between items-start">
 
 <div>
 
+<div class="flex items-center gap-3">
+
+@if($mostPopularClass && $class->id === $mostPopularClass->id)
+<span class="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-semibold animate-pulse">
+🔥 MOST POPULAR
+</span>
+@endif
+
+@if($fillPercent >= 80 && $fillPercent < 100)
+<span class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-semibold animate-pulse">
+🔥 FILLING FAST
+</span>
+@endif
+
 <h3 class="text-2xl font-bold text-indigo-800">{{ $class->name }}</h3>
+
+</div>
 
 <p class="text-gray-500 mt-1">
 📅 {{ $class->class_time->format('d M Y H:i') }}
@@ -169,25 +190,9 @@
 
 <p class="mt-2 font-semibold">💰 €{{ $class->price }}</p>
 
-@php
-$status='active';
-if($class->is_cancelled)$status='cancelled';
-elseif($class->class_time < now())$status='past';
-elseif($class->bookings_count >= $class->capacity)$status='full';
-@endphp
-
-<span class="inline-block mt-3 px-3 py-1 text-xs rounded-full
-@if($status=='full') bg-red-100 text-red-700
-@elseif($status=='past') bg-gray-200 text-gray-600
-@elseif($status=='cancelled') bg-black text-white
-@else bg-green-100 text-green-700
-@endif">
-{{ strtoupper($status) }}
-</span>
-
 <div class="w-64 bg-gray-200 rounded-full h-3 mt-4 overflow-hidden">
 <div class="bg-indigo-600 h-3 rounded-full transition-all duration-700"
-style="width: {{ ($class->bookings_count / $class->capacity) * 100 }}%">
+style="width: {{ $fillPercent }}%">
 </div>
 </div>
 
