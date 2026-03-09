@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace App\Http\Controllers;
 
@@ -28,19 +28,17 @@ class AdminController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        // Class Revenue
         $classRevenue = Booking::where('payment_status', 'paid')
             ->join('fitness_classes', 'bookings.fitness_class_id', '=', 'fitness_classes.id')
             ->sum('fitness_classes.price');
 
-        // Membership Revenue
         $membershipRevenue = User::sum('price_paid');
 
         $totalRevenue = $classRevenue + $membershipRevenue;
 
         /*
         |--------------------------------------------------------------------------
-        | Monthly Revenue (Current Year)
+        | Monthly Revenue
         |--------------------------------------------------------------------------
         */
 
@@ -56,7 +54,7 @@ class AdminController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Membership Breakdown (Pie Chart)
+        | Membership Breakdown
         |--------------------------------------------------------------------------
         */
 
@@ -81,7 +79,7 @@ class AdminController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Growth Calculation (Month over Month)
+        | Growth
         |--------------------------------------------------------------------------
         */
 
@@ -101,12 +99,25 @@ class AdminController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Simple Revenue Forecast
+        | Forecast
         |--------------------------------------------------------------------------
         */
 
         $averageMonthlyRevenue = User::avg('price_paid') ?? 0;
         $forecastNextMonth = $averageMonthlyRevenue * 1.1;
+
+        /*
+        |--------------------------------------------------------------------------
+        | BOOKINGS PER CLASS CHART
+        |--------------------------------------------------------------------------
+        */
+
+        $bookingChart = FitnessClass::withCount('bookings')
+            ->orderBy('class_time')
+            ->get();
+
+        $bookingLabels = $bookingChart->pluck('name');
+        $bookingCounts = $bookingChart->pluck('bookings_count');
 
         return view('admin.dashboard', compact(
             'classes',
@@ -122,7 +133,9 @@ class AdminController extends Controller
             'expiredMembers',
             'growthRate',
             'expiringSoon',
-            'forecastNextMonth'
+            'forecastNextMonth',
+            'bookingLabels',
+            'bookingCounts'
         ));
     }
 
