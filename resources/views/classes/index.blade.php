@@ -2,7 +2,30 @@
 <html>
 <head>
     <title>The Vault – Premium Classes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .lux-card {
+            transition: all .35s ease;
+        }
+
+        .lux-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 60px rgba(124,58,237,0.15);
+        }
+
+        .locked-overlay {
+            position:absolute;
+            inset:0;
+            background:rgba(255,255,255,0.75);
+            backdrop-filter: blur(6px);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:24px;
+        }
+    </style>
 </head>
 
 <body class="bg-gradient-to-br from-purple-50 via-white to-indigo-100 min-h-screen">
@@ -12,10 +35,8 @@
     $membershipExpired = !$user->end_date || \Carbon\Carbon::parse($user->end_date)->isPast();
 @endphp
 
-<!-- ================= HERO ================= -->
-
+<!-- HERO -->
 <div class="relative overflow-hidden h-[420px]">
-
     <div id="slides" class="absolute inset-0 transition-opacity duration-1000">
         <img src="https://images.unsplash.com/photo-1554284126-aa88f22d8b74"
              class="absolute w-full h-full object-cover opacity-100 slide">
@@ -29,14 +50,10 @@
         <h1 class="text-5xl font-extrabold mb-4">Train Hard. Book Smart.</h1>
         <p class="text-lg opacity-90">Elite fitness booking platform</p>
     </div>
-
 </div>
-
-<!-- ================= CONTENT ================= -->
 
 <div class="p-10">
 
-{{-- SUCCESS / ERROR --}}
 @if(session('success'))
 <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-6 shadow">
     {{ session('success') }}
@@ -63,8 +80,6 @@
 </div>
 @endif
 
-<!-- ================= ALL CLASSES ================= -->
-
 <h2 class="text-3xl font-bold text-indigo-900 mb-8">
     🏋️ All Classes
 </h2>
@@ -82,14 +97,20 @@
         : 0;
 @endphp
 
-<div class="bg-white p-6 rounded-3xl shadow-xl 
-            hover:shadow-2xl hover:-translate-y-2 
-            transition duration-300 border border-indigo-100 relative">
+<div class="relative bg-white p-6 rounded-3xl shadow-xl border border-indigo-100 lux-card">
 
-    @if($fillPercent > 80 && !$isFull)
-        <span class="absolute top-4 right-4 bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full animate-pulse">
-            🔥 Filling Fast
-        </span>
+    @if($membershipExpired && !$alreadyBooked && !$isPast)
+        <div class="locked-overlay">
+            <div class="text-center">
+                <p class="text-indigo-800 font-semibold text-lg mb-3">
+                    Membership Required
+                </p>
+                <a href="{{ route('checkout') }}"
+                   class="bg-indigo-600 text-white px-6 py-2 rounded-xl hover:bg-indigo-700 transition">
+                    Renew Now
+                </a>
+            </div>
+        </div>
     @endif
 
     <h2 class="text-2xl font-bold text-indigo-800 mb-2">
@@ -111,8 +132,6 @@
         </div>
     </div>
 
-    {{-- BOOKING LOGIC --}}
-
     @if($alreadyBooked)
         <button disabled class="w-full bg-green-200 text-green-800 py-3 rounded-xl font-semibold">
             ✅ Already Booked
@@ -123,13 +142,7 @@
             Booking Unavailable
         </button>
 
-    @elseif($membershipExpired)
-        <a href="{{ route('checkout') }}"
-           class="block w-full text-center bg-red-500 text-white py-3 rounded-xl hover:bg-red-600 transition font-semibold">
-            🔄 Renew to Book
-        </a>
-
-    @else
+    @elseif(!$membershipExpired)
         <form method="POST" action="{{ route('book.class', $class->id) }}">
             @csrf
             <button
@@ -145,27 +158,20 @@
 @endforeach
 
 </div>
-
 </div>
-
-<!-- ================= HERO SLIDESHOW SCRIPT ================= -->
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-
     let slides = document.querySelectorAll('.slide');
     let index = 0;
 
     setInterval(() => {
         slides[index].classList.remove('opacity-100');
         slides[index].classList.add('opacity-0');
-
         index = (index + 1) % slides.length;
-
         slides[index].classList.remove('opacity-0');
         slides[index].classList.add('opacity-100');
     }, 4000);
-
 });
 </script>
 
