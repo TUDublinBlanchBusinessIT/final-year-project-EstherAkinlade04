@@ -1,249 +1,194 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Vault Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
 
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<title>Vault Admin</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+tailwind.config = {
+theme:{
+extend:{
+colors:{
+lilac:"#C4B5FD",
+deep:"#5B21B6"
+},
+boxShadow:{
+lux:"0 10px 30px rgba(0,0,0,0.08)",
+glow:"0 0 20px rgba(139,92,246,0.35)"
+}
+}
+}
+}
+</script>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+.panel{
+display:none;
+animation:fade .3s ease;
+}
+
+@keyframes fade{
+from{opacity:0; transform:translateY(10px)}
+to{opacity:1; transform:translateY(0)}
+}
+
+</style>
+
 </head>
 
-<body class="bg-gradient-to-br from-purple-100 via-indigo-100 to-purple-200 min-h-screen">
+<body class="bg-gradient-to-br from-white via-purple-50 to-white min-h-screen text-gray-800">
 
 <div class="flex">
 
 <!-- SIDEBAR -->
-<aside class="bg-indigo-900 text-white w-64 min-h-screen p-6 shadow-2xl">
 
-<h2 class="text-2xl font-bold mb-10">💎 Vault Admin</h2>
+<aside class="bg-white/80 backdrop-blur-xl border-r border-purple-100 w-64 min-h-screen p-6 shadow-lux">
 
-<a href="{{ route('admin.dashboard') }}" class="block mb-4 px-3 py-2 rounded-lg bg-indigo-700">
-📊 Dashboard
-</a>
+<h2 class="text-2xl font-bold text-deep mb-10">
+💎 Vault Admin
+</h2>
 
-<a href="{{ route('admin.classes.create') }}" class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 transition">
+<nav class="space-y-3">
+
+<button onclick="openPanel('analytics')" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-purple-50 hover:shadow-glow transition">
+📊 Analytics
+</button>
+
+<button onclick="openPanel('revenue')" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-purple-50 hover:shadow-glow transition">
+💰 Revenue
+</button>
+
+<button onclick="openPanel('classes')" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-purple-50 hover:shadow-glow transition">
+🏋️ Classes
+</button>
+
+</nav>
+
+<a href="{{ route('admin.classes.create') }}"
+class="block mt-6 px-4 py-3 rounded-xl bg-purple-600 text-white text-center hover:bg-purple-700 transition">
+
 ➕ Create Class
+
 </a>
 
-<a href="{{ route('admin.export.revenue') }}" class="block mb-4 px-3 py-2 rounded-lg hover:bg-indigo-700 transition">
-📥 Export Revenue CSV
+<a href="{{ route('admin.export.revenue') }}"
+class="block mt-3 px-4 py-3 rounded-xl bg-white border border-purple-200 text-center hover:bg-purple-50 transition">
+
+📥 Export Revenue
+
 </a>
 
 <form method="POST" action="{{ route('logout') }}" class="mt-10">
 @csrf
-<button class="w-full bg-purple-600 py-2 rounded-lg hover:bg-purple-500 transition">
-🚪 Logout
+<button class="w-full bg-purple-600 text-white py-3 rounded-xl hover:bg-purple-700 transition shadow">
+Logout
 </button>
 </form>
 
 </aside>
 
 <!-- MAIN -->
-<main class="flex-1 p-10">
 
-<h1 class="text-4xl font-extrabold text-indigo-900 mb-8">
-Welcome back, {{ auth()->user()->name }} 👑
+<main class="flex-1 p-14">
+
+<h1 class="text-4xl font-bold text-gray-800 mb-12">
+Welcome back, {{ auth()->user()->name }}
 </h1>
 
-@if(session('success'))
-<div class="bg-green-100 text-green-800 p-4 rounded-xl mb-6">
-{{ session('success') }}
-</div>
-@endif
+<!-- CALENDAR (MAIN FEATURE) -->
 
-@if(session('error'))
-<div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6">
-{{ session('error') }}
-</div>
-@endif
+<div class="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux mb-10">
 
-<!-- ================= STATS ================= -->
-
-<div class="grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-14">
-
-@foreach([
-['Users',$totalUsers],
-['Classes',$totalClasses],
-['Bookings',$totalBookings]
-] as $stat)
-
-<div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition text-center">
-<p class="text-gray-500">{{ $stat[0] }}</p>
-<h2 class="text-2xl font-bold text-indigo-700">{{ $stat[1] }}</h2>
-</div>
-
-@endforeach
-
-<div class="bg-green-100 p-6 rounded-2xl shadow text-center">
-<p>Membership Revenue</p>
-<h2 class="text-2xl font-bold text-green-800">€{{ number_format($membershipRevenue,2) }}</h2>
-</div>
-
-<div class="bg-blue-100 p-6 rounded-2xl shadow text-center">
-<p>Class Revenue</p>
-<h2 class="text-2xl font-bold text-blue-800">€{{ number_format($classRevenue,2) }}</h2>
-</div>
-
-<div class="bg-purple-200 p-6 rounded-2xl shadow text-center">
-<p>Total Revenue</p>
-<h2 class="text-2xl font-bold text-purple-900">€{{ number_format($totalRevenue,2) }}</h2>
-</div>
-
-<div class="bg-yellow-100 p-6 rounded-2xl shadow text-center">
-<p>Active Members</p>
-<h2 class="text-2xl font-bold text-yellow-800">{{ $activeMembers }}</h2>
-</div>
-
-<div class="bg-red-100 p-6 rounded-2xl shadow text-center">
-<p>Expired Members</p>
-<h2 class="text-2xl font-bold text-red-800">{{ $expiredMembers }}</h2>
-</div>
-
-<div class="bg-white p-6 rounded-2xl shadow text-center">
-<p>Growth (MoM)</p>
-<h2 class="text-2xl font-bold {{ $growthRate >= 0 ? 'text-green-600' : 'text-red-600' }}">
-{{ number_format($growthRate,1) }}%
+<h2 class="text-xl font-semibold text-gray-700 mb-6">
+📅 Class Calendar
 </h2>
-</div>
 
-<div class="bg-orange-100 p-6 rounded-2xl shadow text-center">
-<p>Expiring Soon</p>
-<h2 class="text-2xl font-bold text-orange-800">{{ $expiringSoon }}</h2>
-</div>
-
-<div class="bg-indigo-100 p-6 rounded-2xl shadow text-center">
-<p>Forecast</p>
-<h2 class="text-2xl font-bold text-indigo-800">
-€{{ number_format($forecastNextMonth,2) }}
-</h2>
-</div>
+<div id="calendar"></div>
 
 </div>
 
-<!-- ================= CHARTS ================= -->
+<!-- ANALYTICS PANEL -->
 
-<div class="grid lg:grid-cols-3 gap-10 mb-14">
+<div id="analytics" class="panel bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux mb-10">
 
-<div class="bg-white p-8 rounded-3xl shadow-xl">
-<h2 class="text-xl font-bold mb-6">📈 Monthly Revenue</h2>
+<h2 class="text-2xl font-bold mb-8">Analytics Overview</h2>
+
+<div class="grid grid-cols-4 gap-6">
+
+<div class="bg-purple-50 p-6 rounded-xl text-center">
+<p class="text-sm text-gray-500">Users</p>
+<h3 class="text-3xl font-bold text-deep">{{ $totalUsers }}</h3>
+</div>
+
+<div class="bg-purple-50 p-6 rounded-xl text-center">
+<p class="text-sm text-gray-500">Bookings</p>
+<h3 class="text-3xl font-bold text-deep">{{ $totalBookings }}</h3>
+</div>
+
+<div class="bg-purple-50 p-6 rounded-xl text-center">
+<p class="text-sm text-gray-500">Active Members</p>
+<h3 class="text-3xl font-bold text-deep">{{ $activeMembers }}</h3>
+</div>
+
+<div class="bg-purple-50 p-6 rounded-xl text-center">
+<p class="text-sm text-gray-500">Growth</p>
+<h3 class="text-3xl font-bold text-deep">{{ number_format($growthRate,1) }}%</h3>
+</div>
+
+</div>
+
+</div>
+
+<!-- REVENUE PANEL -->
+
+<div id="revenue" class="panel bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux mb-10">
+
+<h2 class="text-2xl font-bold mb-8">Revenue Analytics</h2>
+
+<div class="grid lg:grid-cols-2 gap-10">
+
+<div>
 <canvas id="revenueChart"></canvas>
 </div>
 
-<div class="bg-white p-8 rounded-3xl shadow-xl">
-<h2 class="text-xl font-bold mb-6">🥧 Membership Breakdown</h2>
+<div>
 <canvas id="membershipChart"></canvas>
 </div>
 
-<div class="bg-white p-8 rounded-3xl shadow-xl">
-<h2 class="text-xl font-bold mb-6">📊 Bookings Per Class</h2>
-<canvas id="bookingChart"></canvas>
 </div>
 
 </div>
 
-<!-- ================= CALENDAR ================= -->
+<!-- CLASSES PANEL -->
 
-<div class="bg-white p-8 rounded-3xl shadow-xl mb-14">
-<h2 class="text-xl font-bold mb-6">📅 Class Schedule</h2>
-<div id="calendar"></div>
-</div>
+<div id="classes" class="panel bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux">
 
-<!-- ================= CLASS MANAGEMENT ================= -->
-
-<h2 class="text-3xl font-bold text-indigo-900 mb-8">📚 Manage Classes</h2>
+<h2 class="text-2xl font-bold mb-8">Class Management</h2>
 
 @foreach($classes as $class)
 
-@php
-$fillPercent = ($class->bookings_count / $class->capacity) * 100;
-@endphp
-
-<div class="bg-white p-8 rounded-3xl shadow-xl mb-6 hover:shadow-2xl transition">
-
-<div class="flex justify-between items-start">
+<div class="flex justify-between items-center border-b py-4">
 
 <div>
 
-<div class="flex items-center gap-3">
+<p class="font-semibold text-gray-800">{{ $class->name }}</p>
 
-@if($mostPopularClass && $class->id === $mostPopularClass->id)
-<span class="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-semibold animate-pulse">
-🔥 MOST POPULAR
-</span>
-@endif
-
-@if($fillPercent >= 80 && $fillPercent < 100)
-<span class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-semibold animate-pulse">
-🔥 FILLING FAST
-</span>
-@endif
-
-<h3 class="text-2xl font-bold text-indigo-800">{{ $class->name }}</h3>
-
-</div>
-
-<p class="text-gray-500 mt-1">
-📅 {{ $class->class_time->format('d M Y H:i') }}
-</p>
-
-<p class="mt-2 font-semibold">💰 €{{ $class->price }}</p>
-
-<div class="w-64 bg-gray-200 rounded-full h-3 mt-4 overflow-hidden">
-<div class="bg-indigo-600 h-3 rounded-full transition-all duration-700"
-style="width: {{ $fillPercent }}%">
-</div>
-</div>
-
-<p class="text-sm mt-2">
-👥 {{ $class->bookings_count }} / {{ $class->capacity }}
+<p class="text-sm text-gray-500">
+{{ $class->class_time->format('d M Y H:i') }}
 </p>
 
 </div>
 
-<div class="flex flex-col gap-3">
-
-<button onclick="toggleMembers({{ $class->id }})"
-class="bg-indigo-600 text-white px-5 py-2 rounded-xl hover:bg-indigo-700 transition">
-👥 View Members
-</button>
-
-@if(!$class->is_cancelled)
-<form method="POST" action="{{ route('admin.classes.cancel',$class->id) }}">
-@csrf
-@method('PATCH')
-<button class="bg-red-600 text-white px-5 py-2 rounded-xl hover:bg-red-700 transition">
-Cancel
-</button>
-</form>
-@endif
-
-</div>
-
-</div>
-
-<div id="members-{{ $class->id }}" class="hidden mt-6 bg-indigo-50 p-6 rounded-2xl">
-
-@forelse($class->bookings as $booking)
-
-<div class="flex justify-between bg-white p-4 rounded-xl mb-3">
-
-<div>
-<p class="font-semibold">{{ $booking->user->name }}</p>
-<p class="text-sm text-gray-500">{{ $booking->user->email }}</p>
-</div>
-
-<span class="text-sm text-gray-400">
-{{ $booking->created_at->format('d M Y') }}
-</span>
-
-</div>
-
-@empty
-<p class="text-gray-500">No members booked yet.</p>
-@endforelse
-
+<div class="text-sm text-gray-500">
+👥 {{ $class->bookings_count }}
 </div>
 
 </div>
@@ -252,62 +197,62 @@ Cancel
 
 {{ $classes->links() }}
 
+</div>
+
 </main>
+
 </div>
 
 <script>
 
-function toggleMembers(id){
-document.getElementById('members-'+id)?.classList.toggle('hidden');
+function openPanel(panel){
+
+document.querySelectorAll(".panel").forEach(p=>{
+p.style.display="none"
+})
+
+document.getElementById(panel).style.display="block"
+
 }
 
 new Chart(document.getElementById('revenueChart'),{
+
 type:'line',
+
 data:{
 labels:@json($monthlyRevenue->pluck('month')),
 datasets:[{
-label:'Revenue (€)',
 data:@json($monthlyRevenue->pluck('total')),
-borderColor:'#4f46e5',
-backgroundColor:'rgba(79,70,229,0.1)',
+borderColor:"#8B5CF6",
+backgroundColor:"rgba(139,92,246,0.15)",
 fill:true,
-tension:0.4
+tension:.4
 }]
 }
-});
+
+})
 
 new Chart(document.getElementById('membershipChart'),{
+
 type:'doughnut',
+
 data:{
 labels:@json($membershipBreakdown->pluck('membership_type')),
 datasets:[{
 data:@json($membershipBreakdown->pluck('total'))
 }]
 }
-});
 
-new Chart(document.getElementById('bookingChart'),{
-type:'bar',
-data:{
-labels:@json($bookingLabels),
-datasets:[{
-label:'Bookings',
-data:@json($bookingCounts),
-backgroundColor:'#8b5cf6',
-borderRadius:8
-}]
-},
-options:{
-plugins:{legend:{display:false}},
-scales:{y:{beginAtZero:true}}
-}
-});
+})
 
-document.addEventListener('DOMContentLoaded',function(){
+document.addEventListener("DOMContentLoaded",()=>{
 
-new FullCalendar.Calendar(document.getElementById('calendar'),{
-initialView:'dayGridMonth',
-height:500,
+new FullCalendar.Calendar(document.getElementById("calendar"),{
+
+initialView:"dayGridMonth",
+
+height:550,
+
 events:[
 @foreach($classes as $class)
 {
@@ -316,9 +261,10 @@ start:"{{ $class->class_time }}"
 },
 @endforeach
 ]
-}).render();
 
-});
+}).render()
+
+})
 
 </script>
 
