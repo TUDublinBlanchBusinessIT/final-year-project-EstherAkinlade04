@@ -15,8 +15,8 @@ lilac:"#C4B5FD",
 deep:"#5B21B6"
 },
 boxShadow:{
-lux:"0 10px 30px rgba(0,0,0,0.08)",
-glow:"0 0 20px rgba(139,92,246,0.35)"
+lux:"0 12px 30px rgba(0,0,0,0.08)",
+glow:"0 0 18px rgba(139,92,246,0.25)"
 }
 }
 }
@@ -31,20 +31,49 @@ glow:"0 0 20px rgba(139,92,246,0.35)"
 <style>
 
 .panel{
-display:none;
-animation:fade .3s ease;
+position:fixed;
+top:0;
+right:-100%;
+width:500px;
+height:100%;
+background:white;
+box-shadow:-10px 0 40px rgba(0,0,0,.15);
+padding:40px;
+overflow:auto;
+transition:.35s ease;
+z-index:50;
 }
 
-@keyframes fade{
-from{opacity:0; transform:translateY(10px)}
-to{opacity:1; transform:translateY(0)}
+.panel.open{
+right:0;
+}
+
+.overlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.35);
+display:none;
+z-index:40;
+}
+
+.overlay.show{
+display:block;
+}
+
+.sidebar-btn{
+transition:.25s;
+}
+
+.sidebar-btn:hover{
+transform:translateX(6px);
+background:#f5f3ff;
 }
 
 </style>
 
 </head>
 
-<body class="bg-gradient-to-br from-white via-purple-50 to-white min-h-screen text-gray-800">
+<body class="bg-gradient-to-br from-purple-50 via-white to-purple-100 min-h-screen text-gray-800">
 
 <div class="flex">
 
@@ -52,43 +81,39 @@ to{opacity:1; transform:translateY(0)}
 
 <aside class="bg-white/80 backdrop-blur-xl border-r border-purple-100 w-64 min-h-screen p-6 shadow-lux">
 
-<h2 class="text-2xl font-bold text-deep mb-10">
-💎 Vault Admin
+<h2 class="text-2xl font-bold text-deep mb-12">
+Vault Admin
 </h2>
 
-<nav class="space-y-3">
+<nav class="space-y-4">
 
-<button onclick="openPanel('analytics')" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-purple-50 hover:shadow-glow transition">
-📊 Analytics
+<button onclick="openPanel('analytics')" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl">
+Analytics
 </button>
 
-<button onclick="openPanel('revenue')" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-purple-50 hover:shadow-glow transition">
-💰 Revenue
+<button onclick="openPanel('revenue')" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl">
+Revenue
 </button>
 
-<button onclick="openPanel('classes')" class="block w-full text-left px-4 py-3 rounded-xl hover:bg-purple-50 hover:shadow-glow transition">
-🏋️ Classes
+<button onclick="openPanel('classes')" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl">
+Classes
 </button>
-
-</nav>
 
 <a href="{{ route('admin.classes.create') }}"
-class="block mt-6 px-4 py-3 rounded-xl bg-purple-600 text-white text-center hover:bg-purple-700 transition">
-
-➕ Create Class
-
+class="block px-4 py-3 rounded-xl bg-purple-600 text-white text-center hover:bg-purple-700 transition">
+Create Class
 </a>
 
 <a href="{{ route('admin.export.revenue') }}"
-class="block mt-3 px-4 py-3 rounded-xl bg-white border border-purple-200 text-center hover:bg-purple-50 transition">
-
-📥 Export Revenue
-
+class="block px-4 py-3 rounded-xl border border-purple-200 text-center hover:bg-purple-50 transition">
+Export Revenue
 </a>
 
-<form method="POST" action="{{ route('logout') }}" class="mt-10">
+</nav>
+
+<form method="POST" action="{{ route('logout') }}" class="mt-12">
 @csrf
-<button class="w-full bg-purple-600 text-white py-3 rounded-xl hover:bg-purple-700 transition shadow">
+<button class="w-full bg-purple-600 text-white py-3 rounded-xl hover:bg-purple-700 transition">
 Logout
 </button>
 </form>
@@ -103,44 +128,52 @@ Logout
 Welcome back, {{ auth()->user()->name }}
 </h1>
 
-<!-- CALENDAR (MAIN FEATURE) -->
+<!-- CALENDAR -->
 
-<div class="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux mb-10">
+<div class="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux">
 
-<h2 class="text-xl font-semibold text-gray-700 mb-6">
-📅 Class Calendar
+<h2 class="text-xl font-semibold mb-6 text-gray-700">
+Class Calendar
 </h2>
 
 <div id="calendar"></div>
 
 </div>
 
+</main>
+
+</div>
+
+<!-- OVERLAY -->
+
+<div id="overlay" class="overlay" onclick="closePanels()"></div>
+
 <!-- ANALYTICS PANEL -->
 
-<div id="analytics" class="panel bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux mb-10">
+<div id="analytics" class="panel">
 
-<h2 class="text-2xl font-bold mb-8">Analytics Overview</h2>
+<h2 class="text-2xl font-bold mb-8">Analytics</h2>
 
-<div class="grid grid-cols-4 gap-6">
+<div class="grid grid-cols-2 gap-6">
 
 <div class="bg-purple-50 p-6 rounded-xl text-center">
 <p class="text-sm text-gray-500">Users</p>
-<h3 class="text-3xl font-bold text-deep">{{ $totalUsers }}</h3>
+<h3 class="text-3xl font-bold">{{ $totalUsers }}</h3>
 </div>
 
 <div class="bg-purple-50 p-6 rounded-xl text-center">
 <p class="text-sm text-gray-500">Bookings</p>
-<h3 class="text-3xl font-bold text-deep">{{ $totalBookings }}</h3>
+<h3 class="text-3xl font-bold">{{ $totalBookings }}</h3>
 </div>
 
 <div class="bg-purple-50 p-6 rounded-xl text-center">
-<p class="text-sm text-gray-500">Active Members</p>
-<h3 class="text-3xl font-bold text-deep">{{ $activeMembers }}</h3>
+<p class="text-sm text-gray-500">Active</p>
+<h3 class="text-3xl font-bold">{{ $activeMembers }}</h3>
 </div>
 
 <div class="bg-purple-50 p-6 rounded-xl text-center">
 <p class="text-sm text-gray-500">Growth</p>
-<h3 class="text-3xl font-bold text-deep">{{ number_format($growthRate,1) }}%</h3>
+<h3 class="text-3xl font-bold">{{ number_format($growthRate,1) }}%</h3>
 </div>
 
 </div>
@@ -149,37 +182,27 @@ Welcome back, {{ auth()->user()->name }}
 
 <!-- REVENUE PANEL -->
 
-<div id="revenue" class="panel bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux mb-10">
+<div id="revenue" class="panel">
 
-<h2 class="text-2xl font-bold mb-8">Revenue Analytics</h2>
+<h2 class="text-2xl font-bold mb-8">Revenue</h2>
 
-<div class="grid lg:grid-cols-2 gap-10">
-
-<div>
 <canvas id="revenueChart"></canvas>
-</div>
-
-<div>
-<canvas id="membershipChart"></canvas>
-</div>
-
-</div>
 
 </div>
 
 <!-- CLASSES PANEL -->
 
-<div id="classes" class="panel bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux">
+<div id="classes" class="panel">
 
-<h2 class="text-2xl font-bold mb-8">Class Management</h2>
+<h2 class="text-2xl font-bold mb-8">Classes</h2>
 
 @foreach($classes as $class)
 
-<div class="flex justify-between items-center border-b py-4">
+<div class="border-b py-4 flex justify-between">
 
 <div>
 
-<p class="font-semibold text-gray-800">{{ $class->name }}</p>
+<p class="font-semibold">{{ $class->name }}</p>
 
 <p class="text-sm text-gray-500">
 {{ $class->class_time->format('d M Y H:i') }}
@@ -195,55 +218,76 @@ Welcome back, {{ auth()->user()->name }}
 
 @endforeach
 
-{{ $classes->links() }}
-
-</div>
-
-</main>
-
 </div>
 
 <script>
 
-function openPanel(panel){
+/* PANEL CONTROL */
 
-document.querySelectorAll(".panel").forEach(p=>{
-p.style.display="none"
-})
+function openPanel(id){
 
-document.getElementById(panel).style.display="block"
+document.getElementById("overlay").classList.add("show")
+
+document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"))
+
+document.getElementById(id).classList.add("open")
+
+if(id === "revenue"){
+loadRevenueChart()
+}
 
 }
+
+function closePanels(){
+
+document.getElementById("overlay").classList.remove("show")
+
+document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"))
+
+}
+
+/* REVENUE CHART FIX */
+
+let revenueChartLoaded = false;
+
+function loadRevenueChart(){
+
+if(revenueChartLoaded) return;
 
 new Chart(document.getElementById('revenueChart'),{
 
 type:'line',
 
 data:{
-labels:@json($monthlyRevenue->pluck('month')),
+labels:@json($monthlyRevenue->pluck('month') ?? []),
+
 datasets:[{
-data:@json($monthlyRevenue->pluck('total')),
+label:"Revenue €",
+data:@json($monthlyRevenue->pluck('total') ?? []),
 borderColor:"#8B5CF6",
 backgroundColor:"rgba(139,92,246,0.15)",
 fill:true,
 tension:.4
 }]
+
+},
+
+options:{
+plugins:{
+legend:{display:false}
+},
+scales:{
+y:{beginAtZero:true}
+}
 }
 
-})
+});
 
-new Chart(document.getElementById('membershipChart'),{
+revenueChartLoaded = true;
 
-type:'doughnut',
-
-data:{
-labels:@json($membershipBreakdown->pluck('membership_type')),
-datasets:[{
-data:@json($membershipBreakdown->pluck('total'))
-}]
 }
 
-})
+/* CALENDAR */
 
 document.addEventListener("DOMContentLoaded",()=>{
 
@@ -251,7 +295,7 @@ new FullCalendar.Calendar(document.getElementById("calendar"),{
 
 initialView:"dayGridMonth",
 
-height:550,
+height:600,
 
 events:[
 @foreach($classes as $class)
