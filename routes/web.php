@@ -27,19 +27,15 @@ Route::get('/', function () {
 
 Route::middleware('guest')->group(function () {
 
-    // Registration Page
     Route::get('/register', [AuthController::class, 'showRegister'])
         ->name('register');
 
-    // Stripe Registration Checkout
     Route::post('/register/checkout', [PaymentController::class, 'registerCheckout'])
         ->name('register.checkout');
 
-    // Registration Success (after Stripe)
     Route::get('/register/success', [PaymentController::class, 'registerSuccess'])
         ->name('register.success');
 
-    // Login
     Route::get('/login', [AuthController::class, 'showLogin'])
         ->name('login');
 
@@ -55,20 +51,31 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
+    // Dashboard still accessible
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
-    Route::get('/classes', [ClassesController::class, 'index'])
-        ->name('classes.index');
+    /*
+    |--------------------------------------------------------------------------
+    | Classes (Requires Active Membership)
+    |--------------------------------------------------------------------------
+    */
 
-    Route::post('/book/{id}', [BookingController::class, 'store'])
-        ->name('book.class');
+    Route::middleware('membership')->group(function () {
 
-    Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])
-        ->name('cancel.booking');
+        Route::get('/classes', [ClassesController::class, 'index'])
+            ->name('classes.index');
+
+        Route::post('/book/{id}', [BookingController::class, 'store'])
+            ->name('book.class');
+
+        Route::delete('/cancel/{id}', [BookingController::class, 'destroy'])
+            ->name('cancel.booking');
+
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -95,15 +102,12 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
-    // Dashboard
     Route::get('/', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
-    // Revenue Export
     Route::get('/export-revenue', [AdminController::class, 'exportRevenue'])
         ->name('admin.export.revenue');
 
-    // Classes
     Route::get('/classes/create', [AdminController::class, 'create'])
         ->name('admin.classes.create');
 
@@ -113,7 +117,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::patch('/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
         ->name('admin.classes.cancel');
 
-    // Bookings
     Route::patch('/bookings/{id}/attendance', [AdminController::class, 'toggleAttendance'])
         ->name('admin.bookings.attendance');
 
