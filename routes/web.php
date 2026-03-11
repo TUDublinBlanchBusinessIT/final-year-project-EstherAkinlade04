@@ -51,7 +51,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-    // Dashboard still accessible
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
@@ -102,11 +102,19 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
+    // Admin Dashboard
     Route::get('/', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
+    // Revenue Export
     Route::get('/export-revenue', [AdminController::class, 'exportRevenue'])
         ->name('admin.export.revenue');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Class Management
+    |--------------------------------------------------------------------------
+    */
 
     Route::get('/classes/create', [AdminController::class, 'create'])
         ->name('admin.classes.create');
@@ -117,10 +125,28 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::patch('/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
         ->name('admin.classes.cancel');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Booking Management
+    |--------------------------------------------------------------------------
+    */
+
     Route::patch('/bookings/{id}/attendance', [AdminController::class, 'toggleAttendance'])
         ->name('admin.bookings.attendance');
 
     Route::delete('/bookings/{id}', [AdminController::class, 'removeBooking'])
         ->name('admin.bookings.remove');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Membership Plans
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/plans', [AdminController::class, 'plans'])
+        ->name('admin.plans');
+
+    Route::post('/plans', [AdminController::class, 'storePlan'])
+        ->name('admin.plans.store');
 
 });

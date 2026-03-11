@@ -1,10 +1,11 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers;
 
 use App\Models\FitnessClass;
 use App\Models\User;
 use App\Models\Booking;
+use App\Models\MembershipPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -148,6 +149,32 @@ class AdminController extends Controller
             'bookingCounts',
             'mostPopularClass'
         ));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MEMBERSHIP PLANS
+    |--------------------------------------------------------------------------
+    */
+
+    public function plans()
+    {
+        $plans = MembershipPlan::all();
+
+        return view('admin.plans', compact('plans'));
+    }
+
+    public function storePlan(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'duration_days' => 'required|integer|min:1'
+        ]);
+
+        MembershipPlan::create($validated);
+
+        return back()->with('success', 'Membership plan created.');
     }
 
     /*
