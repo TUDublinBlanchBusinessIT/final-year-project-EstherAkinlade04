@@ -7,6 +7,7 @@ use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\MembershipPlanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,7 +52,6 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
@@ -91,6 +91,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/payment-cancel', [PaymentController::class, 'cancel'])
         ->name('payment.cancel');
+
 });
 
 
@@ -100,13 +101,15 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
 
-    // Admin Dashboard
+    /* Dashboard */
+
     Route::get('/', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
-    // Revenue Export
+    /* Revenue */
+
     Route::get('/export-revenue', [AdminController::class, 'exportRevenue'])
         ->name('admin.export.revenue');
 
@@ -143,10 +146,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/plans', [AdminController::class, 'plans'])
-        ->name('admin.plans');
-
-    Route::post('/plans', [AdminController::class, 'storePlan'])
-        ->name('admin.plans.store');
+    Route::resource('membership-plans', MembershipPlanController::class)
+        ->names([
+            'index' => 'admin.membership-plans.index',
+            'store' => 'admin.membership-plans.store',
+            'destroy' => 'admin.membership-plans.destroy',
+            'create' => 'admin.membership-plans.create',
+            'edit' => 'admin.membership-plans.edit',
+            'update' => 'admin.membership-plans.update',
+            'show' => 'admin.membership-plans.show'
+        ]);
 
 });

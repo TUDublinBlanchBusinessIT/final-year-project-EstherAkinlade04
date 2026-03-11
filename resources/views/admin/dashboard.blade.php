@@ -99,6 +99,13 @@ Revenue
 Classes
 </button>
 
+<!-- NEW MEMBERSHIP PLANS LINK -->
+
+<a href="{{ route('admin.membership-plans.index') }}"
+class="sidebar-btn block px-4 py-3 rounded-xl text-left">
+Membership Plans
+</a>
+
 <a href="{{ route('admin.classes.create') }}"
 class="block px-4 py-3 rounded-xl bg-purple-600 text-white text-center hover:bg-purple-700 transition">
 Create Class
