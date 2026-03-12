@@ -69,6 +69,19 @@ transform:translateX(6px);
 background:#f5f3ff;
 }
 
+.progress{
+height:6px;
+background:#e5e7eb;
+border-radius:999px;
+overflow:hidden;
+margin-top:6px;
+}
+
+.progress-bar{
+height:100%;
+background:#8B5CF6;
+}
+
 </style>
 
 </head>
@@ -98,8 +111,6 @@ Revenue
 <button onclick="openPanel('classes')" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl">
 Classes
 </button>
-
-<!-- NEW MEMBERSHIP PLANS LINK -->
 
 <a href="{{ route('admin.membership-plans.index') }}"
 class="sidebar-btn block px-4 py-3 rounded-xl text-left">
@@ -174,7 +185,7 @@ Class Calendar
 </div>
 
 <div class="bg-purple-50 p-6 rounded-xl text-center">
-<p class="text-sm text-gray-500">Active</p>
+<p class="text-sm text-gray-500">Active Members</p>
 <h3 class="text-3xl font-bold">{{ $activeMembers }}</h3>
 </div>
 
@@ -205,11 +216,27 @@ Class Calendar
 
 @foreach($classes as $class)
 
-<div class="border-b py-4 flex justify-between">
+@php
+$fill = $class->fill_percentage ?? 0;
+@endphp
+
+<div class="border-b py-4">
+
+<div class="flex justify-between">
 
 <div>
 
-<p class="font-semibold">{{ $class->name }}</p>
+<p class="font-semibold">
+
+@if(isset($mostPopularClass) && $class->id === $mostPopularClass->id)
+<span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded mr-2">
+🔥 MOST POPULAR
+</span>
+@endif
+
+{{ $class->name }}
+
+</p>
 
 <p class="text-sm text-gray-500">
 {{ $class->class_time->format('d M Y H:i') }}
@@ -218,8 +245,20 @@ Class Calendar
 </div>
 
 <div class="text-sm text-gray-500">
-👥 {{ $class->bookings_count }}
+👥 {{ $class->bookings_count }} / {{ $class->capacity }}
 </div>
+
+</div>
+
+<div class="progress">
+<div class="progress-bar" style="width: {{ $fill }}%"></div>
+</div>
+
+@if($fill >= 80 && $fill < 100)
+<p class="text-xs text-red-500 mt-1">
+🔥 Filling fast
+</p>
+@endif
 
 </div>
 
@@ -253,7 +292,7 @@ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"))
 
 }
 
-/* REVENUE CHART FIX */
+/* REVENUE CHART */
 
 let revenueChartLoaded = false;
 
@@ -267,7 +306,6 @@ type:'line',
 
 data:{
 labels:@json($monthlyRevenue->pluck('month') ?? []),
-
 datasets:[{
 label:"Revenue €",
 data:@json($monthlyRevenue->pluck('total') ?? []),
@@ -276,16 +314,11 @@ backgroundColor:"rgba(139,92,246,0.15)",
 fill:true,
 tension:.4
 }]
-
 },
 
 options:{
-plugins:{
-legend:{display:false}
-},
-scales:{
-y:{beginAtZero:true}
-}
+plugins:{legend:{display:false}},
+scales:{y:{beginAtZero:true}}
 }
 
 });
@@ -301,7 +334,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 new FullCalendar.Calendar(document.getElementById("calendar"),{
 
 initialView:"dayGridMonth",
-
 height:600,
 
 events:[

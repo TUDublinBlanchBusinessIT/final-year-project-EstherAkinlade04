@@ -25,7 +25,7 @@ class AdminController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Revenue Calculations
+        | Revenue
         |--------------------------------------------------------------------------
         */
 
@@ -109,7 +109,7 @@ class AdminController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | BOOKINGS PER CLASS CHART
+        | Booking Chart
         |--------------------------------------------------------------------------
         */
 
@@ -122,7 +122,7 @@ class AdminController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | MOST POPULAR CLASS
+        | Most Popular Class
         |--------------------------------------------------------------------------
         */
 
@@ -149,32 +149,6 @@ class AdminController extends Controller
             'bookingCounts',
             'mostPopularClass'
         ));
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | MEMBERSHIP PLANS
-    |--------------------------------------------------------------------------
-    */
-
-    public function plans()
-    {
-        $plans = MembershipPlan::all();
-
-        return view('admin.plans', compact('plans'));
-    }
-
-    public function storePlan(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'duration_days' => 'required|integer|min:1'
-        ]);
-
-        MembershipPlan::create($validated);
-
-        return back()->with('success', 'Membership plan created.');
     }
 
     /*
