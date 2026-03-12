@@ -112,6 +112,11 @@ Revenue
 Classes
 </button>
 
+<a href="{{ route('admin.checkin') }}"
+class="sidebar-btn block px-4 py-3 rounded-xl text-left">
+QR Check-In
+</a>
+
 <a href="{{ route('admin.membership-plans.index') }}"
 class="sidebar-btn block px-4 py-3 rounded-xl text-left">
 Membership Plans
@@ -138,6 +143,7 @@ Logout
 
 </aside>
 
+
 <!-- MAIN -->
 
 <main class="flex-1 p-14">
@@ -145,8 +151,6 @@ Logout
 <h1 class="text-4xl font-bold text-gray-800 mb-12">
 Welcome back, {{ auth()->user()->name }}
 </h1>
-
-<!-- CALENDAR -->
 
 <div class="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux">
 
@@ -162,11 +166,10 @@ Class Calendar
 
 </div>
 
-<!-- OVERLAY -->
-
 <div id="overlay" class="overlay" onclick="closePanels()"></div>
 
-<!-- ANALYTICS PANEL -->
+
+<!-- ANALYTICS -->
 
 <div id="analytics" class="panel">
 
@@ -190,15 +193,16 @@ Class Calendar
 </div>
 
 <div class="bg-purple-50 p-6 rounded-xl text-center">
-<p class="text-sm text-gray-500">Growth</p>
-<h3 class="text-3xl font-bold">{{ number_format($growthRate,1) }}%</h3>
+<p class="text-sm text-gray-500">Total Revenue</p>
+<h3 class="text-3xl font-bold">€{{ number_format($totalRevenue,0) }}</h3>
 </div>
 
 </div>
 
 </div>
 
-<!-- REVENUE PANEL -->
+
+<!-- REVENUE -->
 
 <div id="revenue" class="panel">
 
@@ -208,7 +212,8 @@ Class Calendar
 
 </div>
 
-<!-- CLASSES PANEL -->
+
+<!-- CLASSES -->
 
 <div id="classes" class="panel">
 
@@ -266,9 +271,8 @@ $fill = $class->fill_percentage ?? 0;
 
 </div>
 
-<script>
 
-/* PANEL CONTROL */
+<script>
 
 function openPanel(id){
 
@@ -292,6 +296,7 @@ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"))
 
 }
 
+
 /* REVENUE CHART */
 
 let revenueChartLoaded = false;
@@ -305,10 +310,10 @@ new Chart(document.getElementById('revenueChart'),{
 type:'line',
 
 data:{
-labels:@json($monthlyRevenue->pluck('month') ?? []),
+labels:@json($monthlyRevenue->pluck('month')),
 datasets:[{
 label:"Revenue €",
-data:@json($monthlyRevenue->pluck('total') ?? []),
+data:@json($monthlyRevenue->pluck('total')),
 borderColor:"#8B5CF6",
 backgroundColor:"rgba(139,92,246,0.15)",
 fill:true,
@@ -327,11 +332,12 @@ revenueChartLoaded = true;
 
 }
 
+
 /* CALENDAR */
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-new FullCalendar.Calendar(document.getElementById("calendar"),{
+let calendar = new FullCalendar.Calendar(document.getElementById("calendar"),{
 
 initialView:"dayGridMonth",
 height:600,
@@ -345,7 +351,9 @@ start:"{{ $class->class_time }}"
 @endforeach
 ]
 
-}).render()
+});
+
+calendar.render();
 
 })
 

@@ -41,6 +41,7 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('/login', [AuthController::class, 'login']);
+
 });
 
 
@@ -57,6 +58,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -76,6 +78,7 @@ Route::middleware('auth')->group(function () {
             ->name('cancel.booking');
 
     });
+
 
     /*
     |--------------------------------------------------------------------------
@@ -103,15 +106,38 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
 
-    /* Dashboard */
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
 
     Route::get('/', [AdminController::class, 'index'])
         ->name('admin.dashboard');
 
-    /* Revenue */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Revenue Export
+    |--------------------------------------------------------------------------
+    */
 
     Route::get('/export-revenue', [AdminController::class, 'exportRevenue'])
         ->name('admin.export.revenue');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QR Check-In Scanner
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/checkin', [AdminController::class, 'checkinPage'])
+        ->name('admin.checkin');
+
+    Route::post('/checkin/{email}', [AdminController::class, 'checkinMember'])
+        ->name('admin.checkin.process');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -128,6 +154,7 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
     Route::patch('/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
         ->name('admin.classes.cancel');
 
+
     /*
     |--------------------------------------------------------------------------
     | Booking Management
@@ -139,6 +166,7 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
 
     Route::delete('/bookings/{id}', [AdminController::class, 'removeBooking'])
         ->name('admin.bookings.remove');
+
 
     /*
     |--------------------------------------------------------------------------

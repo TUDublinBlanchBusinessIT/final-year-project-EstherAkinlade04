@@ -5,13 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\FitnessClass;
 use App\Models\User;
 use App\Models\Booking;
-use App\Models\MembershipPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminController extends Controller
 {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
+
     public function index()
     {
         $classes = FitnessClass::withCount('bookings')
@@ -23,108 +29,40 @@ class AdminController extends Controller
         $totalBookings = Booking::count();
         $totalClasses = FitnessClass::count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Revenue
-        |--------------------------------------------------------------------------
-        */
-
-        $classRevenue = Booking::where('payment_status', 'paid')
-            ->join('fitness_classes', 'bookings.fitness_class_id', '=', 'fitness_classes.id')
+        $classRevenue = Booking::where('payment_status','paid')
+            ->join('fitness_classes','bookings.fitness_class_id','=','fitness_classes.id')
             ->sum('fitness_classes.price');
 
         $membershipRevenue = User::sum('price_paid');
 
         $totalRevenue = $classRevenue + $membershipRevenue;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Monthly Revenue
-        |--------------------------------------------------------------------------
-        */
-
         $monthlyRevenue = User::select(
-                DB::raw('MONTH(created_at) as month_number'),
-                DB::raw('MONTHNAME(created_at) as month'),
-                DB::raw('SUM(price_paid) as total')
-            )
-            ->whereYear('created_at', now()->year)
-            ->groupBy('month_number', 'month')
-            ->orderBy('month_number')
-            ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Membership Breakdown
-        |--------------------------------------------------------------------------
-        */
+            DB::raw('MONTH(created_at) as month_number'),
+            DB::raw('MONTHNAME(created_at) as month'),
+            DB::raw('SUM(price_paid) as total')
+        )
+        ->whereYear('created_at', now()->year)
+        ->groupBy('month_number','month')
+        ->orderBy('month_number')
+        ->get();
 
         $membershipBreakdown = User::select(
-                'membership_type',
-                DB::raw('COUNT(*) as total')
-            )
-            ->groupBy('membership_type')
-            ->get();
+            'membership_type',
+            DB::raw('COUNT(*) as total')
+        )->groupBy('membership_type')->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Membership Status
-        |--------------------------------------------------------------------------
-        */
+        $activeMembers = User::where('end_date','>=',now())->count();
 
-        $activeMembers = User::where('end_date', '>=', now())->count();
-        $expiredMembers = User::where('end_date', '<', now())->count();
+        $expiredMembers = User::where('end_date','<',now())->count();
 
-        $expiringSoon = User::whereBetween('end_date', [now(), now()->addDays(7)])
+        $expiringSoon = User::whereBetween('end_date',[now(), now()->addDays(7)])
             ->count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Growth
-        |--------------------------------------------------------------------------
-        */
-
-        $currentMonthRevenue = User::whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('price_paid');
-
-        $previousMonthRevenue = User::whereMonth('created_at', now()->subMonth()->month)
-            ->whereYear('created_at', now()->subMonth()->year)
-            ->sum('price_paid');
-
-        $growthRate = 0;
-
-        if ($previousMonthRevenue > 0) {
-            $growthRate = (($currentMonthRevenue - $previousMonthRevenue) / $previousMonthRevenue) * 100;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Forecast
-        |--------------------------------------------------------------------------
-        */
-
-        $averageMonthlyRevenue = User::avg('price_paid') ?? 0;
-        $forecastNextMonth = $averageMonthlyRevenue * 1.1;
-
-        /*
-        |--------------------------------------------------------------------------
-        | Booking Chart
-        |--------------------------------------------------------------------------
-        */
-
-        $bookingChart = FitnessClass::withCount('bookings')
-            ->orderBy('class_time')
-            ->get();
+        $bookingChart = FitnessClass::withCount('bookings')->get();
 
         $bookingLabels = $bookingChart->pluck('name');
         $bookingCounts = $bookingChart->pluck('bookings_count');
-
-        /*
-        |--------------------------------------------------------------------------
-        | Most Popular Class
-        |--------------------------------------------------------------------------
-        */
 
         $mostPopularClass = FitnessClass::withCount('bookings')
             ->orderByDesc('bookings_count')
@@ -142,18 +80,151 @@ class AdminController extends Controller
             'membershipBreakdown',
             'activeMembers',
             'expiredMembers',
-            'growthRate',
             'expiringSoon',
-            'forecastNextMonth',
             'bookingLabels',
             'bookingCounts',
             'mostPopularClass'
         ));
     }
 
+
     /*
     |--------------------------------------------------------------------------
-    | CSV EXPORT
+    | CREATE CLASS PAGE
+    |--------------------------------------------------------------------------
+    */
+
+    public function create()
+    {
+        return view('admin.create-class');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE CLASS
+    |--------------------------------------------------------------------------
+    */
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'=>'required|string|max:255',
+            'description'=>'required|string',
+            'class_time'=>'required|date',
+            'capacity'=>'required|integer|min:1',
+            'price'=>'required|numeric|min:0'
+        ]);
+
+        FitnessClass::create($validated);
+
+        return redirect()->route('admin.dashboard')
+            ->with('success','Class created successfully');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CANCEL CLASS
+    |--------------------------------------------------------------------------
+    */
+
+    public function cancelClass($id)
+    {
+        $class = FitnessClass::findOrFail($id);
+
+        $class->is_cancelled = true;
+        $class->save();
+
+        return back()->with('success','Class cancelled');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TOGGLE ATTENDANCE
+    |--------------------------------------------------------------------------
+    */
+
+    public function toggleAttendance($id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        $booking->attended = !$booking->attended;
+
+        $booking->save();
+
+        return back();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | REMOVE BOOKING
+    |--------------------------------------------------------------------------
+    */
+
+    public function removeBooking($id)
+    {
+        Booking::findOrFail($id)->delete();
+
+        return back()->with('success','Booking removed');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QR SCANNER PAGE
+    |--------------------------------------------------------------------------
+    */
+
+    public function checkinPage()
+    {
+        return view('admin.checkin');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QR CHECK-IN PROCESS
+    |--------------------------------------------------------------------------
+    */
+
+    public function checkinMember($email)
+    {
+        $user = User::where('email',$email)->first();
+
+        if(!$user){
+            return response()->json([
+                'message' => 'Member not found'
+            ]);
+        }
+
+        $booking = Booking::where('user_id',$user->id)
+            ->whereHas('fitnessClass',function($q){
+                $q->whereDate('class_time',now()->toDateString());
+            })
+            ->first();
+
+        if(!$booking){
+            return response()->json([
+                'message' => 'No class booked today'
+            ]);
+        }
+
+        $booking->attended = true;
+
+        $booking->save();
+
+        return response()->json([
+            'message' => '✅ '.$user->name.' checked in!'
+        ]);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | EXPORT REVENUE CSV
     |--------------------------------------------------------------------------
     */
 
@@ -169,9 +240,9 @@ class AdminController extends Controller
 
         $response = new StreamedResponse(function () use ($users) {
 
-            $handle = fopen('php://output', 'w');
+            $handle = fopen('php://output','w');
 
-            fputcsv($handle, [
+            fputcsv($handle,[
                 'Name',
                 'Email',
                 'Membership Type',
@@ -179,9 +250,9 @@ class AdminController extends Controller
                 'Date'
             ]);
 
-            foreach ($users as $user) {
+            foreach($users as $user){
 
-                fputcsv($handle, [
+                fputcsv($handle,[
                     $user->name,
                     $user->email,
                     $user->membership_type,
@@ -195,7 +266,7 @@ class AdminController extends Controller
 
         });
 
-        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Type','text/csv');
         $response->headers->set(
             'Content-Disposition',
             'attachment; filename="vault_revenue_report.csv"'
@@ -203,4 +274,5 @@ class AdminController extends Controller
 
         return $response;
     }
+
 }
