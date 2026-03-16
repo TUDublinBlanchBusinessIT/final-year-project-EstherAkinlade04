@@ -109,11 +109,12 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'=>'required|string|max:255',
-            'description'=>'required|string',
-            'class_time'=>'required|date',
-            'capacity'=>'required|integer|min:1',
-            'price'=>'required|numeric|min:0'
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'class_time' => 'required|date',
+            'capacity' => 'required|integer|min:1',
+            'price' => 'required|numeric|min:0',
+            'admin_notes' => 'nullable|string'
         ]);
 
         FitnessClass::create($validated);
