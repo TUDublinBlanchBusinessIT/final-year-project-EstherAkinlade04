@@ -109,18 +109,47 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'class_time' => 'required|date',
-            'capacity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
-            'admin_notes' => 'nullable|string'
+            'name'=>'required|string|max:255',
+            'description'=>'required|string',
+            'class_time'=>'required|date',
+            'capacity'=>'required|integer|min:1',
+            'price'=>'required|numeric|min:0',
+            'admin_notes'=>'nullable|string'
         ]);
 
         FitnessClass::create($validated);
 
         return redirect()->route('admin.dashboard')
             ->with('success','Class created successfully');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | EDIT CLASS NOTES
+    |--------------------------------------------------------------------------
+    */
+
+    public function editClass($id)
+    {
+        $class = FitnessClass::findOrFail($id);
+
+        return view('admin.edit-class', compact('class'));
+    }
+
+    public function updateClass(Request $request, $id)
+    {
+        $class = FitnessClass::findOrFail($id);
+
+        $request->validate([
+            'admin_notes' => 'nullable|string'
+        ]);
+
+        $class->admin_notes = $request->admin_notes;
+        $class->save();
+
+        return redirect()->route('admin.dashboard')
+            ->with('success','Class notes updated');
     }
 
 
@@ -152,7 +181,6 @@ class AdminController extends Controller
         $booking = Booking::findOrFail($id);
 
         $booking->attended = !$booking->attended;
-
         $booking->save();
 
         return back();
@@ -182,44 +210,6 @@ class AdminController extends Controller
     public function checkinPage()
     {
         return view('admin.checkin');
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | QR CHECK-IN PROCESS
-    |--------------------------------------------------------------------------
-    */
-
-    public function checkinMember($email)
-    {
-        $user = User::where('email',$email)->first();
-
-        if(!$user){
-            return response()->json([
-                'message' => 'Member not found'
-            ]);
-        }
-
-        $booking = Booking::where('user_id',$user->id)
-            ->whereHas('fitnessClass',function($q){
-                $q->whereDate('class_time',now()->toDateString());
-            })
-            ->first();
-
-        if(!$booking){
-            return response()->json([
-                'message' => 'No class booked today'
-            ]);
-        }
-
-        $booking->attended = true;
-
-        $booking->save();
-
-        return response()->json([
-            'message' => '✅ '.$user->name.' checked in!'
-        ]);
     }
 
 

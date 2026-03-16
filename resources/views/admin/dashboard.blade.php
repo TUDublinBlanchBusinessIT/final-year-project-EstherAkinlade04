@@ -247,6 +247,12 @@ $fill = $class->fill_percentage ?? 0;
 {{ $class->class_time->format('d M Y H:i') }}
 </p>
 
+@if($class->admin_notes)
+<p class="text-xs text-purple-600 mt-1">
+📝 {{ $class->admin_notes }}
+</p>
+@endif
+
 </div>
 
 <div class="text-sm text-gray-500">
