@@ -91,6 +91,20 @@ placeholder="20">
 
 </div>
 
+<!-- NEW CLASS NOTES FIELD -->
+
+<div class="mb-6">
+<label class="block text-sm font-semibold mb-2">Admin Notes</label>
+
+<textarea
+name="admin_notes"
+class="w-full border p-3 rounded-lg"
+rows="3"
+placeholder="Optional notes for this class (equipment, reminders etc.)">
+</textarea>
+
+</div>
+
 <button
 class="w-full bg-purple-600 text-white py-3 rounded-xl hover:bg-purple-700 transition">
 Create Class
