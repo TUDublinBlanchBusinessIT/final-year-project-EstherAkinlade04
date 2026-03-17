@@ -81,22 +81,6 @@ background:#111;
 transform:scale(1.05);
 }
 
-/* NEW: PROGRESS BAR */
-.progress{
-height:8px;
-background:rgba(255,255,255,0.4);
-border-radius:999px;
-overflow:hidden;
-margin-top:10px;
-}
-
-.progress-bar{
-height:100%;
-background:#4c1d95;
-}
-
-/* FACE ID */
-
 .face-overlay{
 position:fixed;
 inset:0;
@@ -183,31 +167,31 @@ $memberId = str_pad($user->id,6,'0',STR_PAD_LEFT);
 
 $isExpired = true;
 $daysLeft = null;
-$progress = 100;
 
 if($user->end_date){
 $endDate = Carbon::parse($user->end_date);
 $isExpired = $endDate->isPast();
 $daysLeft = now()->diffInDays($endDate,false);
-
-$totalDays = 30; // adjust if needed
-$progress = max(0, min(100, ($daysLeft / $totalDays) * 100));
 }
 
 @endphp
 
-{{-- WARNINGS --}}
+{{-- WARNING --}}
 
 @if($daysLeft !== null && $daysLeft <= 3 && $daysLeft > 0)
+
 <div class="bg-yellow-100 text-yellow-800 p-4 rounded-xl mb-6 shadow">
 ⚠ Your membership expires in {{ $daysLeft }} day(s). Renew soon.
 </div>
+
 @endif
 
 @if($isExpired)
+
 <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow">
 Your membership has expired. Please renew to continue booking classes.
 </div>
+
 @endif
 
 <!-- MEMBERSHIP CARD -->
@@ -242,17 +226,6 @@ Active
 </span>
 @endif
 
-<!-- NEW: Progress Bar -->
-<div class="progress">
-<div class="progress-bar" style="width: {{ $progress }}%"></div>
-</div>
-
-@if(!$isExpired)
-<p class="text-xs mt-2">
-{{ $daysLeft }} days remaining
-</p>
-@endif
-
 </div>
 
 <div class="flex justify-between items-center mt-8">
@@ -269,12 +242,15 @@ Active
 </div>
 
 <div class="mt-6">
+
 <button class="btn-wallet w-full">
  Add to Apple Wallet
 </button>
+
 </div>
 
 </div>
+
 
 <!-- STATS -->
 
@@ -296,6 +272,7 @@ Active
 
 </div>
 
+
 @if($nextClass)
 
 <div class="lux-card p-6 mb-8">
@@ -315,6 +292,7 @@ Next Session
 </div>
 
 @endif
+
 
 <h2 class="text-2xl lilac-text mb-6">
 Your Bookings
@@ -348,7 +326,9 @@ $isPast = Carbon::parse($class->class_time)->isPast();
 
 <span class="text-xs px-3 py-1 rounded-full
 {{ $isPast ? 'bg-gray-200 text-gray-600' : 'bg-[#c4b5fd] text-black' }}">
+
 {{ $isPast ? 'Completed' : 'Upcoming' }}
+
 </span>
 
 @if(!$isPast && !$isExpired)

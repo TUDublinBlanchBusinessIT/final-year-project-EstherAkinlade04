@@ -118,6 +118,16 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | 🔍 GLOBAL SEARCH (NEW)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/search', [AdminController::class, 'search'])
+        ->name('admin.search');
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Revenue Export
     |--------------------------------------------------------------------------
     */
@@ -145,25 +155,27 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/classes/create', [AdminController::class, 'create'])
-        ->name('admin.classes.create');
+    Route::prefix('classes')->group(function () {
 
-    Route::post('/classes', [AdminController::class, 'store'])
-        ->name('admin.classes.store');
+        Route::get('/create', [AdminController::class, 'create'])
+            ->name('admin.classes.create');
 
-    Route::patch('/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
-        ->name('admin.classes.cancel');
+        Route::post('/', [AdminController::class, 'store'])
+            ->name('admin.classes.store');
 
-    // NEW ROUTES
+        Route::get('/{id}/edit', [AdminController::class, 'editClass'])
+            ->name('admin.classes.edit');
 
-    Route::get('/classes/{id}/edit', [AdminController::class, 'editClass'])
-        ->name('admin.classes.edit');
+        Route::patch('/{id}', [AdminController::class, 'updateClass'])
+            ->name('admin.classes.update');
 
-    Route::patch('/classes/{id}', [AdminController::class, 'updateClass'])
-        ->name('admin.classes.update');
+        Route::delete('/{id}', [AdminController::class, 'deleteClass'])
+            ->name('admin.classes.delete');
 
-    Route::delete('/classes/{id}', [AdminController::class, 'deleteClass'])
-        ->name('admin.classes.delete');
+        Route::patch('/{id}/cancel', [AdminController::class, 'cancelClass'])
+            ->name('admin.classes.cancel');
+
+    });
 
 
     /*

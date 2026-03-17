@@ -100,6 +100,36 @@ class AdminController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | 🔍 ADMIN SEARCH (NEW)
+    |--------------------------------------------------------------------------
+    */
+
+    public function search(Request $request)
+    {
+        $query = $request->q;
+
+        return response()->json([
+            'users' => User::where('name', 'like', "%$query%")
+                ->orWhere('email', 'like', "%$query%")
+                ->get(),
+
+            'classes' => FitnessClass::where('name', 'like', "%$query%")
+                ->get(),
+
+            'bookings' => Booking::with('user','fitnessClass')
+                ->whereHas('user', function ($q) use ($query) {
+                    $q->where('name', 'like', "%$query%");
+                })
+                ->orWhereHas('fitnessClass', function ($q) use ($query) {
+                    $q->where('name', 'like', "%$query%");
+                })
+                ->get()
+        ]);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | CREATE CLASS PAGE
     |--------------------------------------------------------------------------
     */
