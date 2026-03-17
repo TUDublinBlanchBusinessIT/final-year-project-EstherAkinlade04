@@ -82,6 +82,12 @@ height:100%;
 background:#8B5CF6;
 }
 
+.action-btn{
+font-size:12px;
+padding:4px 10px;
+border-radius:6px;
+}
+
 </style>
 
 </head>
@@ -270,6 +276,35 @@ $fill = $class->fill_percentage ?? 0;
 🔥 Filling fast
 </p>
 @endif
+
+
+<!-- ADMIN ACTION BUTTONS -->
+
+<div class="flex gap-2 mt-3">
+
+<a href="{{ route('admin.classes.edit',$class->id) }}"
+class="action-btn bg-blue-100 text-blue-600 hover:bg-blue-200">
+Edit
+</a>
+
+<form method="POST" action="{{ route('admin.classes.cancel',$class->id) }}">
+@csrf
+@method('PATCH')
+<button class="action-btn bg-yellow-100 text-yellow-700 hover:bg-yellow-200">
+Cancel
+</button>
+</form>
+
+<form method="POST" action="{{ route('admin.classes.delete',$class->id) }}">
+@csrf
+@method('DELETE')
+<button onclick="return confirm('Delete this class?')"
+class="action-btn bg-red-100 text-red-600 hover:bg-red-200">
+Delete
+</button>
+</form>
+
+</div>
 
 </div>
 

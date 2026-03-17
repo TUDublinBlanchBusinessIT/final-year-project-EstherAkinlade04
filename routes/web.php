@@ -154,6 +154,17 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
     Route::patch('/classes/{id}/cancel', [AdminController::class, 'cancelClass'])
         ->name('admin.classes.cancel');
 
+    // NEW ROUTES
+
+    Route::get('/classes/{id}/edit', [AdminController::class, 'editClass'])
+        ->name('admin.classes.edit');
+
+    Route::patch('/classes/{id}', [AdminController::class, 'updateClass'])
+        ->name('admin.classes.update');
+
+    Route::delete('/classes/{id}', [AdminController::class, 'deleteClass'])
+        ->name('admin.classes.delete');
+
 
     /*
     |--------------------------------------------------------------------------

@@ -38,35 +38,44 @@ class AdminController extends Controller
         $totalRevenue = $classRevenue + $membershipRevenue;
 
         $monthlyRevenue = User::select(
-            DB::raw('MONTH(created_at) as month_number'),
-            DB::raw('MONTHNAME(created_at) as month'),
-            DB::raw('SUM(price_paid) as total')
-        )
-        ->whereYear('created_at', now()->year)
-        ->groupBy('month_number','month')
-        ->orderBy('month_number')
-        ->get();
+                DB::raw('MONTH(created_at) as month_number'),
+                DB::raw('MONTHNAME(created_at) as month'),
+                DB::raw('SUM(price_paid) as total')
+            )
+            ->whereYear('created_at', now()->year)
+            ->groupBy('month_number','month')
+            ->orderBy('month_number')
+            ->get();
 
         $membershipBreakdown = User::select(
-            'membership_type',
-            DB::raw('COUNT(*) as total')
-        )->groupBy('membership_type')->get();
+                'membership_type',
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('membership_type')
+            ->get();
 
         $activeMembers = User::where('end_date','>=',now())->count();
-
         $expiredMembers = User::where('end_date','<',now())->count();
-
-        $expiringSoon = User::whereBetween('end_date',[now(), now()->addDays(7)])
-            ->count();
+        $expiringSoon = User::whereBetween('end_date',[now(), now()->addDays(7)])->count();
 
         $bookingChart = FitnessClass::withCount('bookings')->get();
-
         $bookingLabels = $bookingChart->pluck('name');
         $bookingCounts = $bookingChart->pluck('bookings_count');
 
         $mostPopularClass = FitnessClass::withCount('bookings')
             ->orderByDesc('bookings_count')
             ->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🔥 TOP MEMBERS LEADERBOARD
+        |--------------------------------------------------------------------------
+        */
+
+        $topMembers = User::withCount('bookings')
+            ->orderByDesc('bookings_count')
+            ->take(5)
+            ->get();
 
         return view('admin.dashboard', compact(
             'classes',
@@ -83,7 +92,8 @@ class AdminController extends Controller
             'expiringSoon',
             'bookingLabels',
             'bookingCounts',
-            'mostPopularClass'
+            'mostPopularClass',
+            'topMembers'
         ));
     }
 
@@ -109,12 +119,12 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'=>'required|string|max:255',
-            'description'=>'required|string',
-            'class_time'=>'required|date',
-            'capacity'=>'required|integer|min:1',
-            'price'=>'required|numeric|min:0',
-            'admin_notes'=>'nullable|string'
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'class_time' => 'required|date',
+            'capacity' => 'required|integer|min:1',
+            'price' => 'required|numeric|min:0',
+            'admin_notes' => 'nullable|string'
         ]);
 
         FitnessClass::create($validated);
@@ -133,7 +143,6 @@ class AdminController extends Controller
     public function editClass($id)
     {
         $class = FitnessClass::findOrFail($id);
-
         return view('admin.edit-class', compact('class'));
     }
 
@@ -145,11 +154,28 @@ class AdminController extends Controller
             'admin_notes' => 'nullable|string'
         ]);
 
-        $class->admin_notes = $request->admin_notes;
-        $class->save();
+        $class->update([
+            'admin_notes' => $request->admin_notes
+        ]);
 
         return redirect()->route('admin.dashboard')
             ->with('success','Class notes updated');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DELETE CLASS
+    |--------------------------------------------------------------------------
+    */
+
+    public function deleteClass($id)
+    {
+        $class = FitnessClass::findOrFail($id);
+        $class->delete();
+
+        return redirect()->route('admin.dashboard')
+            ->with('success','Class deleted successfully');
     }
 
 
@@ -163,8 +189,9 @@ class AdminController extends Controller
     {
         $class = FitnessClass::findOrFail($id);
 
-        $class->is_cancelled = true;
-        $class->save();
+        $class->update([
+            'is_cancelled' => true
+        ]);
 
         return back()->with('success','Class cancelled');
     }
@@ -180,8 +207,9 @@ class AdminController extends Controller
     {
         $booking = Booking::findOrFail($id);
 
-        $booking->attended = !$booking->attended;
-        $booking->save();
+        $booking->update([
+            'attended' => !$booking->attended
+        ]);
 
         return back();
     }
@@ -242,7 +270,6 @@ class AdminController extends Controller
             ]);
 
             foreach($users as $user){
-
                 fputcsv($handle,[
                     $user->name,
                     $user->email,
@@ -250,11 +277,9 @@ class AdminController extends Controller
                     $user->price_paid,
                     $user->created_at->format('Y-m-d')
                 ]);
-
             }
 
             fclose($handle);
-
         });
 
         $response->headers->set('Content-Type','text/csv');
