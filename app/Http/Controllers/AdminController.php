@@ -100,32 +100,50 @@ class AdminController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | 🔍 ADMIN SEARCH (NEW)
+    | 🔍 ADMIN SEARCH (IMPROVED)
     |--------------------------------------------------------------------------
     */
 
     public function search(Request $request)
-    {
-        $query = $request->q;
+{
+    $query = $request->q;
 
+    if (!$query) {
         return response()->json([
-            'users' => User::where('name', 'like', "%$query%")
-                ->orWhere('email', 'like', "%$query%")
-                ->get(),
-
-            'classes' => FitnessClass::where('name', 'like', "%$query%")
-                ->get(),
-
-            'bookings' => Booking::with('user','fitnessClass')
-                ->whereHas('user', function ($q) use ($query) {
-                    $q->where('name', 'like', "%$query%");
-                })
-                ->orWhereHas('fitnessClass', function ($q) use ($query) {
-                    $q->where('name', 'like', "%$query%");
-                })
-                ->get()
+            'users' => [],
+            'classes' => [],
+            'bookings' => []
         ]);
     }
+
+    return response()->json([
+
+        // 👤 USERS
+        'users' => User::where('name', 'like', "%$query%")
+            ->orWhere('email', 'like', "%$query%")
+            ->limit(5)
+            ->get(['id','name','email','membership_type','end_date']),
+
+        // 🏋️ CLASSES
+        'classes' => FitnessClass::where('name', 'like', "%$query%")
+            ->limit(5)
+            ->get(['id','name','class_time','capacity','is_cancelled']),
+
+        // 📅 BOOKINGS (🔥 FINAL FIX — NO RELATION ISSUES)
+        'bookings' => Booking::join('users', 'bookings.user_id', '=', 'users.id')
+            ->leftJoin('fitness_classes', 'bookings.fitness_class_id', '=', 'fitness_classes.id')
+            ->where(function ($q) use ($query) {
+                $q->where('users.name', 'like', "%$query%")
+                  ->orWhere('fitness_classes.name', 'like', "%$query%");
+            })
+            ->limit(5)
+            ->get([
+                'bookings.id',
+                'users.name as user_name',
+                'fitness_classes.name as class_name'
+            ])
+    ]);
+}
 
 
     /*

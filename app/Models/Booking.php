@@ -24,6 +24,6 @@ class Booking extends Model
 
     public function fitnessClass()
     {
-        return $this->belongsTo(FitnessClass::class);
+        return $this->belongsTo(FitnessClass::class, 'fitness_class_id');
     }
 }
