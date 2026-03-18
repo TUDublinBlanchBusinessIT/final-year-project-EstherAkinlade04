@@ -157,6 +157,85 @@ Logout
 <h1 class="text-4xl font-bold text-gray-800 mb-12">
 Welcome back, {{ auth()->user()->name }}
 </h1>
+<div class="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lux mb-10">
+
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">
+        🏆 Top Members
+    </h2>
+
+    @foreach($topMembers as $member)
+
+    <div class="flex justify-between items-center border-b py-2">
+
+        <span class="font-medium">
+            {{ $member->name }}
+        </span>
+
+        <span class="text-sm text-purple-600">
+            {{ $member->bookings_count }} bookings
+        </span>
+
+    </div>
+
+    @endforeach
+
+</div>
+
+<div class="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lux mb-10">
+
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">
+        ⏳ Expiring Soon (7 Days)
+    </h2>
+
+    @forelse($expiringSoonUsers as $user)
+
+    <div class="flex justify-between border-b py-2">
+
+        <span>{{ $user->name }}</span>
+
+        <span class="text-sm text-red-500">
+            {{ \Carbon\Carbon::parse($user->end_date)->format('d M Y') }}
+        </span>
+
+    </div>
+
+    @empty
+
+    <p class="text-sm text-gray-500">
+        No memberships expiring soon
+    </p>
+
+    @endforelse
+
+</div>
+
+<div class="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lux mb-10">
+
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">
+        ❌ Cancelled Classes
+    </h2>
+
+    @forelse($cancelledClasses as $class)
+
+    <div class="flex justify-between border-b py-2">
+
+        <span>{{ $class->name }}</span>
+
+        <span class="text-sm text-red-500">
+            {{ \Carbon\Carbon::parse($class->class_time)->format('d M H:i') }}
+        </span>
+
+    </div>
+
+    @empty
+
+    <p class="text-sm text-gray-500">
+        No cancelled classes
+    </p>
+
+    @endforelse
+
+</div>
 
 <!-- SEARCH -->
 <div class="mb-10 relative">

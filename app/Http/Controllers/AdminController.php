@@ -12,12 +12,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class AdminController extends Controller
 {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard
-    |--------------------------------------------------------------------------
-    */
-
     public function index()
     {
         $classes = FitnessClass::withCount('bookings')
@@ -34,7 +28,6 @@ class AdminController extends Controller
             ->sum('fitness_classes.price');
 
         $membershipRevenue = User::sum('price_paid');
-
         $totalRevenue = $classRevenue + $membershipRevenue;
 
         $monthlyRevenue = User::select(
@@ -56,7 +49,16 @@ class AdminController extends Controller
 
         $activeMembers = User::where('end_date','>=',now())->count();
         $expiredMembers = User::where('end_date','<',now())->count();
-        $expiringSoon = User::whereBetween('end_date',[now(), now()->addDays(7)])->count();
+
+        // ✅ Expiring users list
+        $expiringSoonUsers = User::whereBetween('end_date',[now(), now()->addDays(7)])
+            ->orderBy('end_date')
+            ->get(['name','end_date']);
+
+        // ✅ Cancelled classes (NEW)
+        $cancelledClasses = FitnessClass::where('is_cancelled', true)
+            ->orderBy('class_time')
+            ->get(['name','class_time']);
 
         $bookingChart = FitnessClass::withCount('bookings')->get();
         $bookingLabels = $bookingChart->pluck('name');
@@ -66,12 +68,7 @@ class AdminController extends Controller
             ->orderByDesc('bookings_count')
             ->first();
 
-        /*
-        |--------------------------------------------------------------------------
-        | 🔥 TOP MEMBERS LEADERBOARD
-        |--------------------------------------------------------------------------
-        */
-
+        // ✅ Top members
         $topMembers = User::withCount('bookings')
             ->orderByDesc('bookings_count')
             ->take(5)
@@ -89,7 +86,8 @@ class AdminController extends Controller
             'membershipBreakdown',
             'activeMembers',
             'expiredMembers',
-            'expiringSoon',
+            'expiringSoonUsers',
+            'cancelledClasses', // ✅ NEW
             'bookingLabels',
             'bookingCounts',
             'mostPopularClass',
@@ -98,71 +96,55 @@ class AdminController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | 🔍 ADMIN SEARCH (IMPROVED)
-    |--------------------------------------------------------------------------
-    */
-
     public function search(Request $request)
-{
-    $query = $request->q;
+    {
+        $query = $request->q;
 
-    if (!$query) {
+        if (!$query) {
+            return response()->json([
+                'users' => [],
+                'classes' => [],
+                'bookings' => []
+            ]);
+        }
+
         return response()->json([
-            'users' => [],
-            'classes' => [],
-            'bookings' => []
+
+            // 👤 USERS
+            'users' => User::where('name', 'like', "%$query%")
+                ->orWhere('email', 'like', "%$query%")
+                ->limit(5)
+                ->get(['id','name','email','membership_type','end_date']),
+
+            // 🏋️ CLASSES
+            'classes' => FitnessClass::where('name', 'like', "%$query%")
+                ->limit(5)
+                ->get(['id','name','class_time','capacity','is_cancelled']),
+
+            // 📅 BOOKINGS (safe + grouped)
+            'bookings' => Booking::with([
+                    'user:id,name',
+                    'fitnessClass:id,name,class_time'
+                ])
+                ->where(function ($q) use ($query) {
+                    $q->whereHas('user', function ($q) use ($query) {
+                        $q->where('name', 'like', "%$query%");
+                    })
+                    ->orWhereHas('fitnessClass', function ($q) use ($query) {
+                        $q->where('name', 'like', "%$query%");
+                    });
+                })
+                ->limit(5)
+                ->get()
         ]);
     }
 
-    return response()->json([
-
-        // 👤 USERS
-        'users' => User::where('name', 'like', "%$query%")
-            ->orWhere('email', 'like', "%$query%")
-            ->limit(5)
-            ->get(['id','name','email','membership_type','end_date']),
-
-        // 🏋️ CLASSES
-        'classes' => FitnessClass::where('name', 'like', "%$query%")
-            ->limit(5)
-            ->get(['id','name','class_time','capacity','is_cancelled']),
-
-        // 📅 BOOKINGS (🔥 FINAL FIX — NO RELATION ISSUES)
-        'bookings' => Booking::join('users', 'bookings.user_id', '=', 'users.id')
-            ->leftJoin('fitness_classes', 'bookings.fitness_class_id', '=', 'fitness_classes.id')
-            ->where(function ($q) use ($query) {
-                $q->where('users.name', 'like', "%$query%")
-                  ->orWhere('fitness_classes.name', 'like', "%$query%");
-            })
-            ->limit(5)
-            ->get([
-                'bookings.id',
-                'users.name as user_name',
-                'fitness_classes.name as class_name'
-            ])
-    ]);
-}
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CREATE CLASS PAGE
-    |--------------------------------------------------------------------------
-    */
 
     public function create()
     {
         return view('admin.create-class');
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | STORE CLASS
-    |--------------------------------------------------------------------------
-    */
 
     public function store(Request $request)
     {
@@ -182,17 +164,12 @@ class AdminController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | EDIT CLASS NOTES
-    |--------------------------------------------------------------------------
-    */
-
     public function editClass($id)
     {
         $class = FitnessClass::findOrFail($id);
         return view('admin.edit-class', compact('class'));
     }
+
 
     public function updateClass(Request $request, $id)
     {
@@ -211,12 +188,6 @@ class AdminController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | DELETE CLASS
-    |--------------------------------------------------------------------------
-    */
-
     public function deleteClass($id)
     {
         $class = FitnessClass::findOrFail($id);
@@ -226,12 +197,6 @@ class AdminController extends Controller
             ->with('success','Class deleted successfully');
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | CANCEL CLASS
-    |--------------------------------------------------------------------------
-    */
 
     public function cancelClass($id)
     {
@@ -245,12 +210,6 @@ class AdminController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | TOGGLE ATTENDANCE
-    |--------------------------------------------------------------------------
-    */
-
     public function toggleAttendance($id)
     {
         $booking = Booking::findOrFail($id);
@@ -263,12 +222,6 @@ class AdminController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | REMOVE BOOKING
-    |--------------------------------------------------------------------------
-    */
-
     public function removeBooking($id)
     {
         Booking::findOrFail($id)->delete();
@@ -277,23 +230,11 @@ class AdminController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | QR SCANNER PAGE
-    |--------------------------------------------------------------------------
-    */
-
     public function checkinPage()
     {
         return view('admin.checkin');
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | EXPORT REVENUE CSV
-    |--------------------------------------------------------------------------
-    */
 
     public function exportRevenue()
     {
