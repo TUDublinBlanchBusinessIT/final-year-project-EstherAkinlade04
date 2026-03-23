@@ -69,21 +69,24 @@ class AdminController extends Controller
         // 💰 Revenue per class
         $classRevenueData = FitnessClass::withCount('bookings')
             ->get()
-            ->map(function ($class) {
-                return [
-                    'name' => $class->name,
-                    'revenue' => $class->bookings_count * $class->price
-                ];
-            });
+            ->map(fn($class) => [
+                'name' => $class->name,
+                'revenue' => $class->bookings_count * $class->price
+            ]);
 
-      // 🔥 HEATMAP (Bookings per DATE)
-      $activityData = Booking::select(
-        DB::raw('DATE(created_at) as date'),
-        DB::raw('COUNT(*) as total')
-    )
-    ->groupBy('date')
-    ->orderBy('date')
-    ->get();
+        // 🔥 HEATMAP (FIXED)
+        $activityData = Booking::select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->map(fn($d) => [
+                'date' => $d->date,
+                'total' => (int)$d->total
+            ])
+            ->values();
 
         // 📊 Booking chart
         $bookingChart = FitnessClass::withCount('bookings')->get();
@@ -101,6 +104,71 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
+        // 🚨 LOW BOOKING ALERT
+        $lowBookingClasses = FitnessClass::withCount('bookings')
+            ->having('bookings_count','<',3)
+            ->get();
+
+        // 🔥 ALMOST FULL
+        $almostFullClasses = FitnessClass::withCount('bookings')
+            ->get()
+            ->filter(fn($c) =>
+                $c->capacity > 0 &&
+                ($c->bookings_count / $c->capacity) >= 0.8
+            );
+
+        // ⏰ PEAK TIME
+        $peakTime = Booking::select(
+                DB::raw('DAYNAME(created_at) as day'),
+                DB::raw('HOUR(created_at) as hour'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('day','hour')
+            ->orderByDesc('total')
+            ->first();
+
+        // 📊 CLASS PERFORMANCE
+        $classPerformance = FitnessClass::withCount('bookings')
+            ->get()
+            ->map(fn($c) => [
+                'name' => $c->name,
+                'score' => $c->capacity > 0
+                    ? round(($c->bookings_count / $c->capacity) * 100)
+                    : 0
+            ]);
+
+        // 📈 GROWTH RATE
+        $lastMonthRevenue = User::whereMonth('created_at', now()->subMonth()->month)
+            ->sum('price_paid');
+
+        $thisMonthRevenue = User::whereMonth('created_at', now()->month)
+            ->sum('price_paid');
+
+        $growthRate = $lastMonthRevenue > 0
+            ? round((($thisMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100)
+            : 100;
+
+        // 🧠 SMART INSIGHTS
+        $insights = [];
+
+        if($activeMembers < $expiredMembers){
+            $insights[] = "⚠️ Retention is dropping";
+        }
+
+        if($totalBookings < 20){
+            $insights[] = "📉 Low booking activity";
+        }
+
+        if($mostPopularClass){
+            $insights[] = "🔥 {$mostPopularClass->name} is trending";
+        }
+
+        if($growthRate > 0){
+            $insights[] = "📈 Revenue growing {$growthRate}%";
+        } else {
+            $insights[] = "📉 Revenue declined {$growthRate}%";
+        }
+
         return view('admin.dashboard', compact(
             'classes',
             'totalUsers',
@@ -116,14 +184,21 @@ class AdminController extends Controller
             'expiringSoonUsers',
             'cancelledClasses',
             'classRevenueData',
-            'activityData', // ✅ UPDATED
+            'activityData',
             'bookingLabels',
             'bookingCounts',
             'mostPopularClass',
-            'topMembers'
+            'topMembers',
+
+            // 🔥 NEW FEATURES
+            'lowBookingClasses',
+            'almostFullClasses',
+            'peakTime',
+            'classPerformance',
+            'growthRate',
+            'insights'
         ));
     }
-
 
     public function search(Request $request)
     {
@@ -211,8 +286,7 @@ class AdminController extends Controller
 
     public function deleteClass($id)
     {
-        $class = FitnessClass::findOrFail($id);
-        $class->delete();
+        FitnessClass::findOrFail($id)->delete();
 
         return redirect()->route('admin.dashboard')
             ->with('success','Class deleted successfully');
@@ -220,9 +294,7 @@ class AdminController extends Controller
 
     public function cancelClass($id)
     {
-        $class = FitnessClass::findOrFail($id);
-
-        $class->update([
+        FitnessClass::findOrFail($id)->update([
             'is_cancelled' => true
         ]);
 
@@ -287,7 +359,12 @@ class AdminController extends Controller
             fclose($handle);
         });
 
+        $response->headers->set('Content-Type','text/csv');
+        $response->headers->set(
+            'Content-Disposition',
+            'attachment; filename="vault_revenue_report.csv"'
+        );
+
         return $response;
     }
-
 }

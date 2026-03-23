@@ -157,6 +157,97 @@ Logout
 <h1 class="text-4xl font-bold text-gray-800 mb-12">
 Welcome back, {{ auth()->user()->name }}
 </h1>
+<!-- 🚀 NEW DASHBOARD UPGRADE -->
+
+<!-- 🧠 SMART INSIGHTS -->
+<div class="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lux mb-10">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">
+        🧠 Smart Insights
+    </h2>
+
+    @foreach($insights as $insight)
+        <div class="bg-purple-50 p-3 rounded-lg mb-2 text-sm">
+            {{ $insight }}
+        </div>
+    @endforeach
+</div>
+
+<!-- 📈 GROWTH + PEAK -->
+<div class="grid grid-cols-2 gap-6 mb-10">
+
+    <div class="bg-white p-6 rounded-2xl shadow-lux text-center">
+        <p class="text-sm text-gray-500">Revenue Growth</p>
+        <h3 class="text-3xl font-bold text-purple-600">
+            {{ $growthRate }}%
+        </h3>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-lux text-center">
+        <p class="text-sm text-gray-500">Peak Time</p>
+
+        @if($peakTime)
+            <h3 class="text-lg font-semibold">
+                {{ $peakTime->day }} {{ $peakTime->hour }}:00
+            </h3>
+        @else
+            <p class="text-gray-400 text-sm">No data</p>
+        @endif
+    </div>
+
+</div>
+
+<!-- 🏆 CLASS PERFORMANCE -->
+<div class="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lux mb-10">
+
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">
+        🏆 Class Performance
+    </h2>
+
+    @foreach($classPerformance as $class)
+
+    <div class="mb-4">
+
+        <div class="flex justify-between text-sm">
+            <span>{{ $class['name'] }}</span>
+            <span>{{ $class['score'] }}%</span>
+        </div>
+
+        <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+            <div class="bg-purple-500 h-2 rounded-full"
+                 style="width: {{ $class['score'] }}%">
+            </div>
+        </div>
+
+    </div>
+
+    @endforeach
+
+</div>
+
+<!-- 🚨 ALERTS -->
+<div class="grid grid-cols-2 gap-6 mb-10">
+
+    <div class="bg-red-50 p-6 rounded-2xl">
+        <h3 class="font-semibold mb-2 text-red-600">Low Demand</h3>
+
+        @forelse($lowBookingClasses as $class)
+            <p class="text-sm">{{ $class->name }}</p>
+        @empty
+            <p class="text-sm text-gray-400">All good</p>
+        @endforelse
+    </div>
+
+    <div class="bg-green-50 p-6 rounded-2xl">
+        <h3 class="font-semibold mb-2 text-green-600">Almost Full</h3>
+
+        @forelse($almostFullClasses as $class)
+            <p class="text-sm">{{ $class->name }}</p>
+        @empty
+            <p class="text-sm text-gray-400">No classes near full</p>
+        @endforelse
+    </div>
+
+</div>
 <div class="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lux mb-10">
 
     <h2 class="text-xl font-semibold mb-4 text-gray-700">
