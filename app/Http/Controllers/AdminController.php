@@ -14,15 +14,18 @@ class AdminController extends Controller
 
     public function index()
     {
+        // 📅 Classes
         $classes = FitnessClass::withCount('bookings')
             ->with(['bookings.user'])
             ->orderBy('class_time')
             ->paginate(5);
 
+        // 📊 Basic stats
         $totalUsers = User::count();
         $totalBookings = Booking::count();
         $totalClasses = FitnessClass::count();
 
+        // 💰 Revenue
         $classRevenue = Booking::where('payment_status','paid')
             ->join('fitness_classes','bookings.fitness_class_id','=','fitness_classes.id')
             ->sum('fitness_classes.price');
@@ -30,6 +33,7 @@ class AdminController extends Controller
         $membershipRevenue = User::sum('price_paid');
         $totalRevenue = $classRevenue + $membershipRevenue;
 
+        // 📈 Monthly revenue
         $monthlyRevenue = User::select(
                 DB::raw('MONTH(created_at) as month_number'),
                 DB::raw('MONTHNAME(created_at) as month'),
@@ -40,6 +44,7 @@ class AdminController extends Controller
             ->orderBy('month_number')
             ->get();
 
+        // 📊 Membership breakdown
         $membershipBreakdown = User::select(
                 'membership_type',
                 DB::raw('COUNT(*) as total')
@@ -47,28 +52,50 @@ class AdminController extends Controller
             ->groupBy('membership_type')
             ->get();
 
+        // 👥 Member status
         $activeMembers = User::where('end_date','>=',now())->count();
         $expiredMembers = User::where('end_date','<',now())->count();
 
-        // ✅ Expiring users list
+        // ⏳ Expiring soon
         $expiringSoonUsers = User::whereBetween('end_date',[now(), now()->addDays(7)])
             ->orderBy('end_date')
             ->get(['name','end_date']);
 
-        // ✅ Cancelled classes (NEW)
+        // ❌ Cancelled classes
         $cancelledClasses = FitnessClass::where('is_cancelled', true)
             ->orderBy('class_time')
             ->get(['name','class_time']);
 
+        // 💰 Revenue per class
+        $classRevenueData = FitnessClass::withCount('bookings')
+            ->get()
+            ->map(function ($class) {
+                return [
+                    'name' => $class->name,
+                    'revenue' => $class->bookings_count * $class->price
+                ];
+            });
+
+      // 🔥 HEATMAP (Bookings per DATE)
+      $activityData = Booking::select(
+        DB::raw('DATE(created_at) as date'),
+        DB::raw('COUNT(*) as total')
+    )
+    ->groupBy('date')
+    ->orderBy('date')
+    ->get();
+
+        // 📊 Booking chart
         $bookingChart = FitnessClass::withCount('bookings')->get();
         $bookingLabels = $bookingChart->pluck('name');
         $bookingCounts = $bookingChart->pluck('bookings_count');
 
+        // 🔥 Most popular class
         $mostPopularClass = FitnessClass::withCount('bookings')
             ->orderByDesc('bookings_count')
             ->first();
 
-        // ✅ Top members
+        // 🏆 Top members
         $topMembers = User::withCount('bookings')
             ->orderByDesc('bookings_count')
             ->take(5)
@@ -87,7 +114,9 @@ class AdminController extends Controller
             'activeMembers',
             'expiredMembers',
             'expiringSoonUsers',
-            'cancelledClasses', // ✅ NEW
+            'cancelledClasses',
+            'classRevenueData',
+            'activityData', // ✅ UPDATED
             'bookingLabels',
             'bookingCounts',
             'mostPopularClass',
@@ -110,18 +139,15 @@ class AdminController extends Controller
 
         return response()->json([
 
-            // 👤 USERS
             'users' => User::where('name', 'like', "%$query%")
                 ->orWhere('email', 'like', "%$query%")
                 ->limit(5)
                 ->get(['id','name','email','membership_type','end_date']),
 
-            // 🏋️ CLASSES
             'classes' => FitnessClass::where('name', 'like', "%$query%")
                 ->limit(5)
                 ->get(['id','name','class_time','capacity','is_cancelled']),
 
-            // 📅 BOOKINGS (safe + grouped)
             'bookings' => Booking::with([
                     'user:id,name',
                     'fitnessClass:id,name,class_time'
@@ -139,12 +165,10 @@ class AdminController extends Controller
         ]);
     }
 
-
     public function create()
     {
         return view('admin.create-class');
     }
-
 
     public function store(Request $request)
     {
@@ -163,13 +187,11 @@ class AdminController extends Controller
             ->with('success','Class created successfully');
     }
 
-
     public function editClass($id)
     {
         $class = FitnessClass::findOrFail($id);
         return view('admin.edit-class', compact('class'));
     }
-
 
     public function updateClass(Request $request, $id)
     {
@@ -187,7 +209,6 @@ class AdminController extends Controller
             ->with('success','Class notes updated');
     }
 
-
     public function deleteClass($id)
     {
         $class = FitnessClass::findOrFail($id);
@@ -196,7 +217,6 @@ class AdminController extends Controller
         return redirect()->route('admin.dashboard')
             ->with('success','Class deleted successfully');
     }
-
 
     public function cancelClass($id)
     {
@@ -209,7 +229,6 @@ class AdminController extends Controller
         return back()->with('success','Class cancelled');
     }
 
-
     public function toggleAttendance($id)
     {
         $booking = Booking::findOrFail($id);
@@ -221,7 +240,6 @@ class AdminController extends Controller
         return back();
     }
 
-
     public function removeBooking($id)
     {
         Booking::findOrFail($id)->delete();
@@ -229,12 +247,10 @@ class AdminController extends Controller
         return back()->with('success','Booking removed');
     }
 
-
     public function checkinPage()
     {
         return view('admin.checkin');
     }
-
 
     public function exportRevenue()
     {
@@ -270,12 +286,6 @@ class AdminController extends Controller
 
             fclose($handle);
         });
-
-        $response->headers->set('Content-Type','text/csv');
-        $response->headers->set(
-            'Content-Disposition',
-            'attachment; filename="vault_revenue_report.csv"'
-        );
 
         return $response;
     }

@@ -184,7 +184,7 @@ Welcome back, {{ auth()->user()->name }}
 <div class="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lux mb-10">
 
     <h2 class="text-xl font-semibold mb-4 text-gray-700">
-        ⏳ Expiring Soon (7 Days)
+        ⏳ Expiring Memberships (Next 7 Days)
     </h2>
 
     @forelse($expiringSoonUsers as $user)
@@ -193,7 +193,7 @@ Welcome back, {{ auth()->user()->name }}
 
         <span>{{ $user->name }}</span>
 
-        <span class="text-sm text-red-500">
+        <span class="text-sm text-orange-500">
             {{ \Carbon\Carbon::parse($user->end_date)->format('d M Y') }}
         </span>
 
@@ -267,12 +267,55 @@ Class Calendar
 <div id="calendar"></div>
 
 </div>
+<div class="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-lux mt-10">
+
+<h2 class="text-xl font-semibold mb-6 text-gray-700">
+🔥 Gym Activity (Bookings Per Day)
+</h2>
+
+<!-- LEGEND -->
+<div class="flex items-center gap-2 text-xs text-gray-600 mb-3">
+    <span>Less</span>
+    <div class="w-3 h-3 bg-[#F3F0FF] rounded"></div>
+    <div class="w-3 h-3 bg-[#C4B5FD] rounded"></div>
+    <div class="w-3 h-3 bg-[#A78BFA] rounded"></div>
+    <div class="w-3 h-3 bg-[#7C3AED] rounded"></div>
+    <div class="w-3 h-3 bg-[#4C1D95] rounded"></div>
+    <span>More</span>
+</div>
+
+<!-- MONTH LABELS (optional visual) -->
+<div class="flex text-xs text-gray-500 mb-2 ml-6">
+    <span class="mr-8">Jan</span>
+    <span class="mr-8">Feb</span>
+    <span class="mr-8">Mar</span>
+    <span class="mr-8">Apr</span>
+</div>
+
+<!-- HEATMAP + DAY LABELS -->
+<div class="flex gap-2">
+
+    <!-- DAY LABELS -->
+    <div class="flex flex-col justify-between text-xs text-gray-500 mr-2">
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+        <span>Sun</span>
+    </div>
+
+    <!-- GRID -->
+    <div id="heatmapGrid" class="flex gap-2"></div>
+
+</div>
+
+</div>
 
 </main>
 
 </div>
-
-<div id="overlay" class="overlay" onclick="closePanels()"></div>
 
 
 <!-- ANALYTICS -->
@@ -314,7 +357,11 @@ Class Calendar
 
 <h2 class="text-2xl font-bold mb-8">Revenue</h2>
 
+<!-- Monthly Revenue -->
 <canvas id="revenueChart"></canvas>
+
+<!-- Revenue per Class -->
+<canvas id="classRevenueChart" class="mt-10"></canvas>
 
 </div>
 
@@ -535,10 +582,9 @@ function loadRevenueChart(){
 
 if(revenueChartLoaded) return;
 
+// 📈 Monthly revenue
 new Chart(document.getElementById('revenueChart'),{
-
 type:'line',
-
 data:{
 labels:@json($monthlyRevenue->pluck('month')),
 datasets:[{
@@ -550,12 +596,27 @@ fill:true,
 tension:.4
 }]
 },
-
 options:{
 plugins:{legend:{display:false}},
 scales:{y:{beginAtZero:true}}
 }
+});
 
+// 💰 Revenue per class (NEW 🔥)
+new Chart(document.getElementById('classRevenueChart'),{
+type:'bar',
+data:{
+labels:@json($classRevenueData->pluck('name')),
+datasets:[{
+label:"Revenue per Class €",
+data:@json($classRevenueData->pluck('revenue')),
+backgroundColor:"#C4B5FD"
+}]
+},
+options:{
+plugins:{legend:{display:false}},
+scales:{y:{beginAtZero:true}}
+}
 });
 
 revenueChartLoaded = true;
@@ -586,8 +647,109 @@ start:"{{ $class->class_time }}"
 calendar.render();
 
 })
-
 </script>
 
+<!-- HEATMAP SCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+const container = document.getElementById('heatmapGrid');
+if(!container) return;
+
+// ✅ Get data safely
+let activityData = @json($activityData);
+
+// ✅ fallback data
+if(!activityData || !activityData.length){
+    activityData = [
+        {date:"2025-03-01", total:2},
+        {date:"2025-03-02", total:5},
+        {date:"2025-03-03", total:8}
+    ];
+}
+
+// ✅ FIXED mapping
+const dataMap = {};
+activityData.forEach(d => {
+
+    if(!d.date) return;
+
+    const cleanDate = d.date.includes('T')
+        ? d.date.split('T')[0]
+        : d.date;
+
+    dataMap[cleanDate] = d.total || 0;
+});
+
+console.log("Final dataMap:", dataMap);
+
+// date formatter
+function formatDate(date){
+    return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,'0')+"-"+String(date.getDate()).padStart(2,'0');
+}
+
+// range
+const dates = Object.keys(dataMap).sort();
+if(dates.length === 0) return;
+
+let start = new Date(dates[0]);
+let end = new Date(dates[dates.length-1]);
+
+start.setDate(start.getDate() - start.getDay());
+end.setDate(end.getDate() + (6 - end.getDay()));
+
+const max = Math.max(...Object.values(dataMap)) || 1;
+
+let current = new Date(start);
+
+// build heatmap
+while(current <= end){
+
+    const col = document.createElement('div');
+    col.style.display = "flex";
+    col.style.flexDirection = "column";
+    col.style.gap = "6px";
+
+    for(let i=0;i<7;i++){
+
+        const dateStr = formatDate(current);
+        const value = dataMap[dateStr] || 0;
+        const intensity = value/max;
+
+        
+        let color = "#F3F0FF"; // default (very light)
+
+        if (value >= 1) color = "#C4B5FD";
+        if (value >= 2) color = "#A78BFA";
+        if (value >= 4) color = "#7C3AED";
+        if (value >= 6) color = "#4C1D95";
+
+        const box = document.createElement('div');
+
+box.style.width = "14px";
+box.style.height = "14px";
+box.style.borderRadius = "3px";
+box.style.backgroundColor = color;
+
+// ✅ TEXT INSIDE BOX (optional but included)
+box.innerText = value > 0 ? value : "";
+box.style.fontSize = "8px";
+box.style.display = "flex";
+box.style.alignItems = "center";
+box.style.justifyContent = "center";
+box.style.color = value > 3 ? "#fff" : "#333";
+
+// ✅ TOOLTIP
+box.title = `${dateStr} → ${value} bookings`;
+
+        col.appendChild(box);
+        current.setDate(current.getDate()+1);
+    }
+
+    container.appendChild(col);
+}
+
+});
+</script>
 </body>
 </html>
