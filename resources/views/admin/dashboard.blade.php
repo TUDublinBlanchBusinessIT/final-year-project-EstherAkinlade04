@@ -486,6 +486,8 @@ Class Calendar
 <h3 class="text-3xl font-bold">€{{ number_format($totalRevenue,0) }}</h3>
 </div>
 
+<!-- ✅ ADD THIS HERE -->
+<canvas id="membershipChart" class="mt-10"></canvas>
 </div>
 
 </div>
@@ -757,6 +759,16 @@ backgroundColor:"#C4B5FD"
 options:{
 plugins:{legend:{display:false}},
 scales:{y:{beginAtZero:true}}
+}
+});
+new Chart(document.getElementById('membershipChart'),{
+type:'pie',
+data:{
+labels:@json($membershipBreakdown->pluck('membership_type')),
+datasets:[{
+data:@json($membershipBreakdown->pluck('total')),
+backgroundColor:["#C4B5FD","#A78BFA","#7C3AED","#5B21B6"]
+}]
 }
 });
 
