@@ -715,8 +715,6 @@ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"))
 /* REVENUE CHART */
 
 let revenueChartLoaded = false;
-
-let revenueChartLoaded = false;
 let analyticsChartLoaded = false;
 
 // 📈 REVENUE
@@ -724,18 +722,16 @@ function loadRevenueChart(){
 
 if(revenueChartLoaded) return;
 
-// Monthly
+// Monthly revenue
 new Chart(document.getElementById('revenueChart'),{
 type:'line',
 data:{
 labels:@json($monthlyRevenue->pluck('month')),
 datasets:[{
-label:"Revenue €",
 data:@json($monthlyRevenue->pluck('total')),
 borderColor:"#8B5CF6",
 backgroundColor:"rgba(139,92,246,0.15)",
-fill:true,
-tension:.4
+fill:true
 }]
 }
 });
@@ -755,14 +751,13 @@ backgroundColor:"#C4B5FD"
 revenueChartLoaded = true;
 }
 
-
-// 🧠 ANALYTICS (SEPARATE!!)
+// 🧠 ANALYTICS
 function loadAnalyticsChart(){
 
 if(analyticsChartLoaded) return;
 
 new Chart(document.getElementById('membershipChart'),{
-type:'doughnut', // 🔥 nicer
+type:'doughnut',
 data:{
 labels:@json($membershipBreakdown->pluck('membership_type')),
 datasets:[{
@@ -772,65 +767,12 @@ backgroundColor:["#6366F1","#8B5CF6","#A78BFA","#C4B5FD"]
 },
 options:{
 cutout:'70%',
-plugins:{
-legend:{position:'bottom'}
-}
+plugins:{legend:{position:'bottom'}}
 }
 });
 
 analyticsChartLoaded = true;
 }
-
-if(!document.getElementById('membershipChart')) return;
-
-new Chart(document.getElementById('membershipChart'),{
-type:'pie',
-data:{
-labels:@json($membershipBreakdown->pluck('membership_type')),
-datasets:[{
-data:@json($membershipBreakdown->pluck('total')),
-backgroundColor:["#C4B5FD","#A78BFA","#7C3AED","#5B21B6"]
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false
-}
-});
-
-}
-
-// 💰 Revenue per class (NEW 🔥)
-new Chart(document.getElementById('classRevenueChart'),{
-type:'bar',
-data:{
-labels:@json($classRevenueData->pluck('name')),
-datasets:[{
-label:"Revenue per Class €",
-data:@json($classRevenueData->pluck('revenue')),
-backgroundColor:"#C4B5FD"
-}]
-},
-options:{
-plugins:{legend:{display:false}},
-scales:{y:{beginAtZero:true}}
-}
-});
-new Chart(document.getElementById('membershipChart'),{
-type:'pie',
-data:{
-labels:@json($membershipBreakdown->pluck('membership_type')),
-datasets:[{
-data:@json($membershipBreakdown->pluck('total')),
-backgroundColor:["#C4B5FD","#A78BFA","#7C3AED","#5B21B6"]
-}]
-}
-});
-
-revenueChartLoaded = true;
-
-}
-
 
 /* CALENDAR */
 
