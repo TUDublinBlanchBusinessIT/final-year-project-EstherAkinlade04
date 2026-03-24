@@ -465,12 +465,13 @@ Class Calendar
 <h2 class="text-2xl font-bold mb-8">Analytics</h2>
 
 <div class="grid grid-cols-2 gap-6">
+<canvas id="membershipChart" class="mt-10"></canvas>
 
 <div class="bg-purple-50 p-6 rounded-xl text-center">
 <p class="text-sm text-gray-500">Users</p>
 <h3 class="text-3xl font-bold">{{ $totalUsers }}</h3>
 </div>
-<canvas id="membershipChart" class="mt-10"></canvas>
+
 <div class="bg-purple-50 p-6 rounded-xl text-center">
 <p class="text-sm text-gray-500">Bookings</p>
 <h3 class="text-3xl font-bold">{{ $totalBookings }}</h3>
@@ -486,8 +487,6 @@ Class Calendar
 <h3 class="text-3xl font-bold">€{{ number_format($totalRevenue,0) }}</h3>
 </div>
 
-<!-- ✅ ADD THIS HERE -->
-<canvas id="membershipChart" class="mt-10"></canvas>
 </div>
 
 </div>
@@ -695,14 +694,21 @@ document.getElementById('searchResults').innerHTML = html || "No results";
 
 function openPanel(id){
 
-document.getElementById("overlay").classList.add("show")
+const overlay = document.getElementById("overlay");
+if(overlay) overlay.classList.add("show");
 
-document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"))
+document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"));
 
-document.getElementById(id).classList.add("open")
+const panel = document.getElementById(id);
+if(panel) panel.classList.add("open");
 
+// 🔥 LOAD CORRECT CHARTS
 if(id === "revenue"){
-loadRevenueChart()
+    loadRevenueChart();
+}
+
+if(id === "analytics"){
+    loadAnalyticsChart();
 }
 
 }
@@ -724,26 +730,22 @@ function loadRevenueChart(){
 
 if(revenueChartLoaded) return;
 
-// 📈 Monthly revenue
-new Chart(document.getElementById('revenueChart'),{
-type:'line',
-data:{
-labels:@json($monthlyRevenue->pluck('month')),
-datasets:[{
-label:"Revenue €",
-data:@json($monthlyRevenue->pluck('total')),
-borderColor:"#8B5CF6",
-backgroundColor:"rgba(139,92,246,0.15)",
-fill:true,
-tension:.4
-}]
-},
-options:{
-plugins:{legend:{display:false}},
-scales:{y:{beginAtZero:true}}
-}
+function loadAnalyticsChart(){
 
+if(!document.getElementById('membershipChart')) return;
+
+new Chart(document.getElementById('membershipChart'),{
+type:'pie',
+data:{
+labels:@json($membershipBreakdown->pluck('membership_type')),
+datasets:[{
+data:@json($membershipBreakdown->pluck('total')),
+backgroundColor:["#C4B5FD","#A78BFA","#7C3AED","#5B21B6"]
+}]
+}
 });
+
+}
 
 // 💰 Revenue per class (NEW 🔥)
 new Chart(document.getElementById('classRevenueChart'),{
