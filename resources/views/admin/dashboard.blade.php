@@ -157,6 +157,32 @@ Logout
 <h1 class="text-4xl font-bold text-gray-800 mb-12">
 Welcome back, {{ auth()->user()->name }}
 </h1>
+<div class="flex gap-3 mb-6">
+
+<a href="{{ route('admin.classes.create') }}"
+class="bg-purple-600 text-white px-4 py-2 rounded-lg">
++ Add Class
+</a>
+
+<a href="{{ route('admin.checkin') }}"
+class="bg-green-500 text-white px-4 py-2 rounded-lg">
+Scan QR
+</a>
+
+</div>
+<div class="flex gap-3 mb-6">
+
+<a href="{{ route('admin.classes.create') }}"
+class="bg-purple-600 text-white px-4 py-2 rounded-lg">
++ Add Class
+</a>
+
+<a href="{{ route('admin.checkin') }}"
+class="bg-green-500 text-white px-4 py-2 rounded-lg">
+Scan QR
+</a>
+
+</div>
 <!-- 🚀 NEW DASHBOARD UPGRADE -->
 
 <!-- 🧠 SMART INSIGHTS -->
@@ -271,7 +297,30 @@ Welcome back, {{ auth()->user()->name }}
     @endforeach
 
 </div>
+<!-- 🔢 LIVE STATS -->
+<div class="grid grid-cols-4 gap-6 mb-10 text-center">
 
+<div class="bg-white p-6 rounded-xl shadow-lux">
+<p class="text-sm text-gray-500">Users</p>
+<h3 id="usersCount" class="text-3xl font-bold">0</h3>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow-lux">
+<p class="text-sm text-gray-500">Bookings</p>
+<h3 id="bookingsCount" class="text-3xl font-bold">0</h3>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow-lux">
+<p class="text-sm text-gray-500">Revenue</p>
+<h3 id="revenueCount" class="text-3xl font-bold">0</h3>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow-lux">
+<p class="text-sm text-gray-500">Active</p>
+<h3 id="activeCount" class="text-3xl font-bold">0</h3>
+</div>
+
+</div>
 <div class="bg-white/80 backdrop-blur-xl p-6 rounded-3xl shadow-lux mb-10">
 
     <h2 class="text-xl font-semibold mb-4 text-gray-700">
@@ -421,7 +470,7 @@ Class Calendar
 <p class="text-sm text-gray-500">Users</p>
 <h3 class="text-3xl font-bold">{{ $totalUsers }}</h3>
 </div>
-
+<canvas id="membershipChart" class="mt-10"></canvas>
 <div class="bg-purple-50 p-6 rounded-xl text-center">
 <p class="text-sm text-gray-500">Bookings</p>
 <h3 class="text-3xl font-bold">{{ $totalBookings }}</h3>
@@ -691,6 +740,7 @@ options:{
 plugins:{legend:{display:false}},
 scales:{y:{beginAtZero:true}}
 }
+
 });
 
 // 💰 Revenue per class (NEW 🔥)
@@ -841,6 +891,39 @@ box.title = `${dateStr} → ${value} bookings`;
 }
 
 });
+</script>
+<script>
+function animateValue(id, end, isCurrency = false) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    let start = 0;
+    const duration = 1000; // 1 second
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        const value = Math.floor(progress * end);
+
+        if (isCurrency) {
+            el.innerText = '€' + value.toLocaleString();
+        } else {
+            el.innerText = value.toLocaleString();
+        }
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+// Run animations
+animateValue("usersCount", {{ $totalUsers }});
+animateValue("bookingsCount", {{ $totalBookings }});
+animateValue("revenueCount", {{ $totalRevenue }}, true);
+animateValue("activeCount", {{ $activeMembers }});
 </script>
 </body>
 </html>
