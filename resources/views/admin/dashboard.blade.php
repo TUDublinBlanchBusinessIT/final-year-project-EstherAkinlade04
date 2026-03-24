@@ -947,5 +947,6 @@ animateValue("bookingsCount", {{ $totalBookings }});
 animateValue("revenueCount", {{ $totalRevenue }}, true);
 animateValue("activeCount", {{ $activeMembers }});
 </script>
+<div id="overlay" class="overlay" onclick="closePanels()"></div>
 </body>
 </html>
