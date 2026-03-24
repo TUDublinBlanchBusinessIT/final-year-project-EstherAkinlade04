@@ -450,32 +450,41 @@ Class Calendar
 
 <div id="analytics" class="panel">
 
-<h2 class="text-2xl font-bold mb-8">Analytics</h2>
+<h2 class="text-xl font-semibold mb-6 text-gray-800">
+Analytics Overview
+</h2>
 
-<div class="grid grid-cols-2 gap-6">
-<div class="flex justify-center mt-10">
-    <canvas id="membershipChart" style="max-width:250px; max-height:250px;"></canvas>
+<div class="grid grid-cols-2 gap-4 mb-6">
+
+<div class="bg-white p-4 rounded-xl shadow-sm border text-center">
+<p class="text-xs text-gray-500">Users</p>
+<h3 class="text-xl font-semibold">{{ $totalUsers }}</h3>
 </div>
 
-<div class="bg-purple-50 p-6 rounded-xl text-center">
-<p class="text-sm text-gray-500">Users</p>
-<h3 class="text-3xl font-bold">{{ $totalUsers }}</h3>
+<div class="bg-white p-4 rounded-xl shadow-sm border text-center">
+<p class="text-xs text-gray-500">Bookings</p>
+<h3 class="text-xl font-semibold">{{ $totalBookings }}</h3>
 </div>
 
-<div class="bg-purple-50 p-6 rounded-xl text-center">
-<p class="text-sm text-gray-500">Bookings</p>
-<h3 class="text-3xl font-bold">{{ $totalBookings }}</h3>
+<div class="bg-white p-4 rounded-xl shadow-sm border text-center">
+<p class="text-xs text-gray-500">Active</p>
+<h3 class="text-xl font-semibold">{{ $activeMembers }}</h3>
 </div>
 
-<div class="bg-purple-50 p-6 rounded-xl text-center">
-<p class="text-sm text-gray-500">Active Members</p>
-<h3 class="text-3xl font-bold">{{ $activeMembers }}</h3>
+<div class="bg-white p-4 rounded-xl shadow-sm border text-center">
+<p class="text-xs text-gray-500">Revenue</p>
+<h3 class="text-xl font-semibold">€{{ number_format($totalRevenue,0) }}</h3>
 </div>
 
-<div class="bg-purple-50 p-6 rounded-xl text-center">
-<p class="text-sm text-gray-500">Total Revenue</p>
-<h3 class="text-3xl font-bold">€{{ number_format($totalRevenue,0) }}</h3>
 </div>
+
+<div class="bg-white p-6 rounded-xl shadow-sm border text-center">
+
+<p class="text-sm text-gray-500 mb-4">
+Membership Distribution
+</p>
+
+<canvas id="membershipChart" style="max-width:220px;margin:auto;"></canvas>
 
 </div>
 
