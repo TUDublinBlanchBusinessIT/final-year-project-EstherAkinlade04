@@ -692,6 +692,10 @@ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"));
 const panel = document.getElementById(id);
 if(panel) panel.classList.add("open");
 
+if(id === "revenue") loadRevenueChart();
+if(id === "analytics") loadAnalyticsChart();
+}
+
 // 🔥 LOAD CORRECT CHARTS
 if(id === "revenue"){
     loadRevenueChart();
