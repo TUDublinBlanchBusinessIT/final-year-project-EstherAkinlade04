@@ -171,17 +171,6 @@ Scan QR
 
 </div>
 
-<a href="{{ route('admin.classes.create') }}"
-class="bg-purple-600 text-white px-4 py-2 rounded-lg">
-+ Add Class
-</a>
-
-<a href="{{ route('admin.checkin') }}"
-class="bg-green-500 text-white px-4 py-2 rounded-lg">
-Scan QR
-</a>
-
-</div>
 <!-- 🚀 NEW DASHBOARD UPGRADE -->
 
 <!-- 🧠 SMART INSIGHTS -->
@@ -464,7 +453,9 @@ Class Calendar
 <h2 class="text-2xl font-bold mb-8">Analytics</h2>
 
 <div class="grid grid-cols-2 gap-6">
-<canvas id="membershipChart" class="mt-10"></canvas>
+<div class="flex justify-center mt-10">
+    <canvas id="membershipChart" style="max-width:250px; max-height:250px;"></canvas>
+</div>
 
 <div class="bg-purple-50 p-6 rounded-xl text-center">
 <p class="text-sm text-gray-500">Users</p>
@@ -741,6 +732,10 @@ datasets:[{
 data:@json($membershipBreakdown->pluck('total')),
 backgroundColor:["#C4B5FD","#A78BFA","#7C3AED","#5B21B6"]
 }]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false
 }
 });
 
