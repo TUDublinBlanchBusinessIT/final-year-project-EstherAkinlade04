@@ -21,17 +21,10 @@ body {
     top:0;
     width:100%;
     display:flex;
-    justify-content:center; /* CENTER EVERYTHING */
+    justify-content:center;
     align-items:center;
     padding:25px 60px;
     z-index:100;
-}
-
-/* NAV CENTER */
-.nav {
-    display:flex;
-    align-items:center;
-    gap:60px; /* 🔥 spread out */
 }
 
 /* LOGO */
@@ -47,7 +40,13 @@ body {
     color:white;
 }
 
-/* LINKS */
+/* NAV */
+.nav {
+    display:flex;
+    gap:60px;
+    align-items:center;
+}
+
 .nav a {
     color:white;
     text-decoration:none;
@@ -113,6 +112,17 @@ body {
     overflow:hidden;
 }
 
+/* OVERLAY */
+.hero-right::after {
+    content:'';
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+    background:linear-gradient(90deg, rgba(0,0,0,0.6), transparent);
+}
+
 /* SLIDER */
 .slider {
     display:flex;
@@ -127,36 +137,37 @@ body {
     background-position:center;
 }
 
-/* OVERLAY */
-.hero-right::after {
-    content:'';
-    position:absolute;
-    width:100%;
-    height:100%;
-    top:0;
-    left:0;
-    background:linear-gradient(90deg, rgba(0,0,0,0.6), transparent);
-}
-
 /* STEPS */
 .steps {
     position:absolute;
     bottom:40px;
     left:50px;
     display:flex;
-    gap:40px;
-    color:white;
-    font-weight:600;
+    gap:50px;
 }
 
 .step {
-    opacity:0.5;
+    color:white;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:2px;
     cursor:pointer;
+    opacity:0.6;
+    transition:0.3s;
 }
 
 .step.active {
     opacity:1;
-    border-bottom:3px solid var(--main);
+    text-shadow: 0 0 10px var(--main);
+}
+
+.step.active::after {
+    content:'';
+    display:block;
+    margin-top:8px;
+    width:100%;
+    height:3px;
+    background:var(--main);
 }
 
 /* PROGRESS */
@@ -168,6 +179,80 @@ body {
     background:var(--main);
     width:0%;
 }
+
+/* ===================== */
+/* VAULT+ SECTION */
+/* ===================== */
+
+.vaultplus {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:120px 60px;
+    background:#f5f1fb;
+}
+
+.vaultplus-left {
+    max-width:500px;
+}
+
+.vaultplus-left h2 {
+    font-size:34px;
+    color:var(--dark);
+    margin-bottom:15px;
+}
+
+.vaultplus-left p {
+    color:#666;
+    margin-bottom:20px;
+}
+
+.vaultplus-left a {
+    display:inline-block;
+    padding:12px 30px;
+    border-radius:30px;
+    background:var(--main);
+    color:white;
+    text-decoration:none;
+    font-weight:600;
+}
+
+/* RIGHT CIRCLE */
+.circle {
+    width:260px;
+    height:260px;
+    border-radius:50%;
+    overflow:hidden;
+    position:relative;
+}
+
+.circle img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+/* PLAY BUTTON */
+.play {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    border:2px solid white;
+}
+
+.play::after {
+    content:'';
+    position:absolute;
+    left:28px;
+    top:20px;
+    border-left:18px solid white;
+    border-top:12px solid transparent;
+    border-bottom:12px solid transparent;
+}
 </style>
 </head>
 
@@ -176,52 +261,72 @@ body {
 <header class="header">
 
     <div class="logo">
-        <a href="#">The Vault</a>
+        <a href="{{ route('home') }}">The Vault</a>
     </div>
 
     <nav class="nav">
-        <a href="#" class="btn join">Join</a>
-        <a href="#" class="btn login">Login</a>
-        <a href="#">Gyms</a>
-        <a href="#">Classes</a>
-        <a href="#">Help</a>
+        <a href="{{ route('register') }}" class="btn join">Join</a>
+        <a href="{{ route('login') }}" class="btn login">Login</a>
+
+        <a href="{{ auth()->check() ? route('classes.index') : route('login') }}">
+            Classes
+        </a>
     </nav>
 
 </header>
 
+<!-- HERO -->
 <section class="hero">
 
 <div class="hero-left">
     <h1 id="heroTitle">JOIN TODAY</h1>
     <p id="heroText">Start your fitness journey now.</p>
-    <a href="#">Join Now</a>
+    <a href="{{ route('register') }}">Join Now</a>
 </div>
 
 <div class="hero-right" id="heroArea">
 
     <div class="slider" id="slider">
-
-        <!-- 🔥 ONLY 4 BIG CLEAN SLIDES -->
         <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1554284126-aa88f22d8b74')"></div>
-
         <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b')"></div>
-
         <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd')"></div>
-
         <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1540497077202-7c8a3999166f')"></div>
-
     </div>
 
     <div class="steps">
-        <div class="step active" onclick="goToSlide(0)">01 JOIN</div>
-        <div class="step" onclick="goToSlide(1)">02 CLASSES</div>
-        <div class="step" onclick="goToSlide(2)">03 STUDENTS</div>
-        <div class="step" onclick="goToSlide(3)">04 RESULTS</div>
+        <div class="step active" onclick="goToSlide(0)">JOIN</div>
+        <div class="step" onclick="goToSlide(1)">CLASSES</div>
+        <div class="step" onclick="goToSlide(2)">STUDENTS</div>
+        <div class="step" onclick="goToSlide(3)">RESULTS</div>
     </div>
 
     <div class="progress" id="progress"></div>
 
 </div>
+
+</section>
+
+<!-- VAULT+ SECTION -->
+<section class="vaultplus">
+
+    <div class="vaultplus-left">
+        <h2>THE VAULT+</h2>
+        <p>
+            150+ Vault classes available anytime.  
+            Suitable for all levels.
+        </p>
+
+        <a href="{{ auth()->check() ? route('classes.index') : route('login') }}">
+            GO TO VAULT+
+        </a>
+    </div>
+
+    <div class="vaultplus-right">
+        <div class="circle">
+            <img src="https://images.unsplash.com/photo-1599058917212-d750089bc07e">
+            <div class="play"></div>
+        </div>
+    </div>
 
 </section>
 
