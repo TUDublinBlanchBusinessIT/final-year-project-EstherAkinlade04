@@ -19,7 +19,6 @@ body {
     margin: 0;
     font-family: "Segoe UI", Helvetica, Arial, sans-serif;
     background-color: var(--lilac-light);
-    color: var(--text-dark);
 }
 
 /* HEADER */
@@ -52,12 +51,6 @@ header {
     text-decoration: none;
     color: white;
     border: 2px solid rgba(255,255,255,0.4);
-    transition: all 0.25s ease;
-}
-
-.top-nav a:hover {
-    background-color: rgba(255,255,255,0.25);
-    transform: translateY(-2px);
 }
 
 .top-nav a.join {
@@ -78,18 +71,6 @@ header {
 .hamburger span {
     height: 3px;
     background: white;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-.hamburger.active span:nth-child(1) {
-    transform: translateY(9px) rotate(45deg);
-}
-.hamburger.active span:nth-child(2) {
-    opacity: 0;
-}
-.hamburger.active span:nth-child(3) {
-    transform: translateY(-9px) rotate(-45deg);
 }
 
 .menu {
@@ -99,159 +80,214 @@ header {
     right: 40px;
     background: white;
     border-radius: 14px;
-    box-shadow: 0 18px 40px rgba(0,0,0,0.18);
-    overflow: hidden;
 }
 
 .menu a {
     display: block;
     padding: 16px 40px;
-    text-align: center;
     text-decoration: none;
-    color: var(--text-dark);
-    font-weight: 600;
+    color: black;
 }
 
-.menu a:hover {
-    background-color: var(--lilac-light);
-}
-
-/* HERO */
-.hero {
+/* HERO SLIDER */
+.hero-slider {
     position: relative;
-    padding: 160px 20px 130px;
-    text-align: center;
+    height: 90vh;
+    overflow: hidden;
 }
 
-.hero h1 {
-    font-size: 56px;
+.slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.slide.active {
+    opacity: 1;
+}
+
+.overlay {
+    background: rgba(0,0,0,0.6);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color:white;
+    text-align:center;
+}
+
+.overlay h1 {
+    font-size: 60px;
+}
+
+.overlay a {
+    margin-top:20px;
+    padding:14px 40px;
+    background: var(--lilac-main);
+    color:white;
+    border-radius:30px;
+    text-decoration:none;
+}
+
+/* STATS */
+.stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 80px 20px;
+    background: white;
+}
+
+.stat h2 {
+    font-size: 40px;
     color: var(--lilac-dark);
-}
-
-.hero p {
-    max-width: 720px;
-    margin: 20px auto 40px;
-    font-size: 18px;
-    color: var(--text-muted);
-}
-
-.hero a {
-    padding: 16px 52px;
-    border-radius: 40px;
-    font-weight: 800;
-    text-decoration: none;
-    color: white;
-    background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
-    box-shadow: 0 18px 45px rgba(124,92,196,0.65);
-    transition: all 0.3s ease;
-}
-
-.hero a:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 30px 70px rgba(124,92,196,0.9);
 }
 
 /* CLASSES */
 .classes {
-    padding: 120px 20px;
+    padding: 100px 20px;
     text-align: center;
-}
-
-.class-slider {
-    max-width: 820px;
-    margin: 50px auto 0;
 }
 
 .class-card {
-    display: none;
-    padding: 58px;
-    border-radius: 28px;
+    max-width: 400px;
+    margin: 20px auto;
+    border-radius: 20px;
+    overflow: hidden;
     background: white;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    transition: transform 0.3s;
 }
 
-.class-card.active {
-    display: block;
+.class-card:hover {
+    transform: scale(1.05);
 }
 
-.class-actions a {
-    display: inline-block;
-    margin: 0 10px;
-    padding: 12px 30px;
-    border-radius: 30px;
-    font-weight: 700;
-    text-decoration: none;
-    color: white;
-    background: linear-gradient(135deg, var(--lilac-main), var(--lilac-dark));
+.class-card img {
+    width:100%;
+    height:200px;
+    object-fit:cover;
+}
+
+.class-content {
+    padding:20px;
+}
+
+/* SCROLL ANIMATION */
+.hidden {
+    opacity:0;
+    transform:translateY(40px);
+    transition: all 0.6s;
+}
+
+.show {
+    opacity:1;
+    transform:translateY(0);
 }
 
 footer {
-    background: #111;
-    color: #ccc;
-    text-align: center;
-    padding: 26px;
+    background:#111;
+    color:#ccc;
+    text-align:center;
+    padding:20px;
 }
 </style>
 </head>
+
 <body>
 
 <header>
     <div class="logo">
-        <a href="{{ route('home') }}">The Vault</a>
+        <a href="#">The Vault</a>
     </div>
 
     <nav class="top-nav">
-        <a href="{{ route('home') }}">Home</a>
-        <a href="{{ route('login') }}">Login</a>
-        <a href="{{ route('register') }}" class="join">Join</a>
+        <a href="#">Home</a>
+        <a href="#">Login</a>
+        <a href="#" class="join">Join</a>
     </nav>
 
-    <div class="hamburger" onclick="toggleMenu(this)">
+    <div class="hamburger" onclick="toggleMenu()">
         <span></span><span></span><span></span>
     </div>
 
     <div class="menu" id="menu">
-        <a href="{{ route('home') }}">Home</a>
-        <a href="{{ route('login') }}">Login</a>
-        <a href="{{ route('register') }}">Join</a>
+        <a href="#">Home</a>
+        <a href="#">Login</a>
+        <a href="#">Join</a>
     </div>
 </header>
 
-<section class="hero">
-    <h1>Train Smarter. Feel Stronger.</h1>
-    <p>A modern fitness platform built around memberships, classes, and real results.</p>
-    <a href="{{ route('register') }}">Join The Vault</a>
+<!-- HERO -->
+<section class="hero-slider">
+    <div class="slide active" style="background-image:url('https://images.unsplash.com/photo-1554284126-aa88f22d8b74')">
+        <div class="overlay">
+            <h1>Train Hard</h1>
+            <a href="#">Join Now</a>
+        </div>
+    </div>
+
+    <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b')">
+        <div class="overlay">
+            <h1>Build Strength</h1>
+            <a href="#">Start Today</a>
+        </div>
+    </div>
+
+    <div class="slide" style="background-image:url('https://images.unsplash.com/photo-1599058917212-d750089bc07e')">
+        <div class="overlay">
+            <h1>Join The Vault</h1>
+            <a href="#">Sign Up</a>
+        </div>
+    </div>
 </section>
 
+<!-- STATS -->
+<section class="stats">
+    <div class="stat">
+        <h2>500+</h2>
+        <p>Members</p>
+    </div>
+    <div class="stat">
+        <h2>40+</h2>
+        <p>Classes</p>
+    </div>
+    <div class="stat">
+        <h2>10</h2>
+        <p>Trainers</p>
+    </div>
+</section>
+
+<!-- CLASSES -->
 <section class="classes">
     <h2>Our Classes</h2>
 
-    <div class="class-slider" id="classSlider">
-
-        <div class="class-card active">
+    <div class="class-card">
+        <img src="https://images.unsplash.com/photo-1518611012118-fc6d3d3b5d4c">
+        <div class="class-content">
             <h3>Pilates</h3>
-            <p>Full body conditioning focusing on posture and core strength.</p>
-            <div class="class-actions">
-                <a href="{{ route('classes.index') }}">Book Now</a>
-            </div>
+            <p>Core strength & flexibility</p>
         </div>
+    </div>
 
-        <div class="class-card">
-            <h3>HIIT Training</h3>
-            <p>High-intensity workouts to burn fat and boost endurance.</p>
-            <div class="class-actions">
-                <a href="{{ route('classes.index') }}">Book Now</a>
-            </div>
+    <div class="class-card">
+        <img src="https://images.unsplash.com/photo-1549060279-7e168fcee0c2">
+        <div class="class-content">
+            <h3>HIIT</h3>
+            <p>High intensity fat burning</p>
         </div>
+    </div>
 
-        <div class="class-card">
+    <div class="class-card">
+        <img src="https://images.unsplash.com/photo-1552196563-55cd4e45efb3">
+        <div class="class-content">
             <h3>Yoga</h3>
-            <p>Improve balance, flexibility and mental focus.</p>
-            <div class="class-actions">
-                <a href="{{ route('classes.index') }}">Book Now</a>
-            </div>
+            <p>Balance & mindfulness</p>
         </div>
-
     </div>
 </section>
 
@@ -260,20 +296,35 @@ footer {
 </footer>
 
 <script>
-function toggleMenu(btn) {
-    btn.classList.toggle('active');
+// MENU
+function toggleMenu() {
     const menu = document.getElementById('menu');
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 }
 
-const cards = document.querySelectorAll('.class-card');
-let current = 0;
+// HERO SLIDER
+const slides = document.querySelectorAll('.slide');
+let index = 0;
 
-setInterval(() => {
-    cards[current].classList.remove('active');
-    current = (current + 1) % cards.length;
-    cards[current].classList.add('active');
-}, 3000);
+setInterval(()=>{
+    slides[index].classList.remove('active');
+    index = (index+1) % slides.length;
+    slides[index].classList.add('active');
+},4000);
+
+// SCROLL ANIMATION
+const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+        if(entry.isIntersecting){
+            entry.target.classList.add('show');
+        }
+    });
+});
+
+document.querySelectorAll('section').forEach(sec=>{
+    sec.classList.add('hidden');
+    observer.observe(sec);
+});
 </script>
 
 </body>

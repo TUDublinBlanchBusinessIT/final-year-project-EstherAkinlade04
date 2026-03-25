@@ -701,28 +701,20 @@ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"));
 const panel = document.getElementById(id);
 if(panel) panel.classList.add("open");
 
+// ✅ Load charts correctly
 if(id === "revenue") loadRevenueChart();
 if(id === "analytics") loadAnalyticsChart();
 }
-
-// 🔥 LOAD CORRECT CHARTS
-if(id === "revenue"){
-    loadRevenueChart();
-}
-
-if(id === "analytics"){
-    loadAnalyticsChart();
-}
-
-}
-
 function closePanels(){
+    const overlay = document.getElementById("overlay");
+    if(overlay) overlay.classList.remove("show");
 
-document.getElementById("overlay").classList.remove("show")
-
-document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"))
-
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"));
 }
+
+
+
+
 
 
 /* REVENUE CHART */
@@ -730,12 +722,12 @@ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("open"))
 let revenueChartLoaded = false;
 let analyticsChartLoaded = false;
 
-// 📈 REVENUE
+// ✅ REVENUE
 function loadRevenueChart(){
 
 if(revenueChartLoaded) return;
 
-// Monthly revenue
+// Monthly
 new Chart(document.getElementById('revenueChart'),{
 type:'line',
 data:{
@@ -746,6 +738,15 @@ borderColor:"#8B5CF6",
 backgroundColor:"rgba(139,92,246,0.15)",
 fill:true
 }]
+},
+options:{
+plugins:{
+tooltip:{
+callbacks:{
+label:(ctx)=> ctx.raw || 0
+}
+}
+}
 }
 });
 
@@ -758,18 +759,31 @@ datasets:[{
 data:@json($classRevenueData->pluck('revenue')),
 backgroundColor:"#C4B5FD"
 }]
+},
+options:{
+plugins:{
+tooltip:{
+callbacks:{
+label:(ctx)=> ctx.raw || 0
+}
+}
+}
 }
 });
 
 revenueChartLoaded = true;
 }
 
-// 🧠 ANALYTICS
+
+// ✅ ANALYTICS
 function loadAnalyticsChart(){
 
 if(analyticsChartLoaded) return;
 
-new Chart(document.getElementById('membershipChart'),{
+const el = document.getElementById('membershipChart');
+if(!el) return;
+
+new Chart(el,{
 type:'doughnut',
 data:{
 labels:@json($membershipBreakdown->pluck('membership_type')),
@@ -780,7 +794,14 @@ backgroundColor:["#6366F1","#8B5CF6","#A78BFA","#C4B5FD"]
 },
 options:{
 cutout:'70%',
-plugins:{legend:{position:'bottom'}}
+plugins:{
+legend:{position:'bottom'},
+tooltip:{
+callbacks:{
+label:(ctx)=> ctx.raw || 0
+}
+}
+}
 }
 });
 
