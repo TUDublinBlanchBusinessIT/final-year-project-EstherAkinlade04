@@ -74,7 +74,7 @@ class AdminController extends Controller
                 'revenue' => $class->bookings_count * $class->price
             ]);
 
-        // 🔥 HEATMAP (FIXED)
+        // 🔥 HEATMAP
         $activityData = Booking::select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as total')
@@ -169,6 +169,12 @@ class AdminController extends Controller
             $insights[] = "📉 Revenue declined {$growthRate}%";
         }
 
+        // ✅ USERS (ADDED ONLY)
+        $users = User::withCount('bookings')
+            ->latest()
+            ->take(20)
+            ->get();
+
         return view('admin.dashboard', compact(
             'classes',
             'totalUsers',
@@ -190,13 +196,15 @@ class AdminController extends Controller
             'mostPopularClass',
             'topMembers',
 
-            // 🔥 NEW FEATURES
             'lowBookingClasses',
             'almostFullClasses',
             'peakTime',
             'classPerformance',
             'growthRate',
-            'insights'
+            'insights',
+
+            // ✅ ADDED
+            'users'
         ));
     }
 
@@ -213,7 +221,6 @@ class AdminController extends Controller
         }
 
         return response()->json([
-
             'users' => User::where('name', 'like', "%$query%")
                 ->orWhere('email', 'like', "%$query%")
                 ->limit(5)
@@ -228,12 +235,8 @@ class AdminController extends Controller
                     'fitnessClass:id,name,class_time'
                 ])
                 ->where(function ($q) use ($query) {
-                    $q->whereHas('user', function ($q) use ($query) {
-                        $q->where('name', 'like', "%$query%");
-                    })
-                    ->orWhereHas('fitnessClass', function ($q) use ($query) {
-                        $q->where('name', 'like', "%$query%");
-                    });
+                    $q->whereHas('user', fn($q) => $q->where('name','like',"%$query%"))
+                      ->orWhereHas('fitnessClass', fn($q) => $q->where('name','like',"%$query%"));
                 })
                 ->limit(5)
                 ->get()

@@ -118,7 +118,7 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | 🔍 GLOBAL SEARCH (NEW)
+    | 🔍 GLOBAL SEARCH
     |--------------------------------------------------------------------------
     */
 
@@ -207,5 +207,17 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
             'update' => 'admin.membership-plans.update',
             'show' => 'admin.membership-plans.show'
         ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ✅ USERS (NEW)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::delete('/users/{id}/delete', function ($id) {
+        \App\Models\User::findOrFail($id)->delete();
+        return back();
+    });
 
 });
