@@ -4,11 +4,6 @@
 
 <title>Vault Admin</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- USERS PANEL -->
-
-<div id="users" class="panel">
-
 <h2 class="text-2xl font-bold mb-6">Users</h2>
 
 @foreach($users as $user)
@@ -37,7 +32,15 @@
 
 <!-- ACTION -->
 <div class="mt-2">
-<form method="POST" action="/admin/users/{{ $user->id }}/delete">
+<form method="POST" action="{{ route('admin.users.delete', $user->id) }}">
+    @csrf
+    @method('DELETE')
+
+    <button onclick="return confirm('Delete this user?')"
+        class="action-btn bg-red-100 text-red-600 hover:bg-red-200">
+        Delete User
+    </button>
+</form>
 @csrf
 @method('DELETE')
 
@@ -489,7 +492,10 @@ Class Calendar
 </div>
 
 </main>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- USERS PANEL -->
 
+<div id="users" class="panel">
 </div>
 
 

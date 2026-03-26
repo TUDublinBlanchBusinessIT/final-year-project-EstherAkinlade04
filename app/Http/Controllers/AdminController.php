@@ -169,7 +169,7 @@ class AdminController extends Controller
             $insights[] = "📉 Revenue declined {$growthRate}%";
         }
 
-        // ✅ USERS (ADDED ONLY)
+        // ✅ USERS
         $users = User::withCount('bookings')
             ->latest()
             ->take(20)
@@ -195,17 +195,21 @@ class AdminController extends Controller
             'bookingCounts',
             'mostPopularClass',
             'topMembers',
-
             'lowBookingClasses',
             'almostFullClasses',
             'peakTime',
             'classPerformance',
             'growthRate',
             'insights',
-
-            // ✅ ADDED
             'users'
         ));
+    }
+
+    // ✅ ADD THIS (DELETE USER)
+    public function deleteUser($id)
+    {
+        User::findOrFail($id)->delete();
+        return back()->with('success', 'User deleted');
     }
 
     public function search(Request $request)

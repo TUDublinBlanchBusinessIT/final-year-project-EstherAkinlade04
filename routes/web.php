@@ -212,12 +212,11 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | ✅ USERS (NEW)
+
     |--------------------------------------------------------------------------
     */
 
-    Route::delete('/users/{id}/delete', function ($id) {
-        \App\Models\User::findOrFail($id)->delete();
-        return back();
-    });
+    Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])
+    ->name('admin.users.delete');
 
 });
