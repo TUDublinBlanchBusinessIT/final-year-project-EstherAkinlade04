@@ -14,19 +14,30 @@ class AdminController extends Controller
 
     public function index()
     {
-        // 📅 Classes
+        // ✅ CURRENT GYM
+        $gymId = session('selected_gym_id');
+
+        // 📅 Classes (FILTERED)
         $classes = FitnessClass::withCount('bookings')
             ->with(['bookings.user'])
+            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
             ->orderBy('class_time')
             ->paginate(5);
 
         // 📊 Basic stats
         $totalUsers = User::count();
-        $totalBookings = Booking::count();
-        $totalClasses = FitnessClass::count();
 
-        // 💰 Revenue
+        $totalBookings = Booking::whereHas('fitnessClass', function ($q) use ($gymId) {
+            if ($gymId) $q->where('gym_id', $gymId);
+        })->count();
+
+        $totalClasses = FitnessClass::when($gymId, fn($q) => $q->where('gym_id', $gymId))->count();
+
+        // 💰 Revenue (FILTERED)
         $classRevenue = Booking::where('payment_status','paid')
+            ->whereHas('fitnessClass', function ($q) use ($gymId) {
+                if ($gymId) $q->where('gym_id', $gymId);
+            })
             ->join('fitness_classes','bookings.fitness_class_id','=','fitness_classes.id')
             ->sum('fitness_classes.price');
 
@@ -61,24 +72,29 @@ class AdminController extends Controller
             ->orderBy('end_date')
             ->get(['name','end_date']);
 
-        // ❌ Cancelled classes
+        // ❌ Cancelled classes (FILTERED)
         $cancelledClasses = FitnessClass::where('is_cancelled', true)
+            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
             ->orderBy('class_time')
             ->get(['name','class_time']);
 
-        // 💰 Revenue per class
+        // 💰 Revenue per class (FILTERED)
         $classRevenueData = FitnessClass::withCount('bookings')
+            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
             ->get()
             ->map(fn($class) => [
                 'name' => $class->name,
                 'revenue' => $class->bookings_count * $class->price
             ]);
 
-        // 🔥 HEATMAP
+        // 🔥 HEATMAP (FILTERED)
         $activityData = Booking::select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as total')
             )
+            ->whereHas('fitnessClass', function ($q) use ($gymId) {
+                if ($gymId) $q->where('gym_id', $gymId);
+            })
             ->groupBy('date')
             ->orderBy('date')
             ->get()
@@ -89,46 +105,56 @@ class AdminController extends Controller
             ->values();
 
         // 📊 Booking chart
-        $bookingChart = FitnessClass::withCount('bookings')->get();
+        $bookingChart = FitnessClass::withCount('bookings')
+            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
+            ->get();
+
         $bookingLabels = $bookingChart->pluck('name');
         $bookingCounts = $bookingChart->pluck('bookings_count');
 
-        // 🔥 Most popular class
+        // 🔥 Most popular class (FILTERED)
         $mostPopularClass = FitnessClass::withCount('bookings')
+            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
             ->orderByDesc('bookings_count')
             ->first();
 
-        // 🏆 Top members
+        // 🏆 Top members (GLOBAL)
         $topMembers = User::withCount('bookings')
             ->orderByDesc('bookings_count')
             ->take(5)
             ->get();
 
-        // 🚨 LOW BOOKING ALERT
+        // 🚨 LOW BOOKING ALERT (FILTERED)
         $lowBookingClasses = FitnessClass::withCount('bookings')
+            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
             ->having('bookings_count','<',3)
             ->get();
 
-        // 🔥 ALMOST FULL
+        // 🔥 ALMOST FULL (FILTERED)
         $almostFullClasses = FitnessClass::withCount('bookings')
+            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
             ->get()
             ->filter(fn($c) =>
                 $c->capacity > 0 &&
                 ($c->bookings_count / $c->capacity) >= 0.8
             );
 
-        // ⏰ PEAK TIME
+        // ⏰ PEAK TIME (FILTERED)
         $peakTime = Booking::select(
                 DB::raw('DAYNAME(created_at) as day'),
                 DB::raw('HOUR(created_at) as hour'),
                 DB::raw('COUNT(*) as total')
             )
+            ->whereHas('fitnessClass', function ($q) use ($gymId) {
+                if ($gymId) $q->where('gym_id', $gymId);
+            })
             ->groupBy('day','hour')
             ->orderByDesc('total')
             ->first();
 
-        // 📊 CLASS PERFORMANCE
+        // 📊 CLASS PERFORMANCE (FILTERED)
         $classPerformance = FitnessClass::withCount('bookings')
+            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
             ->get()
             ->map(fn($c) => [
                 'name' => $c->name,
@@ -169,7 +195,7 @@ class AdminController extends Controller
             $insights[] = "📉 Revenue declined {$growthRate}%";
         }
 
-        // ✅ USERS
+        // ✅ USERS (GLOBAL)
         $users = User::withCount('bookings')
             ->latest()
             ->take(20)
@@ -205,7 +231,33 @@ class AdminController extends Controller
         ));
     }
 
-    // ✅ ADD THIS (DELETE USER)
+    public function store(Request $request)
+    {
+        $gymId = session('selected_gym_id');
+
+        if (!$gymId) {
+            return back()->with('error', 'Please select a gym first');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'class_time' => 'required|date',
+            'capacity' => 'required|integer|min:1',
+            'price' => 'required|numeric|min:0',
+            'admin_notes' => 'nullable|string'
+        ]);
+
+        $validated['gym_id'] = $gymId;
+
+        FitnessClass::create($validated);
+
+        return redirect()->route('admin.dashboard')
+            ->with('success','Class created successfully');
+    }
+
+    // 🔽 EVERYTHING ELSE UNCHANGED
+
     public function deleteUser($id)
     {
         User::findOrFail($id)->delete();
@@ -224,23 +276,22 @@ class AdminController extends Controller
             ]);
         }
 
+        $gymId = session('selected_gym_id');
+
         return response()->json([
             'users' => User::where('name', 'like', "%$query%")
                 ->orWhere('email', 'like', "%$query%")
                 ->limit(5)
-                ->get(['id','name','email','membership_type','end_date']),
+                ->get(),
 
-            'classes' => FitnessClass::where('name', 'like', "%$query%")
+            'classes' => FitnessClass::when($gymId, fn($q)=>$q->where('gym_id',$gymId))
+                ->where('name', 'like', "%$query%")
                 ->limit(5)
-                ->get(['id','name','class_time','capacity','is_cancelled']),
+                ->get(),
 
-            'bookings' => Booking::with([
-                    'user:id,name',
-                    'fitnessClass:id,name,class_time'
-                ])
-                ->where(function ($q) use ($query) {
-                    $q->whereHas('user', fn($q) => $q->where('name','like',"%$query%"))
-                      ->orWhereHas('fitnessClass', fn($q) => $q->where('name','like',"%$query%"));
+            'bookings' => Booking::with(['user','fitnessClass'])
+                ->whereHas('fitnessClass', function ($q) use ($gymId) {
+                    if ($gymId) $q->where('gym_id', $gymId);
                 })
                 ->limit(5)
                 ->get()
@@ -252,23 +303,6 @@ class AdminController extends Controller
         return view('admin.create-class');
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'class_time' => 'required|date',
-            'capacity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
-            'admin_notes' => 'nullable|string'
-        ]);
-
-        FitnessClass::create($validated);
-
-        return redirect()->route('admin.dashboard')
-            ->with('success','Class created successfully');
-    }
-
     public function editClass($id)
     {
         $class = FitnessClass::findOrFail($id);
@@ -278,10 +312,6 @@ class AdminController extends Controller
     public function updateClass(Request $request, $id)
     {
         $class = FitnessClass::findOrFail($id);
-
-        $request->validate([
-            'admin_notes' => 'nullable|string'
-        ]);
 
         $class->update([
             'admin_notes' => $request->admin_notes
@@ -334,24 +364,14 @@ class AdminController extends Controller
     public function exportRevenue()
     {
         $users = User::select(
-            'name',
-            'email',
-            'membership_type',
-            'price_paid',
-            'created_at'
+            'name','email','membership_type','price_paid','created_at'
         )->get();
 
         $response = new StreamedResponse(function () use ($users) {
 
             $handle = fopen('php://output','w');
 
-            fputcsv($handle,[
-                'Name',
-                'Email',
-                'Membership Type',
-                'Amount Paid (€)',
-                'Date'
-            ]);
+            fputcsv($handle,['Name','Email','Membership Type','Amount Paid (€)','Date']);
 
             foreach($users as $user){
                 fputcsv($handle,[
