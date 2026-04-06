@@ -13,13 +13,20 @@ class FitnessClass extends Model
         'capacity',
         'price',
         'admin_notes',
-        'is_cancelled'
+        'is_cancelled',
+        'gym_id', // ✅ ADD THIS
     ];
 
     protected $casts = [
         'class_time' => 'datetime',
         'is_cancelled' => 'boolean',
     ];
+
+    // ✅ NEW: Gym relationship
+    public function gym()
+    {
+        return $this->belongsTo(Gym::class);
+    }
 
     public function bookings()
     {
