@@ -54,6 +54,7 @@
 
 <div class="p-10">
 
+{{-- SUCCESS / ERROR --}}
 @if(session('success'))
 <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-6 shadow">
     {{ session('success') }}
@@ -66,6 +67,7 @@
 </div>
 @endif
 
+{{-- MEMBERSHIP WARNING --}}
 @if($membershipExpired)
 <div class="bg-red-100 text-red-800 p-6 rounded-xl mb-10 shadow flex justify-between items-center">
     <div>
@@ -80,6 +82,40 @@
 </div>
 @endif
 
+{{-- 🔥 RECOMMENDATIONS SECTION --}}
+@if(isset($recommendedClasses) && $recommendedClasses->count())
+
+<h2 class="text-3xl font-bold text-purple-800 mb-6">
+    🔥 Recommended for You
+</h2>
+
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+
+@foreach($recommendedClasses as $class)
+
+<div class="bg-purple-50 border border-purple-200 p-6 rounded-2xl shadow-md">
+
+    <h3 class="text-lg font-bold text-purple-800 mb-1">
+        {{ $class->name }}
+    </h3>
+
+    <p class="text-sm text-gray-600 mb-2">
+        {{ $class->class_time->format('d M H:i') }}
+    </p>
+
+    <p class="text-sm text-purple-700 font-semibold">
+        €{{ $class->price }}
+    </p>
+
+</div>
+
+@endforeach
+
+</div>
+
+@endif
+
+{{-- ALL CLASSES --}}
 <h2 class="text-3xl font-bold text-indigo-900 mb-8">
     🏋️ All Classes
 </h2>
@@ -127,7 +163,7 @@
     </div>
 
     <div class="w-full bg-gray-200 rounded-full h-2 mb-5 overflow-hidden">
-        <div class="bg-indigo-600 h-2 rounded-full transition-all duration-1000"
+        <div class="bg-indigo-600 h-2 rounded-full"
              style="width: {{ $fillPercent }}%">
         </div>
     </div>
@@ -146,8 +182,7 @@
         <form method="POST" action="{{ route('book.class', $class->id) }}">
             @csrf
             <button
-                class="w-full bg-indigo-600 text-white py-3 rounded-xl 
-                       hover:bg-indigo-700 hover:shadow-xl hover:scale-105 transition font-semibold">
+                class="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-semibold">
                 📅 Book Class
             </button>
         </form>
