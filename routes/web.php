@@ -8,6 +8,8 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MembershipPlanController;
+use App\Http\Controllers\Admin\GymController; // ✅ ADDED
+
 
 /*
 |--------------------------------------------------------------------------
@@ -118,6 +120,16 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | 🏢 Gym Switching (NEW)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/switch-gym/{gym}', [GymController::class, 'switch'])
+        ->name('admin.switchGym');
+
+
+    /*
+    |--------------------------------------------------------------------------
     | 🔍 GLOBAL SEARCH
     |--------------------------------------------------------------------------
     */
@@ -212,11 +224,10 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | ✅ USERS (NEW)
-
     |--------------------------------------------------------------------------
     */
 
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])
-    ->name('admin.users.delete');
+        ->name('admin.users.delete');
 
 });
