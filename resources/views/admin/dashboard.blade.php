@@ -4,9 +4,6 @@
 
 <title>Vault Admin</title>
 
-
-
-</div>
 <script>
 tailwind.config = {
 theme:{
@@ -444,9 +441,9 @@ Class Calendar
 
 </main>
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- USERS PANEL -->
 
 <div id="users" class="panel">
+
 <h2 class="text-2xl font-bold mb-6">Users</h2>
 
 @foreach($users as $user)
@@ -486,53 +483,10 @@ Class Calendar
 
 @endforeach
 
-
-
-
-    <!-- ACTION -->
-    <h2 class="text-2xl font-bold mb-6">Users</h2>
-
-@foreach($users as $user)
-
-<div class="border-b py-4">
-
-    <div class="flex justify-between items-center">
-
-        <div>
-            <p class="font-semibold">{{ $user->name }}</p>
-
-            <p class="text-xs text-gray-500">
-                {{ $user->email }}
-            </p>
-
-            <p class="text-xs text-purple-600">
-                {{ $user->membership_type ?? 'No plan' }}
-            </p>
-        </div>
-
-        <div class="text-sm text-gray-500">
-            {{ $user->bookings_count }} bookings
-        </div>
-
-    </div>
-
-    <!-- ACTION -->
-    <div class="mt-2">
-        <form method="POST" action="{{ route('admin.users.delete', $user->id) }}">
-            @csrf
-            @method('DELETE')
-
-            <button onclick="return confirm('Delete this user?')"
-                class="action-btn bg-red-100 text-red-600 hover:bg-red-200">
-                Delete User
-            </button>
-        </form>
-    </div>
-
 </div>
 
-@endforeach
 
+    
 </div>
 
 
