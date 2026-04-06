@@ -25,7 +25,7 @@ glow:"0 0 18px rgba(139,92,246,0.25)"
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <style>
 
 .panel{
@@ -168,7 +168,38 @@ Logout
 <!-- MAIN -->
 
 <main class="flex-1 p-14">
+<!-- 🔔 NOTIFICATIONS -->
+@if(session('success'))
+<div 
+    x-data="{ show: true }"
+    x-init="setTimeout(() => show = false, 4000)"
+    x-show="show"
+    x-transition
+    class="mb-6 p-4 rounded-xl shadow-lg flex justify-between items-center bg-green-100 text-green-800"
+>
+    <div class="font-medium">
+        {{ session('success') }}
+    </div>
 
+    <button @click="show = false" class="ml-4 font-bold">✕</button>
+</div>
+@endif
+
+@if(session('error'))
+<div 
+    x-data="{ show: true }"
+    x-init="setTimeout(() => show = false, 4000)"
+    x-show="show"
+    x-transition
+    class="mb-6 p-4 rounded-xl shadow-lg flex justify-between items-center bg-red-100 text-red-800"
+>
+    <div class="font-medium">
+        {{ session('error') }}
+    </div>
+
+    <button @click="show = false" class="ml-4 font-bold">✕</button>
+</div>
+@endif
 <h1 class="text-4xl font-bold text-gray-800 mb-12">
 Welcome back, {{ auth()->user()->name }}
 </h1>
