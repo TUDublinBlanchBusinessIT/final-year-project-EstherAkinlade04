@@ -101,7 +101,24 @@ border-radius:6px;
 <h2 class="text-2xl font-bold text-deep mb-12">
 Vault Admin
 </h2>
+<!-- 🏢 GYM SELECTOR -->
+<form method="POST" id="gymForm" class="mb-6">
+    @csrf
 
+    <select onchange="switchGym(this.value)"
+        class="w-full border border-purple-200 p-2 rounded-xl text-sm">
+
+        <option value="">Select Gym</option>
+
+        @foreach(\App\Models\Gym::all() as $gym)
+            <option value="{{ $gym->id }}"
+                {{ session('selected_gym_id') == $gym->id ? 'selected' : '' }}>
+                {{ $gym->name }}
+            </option>
+        @endforeach
+
+    </select>
+</form>
 <nav class="space-y-4">
 
 <button onclick="openPanel('analytics')" class="sidebar-btn w-full text-left px-4 py-3 rounded-xl">
@@ -1013,5 +1030,12 @@ animateValue("revenueCount", {{ $totalRevenue }}, true);
 animateValue("activeCount", {{ $activeMembers }});
 </script>
 <div id="overlay" class="overlay" onclick="closePanels()"></div>
+<script>
+function switchGym(gymId){
+    const form = document.getElementById('gymForm');
+    form.action = `/admin/switch-gym/${gymId}`;
+    form.submit();
+}
+</script>
 </body>
 </html>
