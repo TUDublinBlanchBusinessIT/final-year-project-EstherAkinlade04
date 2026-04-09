@@ -73,7 +73,7 @@ class AuthController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Stripe Success → Create User + Queue Welcome Email
+    | Stripe Success → Create User + Send Welcome Email
     |--------------------------------------------------------------------------
     */
 
@@ -100,9 +100,13 @@ class AuthController extends Controller
             'price_paid' => $plan->price,
         ]);
 
-        // 🔥 Queue Welcome Email (FORCED to database connection)
-        Mail::to($user->email)
-            ->send(new WelcomeMemberMail($user));
+        // 📧 Send welcome email (SAFE)
+        try {
+            Mail::to($user->email)
+                ->send(new WelcomeMemberMail($user));
+        } catch (\Exception $e) {
+            // Don't break registration if email fails
+        }
 
         // Clear temporary registration data
         session()->forget('registration_data');
@@ -110,7 +114,7 @@ class AuthController extends Controller
         Auth::login($user);
 
         return redirect()->route('dashboard')
-            ->with('success', 'Welcome to Vault Fitness!');
+            ->with('success', 'Welcome to Vault Fitness! 📩 Check your email.');
     }
 
     /*
