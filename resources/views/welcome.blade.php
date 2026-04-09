@@ -276,7 +276,16 @@ body {
         <div class="play" onclick="openVideo()"></div>
     </div>
 </section>
+<!-- GOOGLE MAP -->
+<section style="padding:100px 60px; background:#f5f1fb;">
 
+    <h2 style="text-align:center; margin-bottom:30px;">
+        📍 Our Locations
+    </h2>
+
+    <div id="map" style="height:500px; border-radius:20px;"></div>
+
+</section>
 <!-- CLASS SLIDER -->
 <section class="class-slider-section">
 <h2>Popular Classes</h2>
@@ -338,6 +347,63 @@ function closeVideo(){
     video.pause();
 }
 </script>
+<script>
+function initMap() {
 
+    const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 7,
+        center: { lat: 53.3498, lng: -6.2603 }
+    });
+
+    const gyms = [
+        { name: "Tallaght", lat: 53.2886, lng: -6.3732 },
+        { name: "Dundrum", lat: 53.2923, lng: -6.2456 },
+        { name: "Stillorgan", lat: 53.2895, lng: -6.1988 },
+        { name: "Sandyford", lat: 53.2745, lng: -6.2165 },
+        { name: "Foxrock", lat: 53.2667, lng: -6.1742 },
+        { name: "Crumlin", lat: 53.3194, lng: -6.3145 },
+        { name: "Baggot Street", lat: 53.3346, lng: -6.2469 },
+        { name: "Blanchardstown", lat: 53.3881, lng: -6.3756 },
+        { name: "CHQ", lat: 53.3487, lng: -6.2476 },
+        { name: "Cork City", lat: 51.8985, lng: -8.4756 },
+        { name: "Drumcondra", lat: 53.3681, lng: -6.2513 },
+        { name: "Finglas", lat: 53.3904, lng: -6.2983 },
+        { name: "Galway", lat: 53.2707, lng: -9.0568 },
+        { name: "Georges Street", lat: 53.3438, lng: -6.2646 },
+        { name: "Inchicore", lat: 53.3396, lng: -6.3172 },
+        { name: "Jervis Street", lat: 53.3478, lng: -6.2666 },
+        { name: "Liffey Valley", lat: 53.3505, lng: -6.3903 },
+        { name: "Macken Street", lat: 53.3392, lng: -6.2385 },
+        { name: "Northside SC", lat: 53.3900, lng: -6.2450 },
+        { name: "Portobello", lat: 53.3315, lng: -6.2671 },
+        { name: "Ranelagh", lat: 53.3266, lng: -6.2550 },
+        { name: "Sallynoggin", lat: 53.2780, lng: -6.1330 },
+        { name: "Swords", lat: 53.4597, lng: -6.2181 }
+    ];
+
+    gyms.forEach(gym => {
+
+        const marker = new google.maps.Marker({
+            position: { lat: gym.lat, lng: gym.lng },
+            map: map,
+            title: gym.name
+        });
+
+        const info = new google.maps.InfoWindow({
+            content: `<strong>${gym.name}</strong>`
+        });
+
+        marker.addListener("click", () => {
+            info.open(map, marker);
+        });
+
+    });
+
+}
+</script>
+
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALHNH5TxEEr2iei6vuBS3yDEAmdgZgfdA&callback=initMap">
+</script>
 </body>
 </html>

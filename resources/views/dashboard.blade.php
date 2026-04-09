@@ -156,7 +156,17 @@ Renew
 </nav>
 
 <div class="pt-28 px-6 max-w-6xl mx-auto">
+@if(session('success'))
+<div id="alert" class="bg-green-100 text-green-800 p-4 rounded-xl mb-6 shadow transition">
+    {{ session('success') }}
+</div>
+@endif
 
+@if(session('error'))
+<div id="alert" class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow transition">
+    {{ session('error') }}
+</div>
+@endif
 @php
 
 use Carbon\Carbon;
@@ -367,6 +377,14 @@ height:70
 });
 
 </script>
-
+<script>
+setTimeout(() => {
+    const alert = document.getElementById('alert');
+    if(alert){
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 500);
+    }
+}, 4000);
+</script>
 </body>
 </html>
