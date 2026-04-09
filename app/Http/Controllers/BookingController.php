@@ -6,7 +6,7 @@ use App\Models\Booking;
 use App\Models\FitnessClass;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\BookingConfirmation;
+use App\Mail\BookingConfirmationMail;
 use Carbon\Carbon;
 
 class BookingController extends Controller
@@ -48,21 +48,21 @@ class BookingController extends Controller
         }
 
         // ✅ Create booking
-        Booking::create([
+        $booking = Booking::create([
             'user_id' => $user->id,
             'fitness_class_id' => $class->id,
             'payment_status' => 'paid',
         ]);
 
-        // 📧 Send confirmation email
+        // 📧 Send confirmation email (safe)
         try {
             Mail::to($user->email)
-                ->send(new BookingConfirmation($class));
+                ->send(new BookingConfirmationMail($class));
         } catch (\Exception $e) {
-            // Don't break booking if email fails
+            // Fail silently (important for demo)
         }
 
-        return back()->with('success', 'Class booked successfully! 📩 Confirmation email sent.');
+        return back()->with('success', 'Class booked! 📩 Check your email.');
     }
 
     /*
