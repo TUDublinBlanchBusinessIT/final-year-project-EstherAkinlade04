@@ -226,7 +226,9 @@ body {
 </head>
 
 <body>
-
+@php
+$selectedGym = auth()->check() ? auth()->user()->gym_location : null;
+@endphp
 <header class="header">
     <div class="logo">
         <a href="{{ route('home') }}">The Vault</a>
@@ -350,10 +352,7 @@ function closeVideo(){
 <script>
 function initMap() {
 
-    const map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 7,
-        center: { lat: 53.3498, lng: -6.2603 }
-    });
+    const selectedGym = @json($selectedGym);
 
     const gyms = [
         { name: "Tallaght", lat: 53.2886, lng: -6.3732 },
@@ -362,42 +361,104 @@ function initMap() {
         { name: "Sandyford", lat: 53.2745, lng: -6.2165 },
         { name: "Foxrock", lat: 53.2667, lng: -6.1742 },
         { name: "Crumlin", lat: 53.3194, lng: -6.3145 },
-        { name: "Baggot Street", lat: 53.3346, lng: -6.2469 },
         { name: "Blanchardstown", lat: 53.3881, lng: -6.3756 },
-        { name: "CHQ", lat: 53.3487, lng: -6.2476 },
         { name: "Cork City", lat: 51.8985, lng: -8.4756 },
-        { name: "Drumcondra", lat: 53.3681, lng: -6.2513 },
-        { name: "Finglas", lat: 53.3904, lng: -6.2983 },
         { name: "Galway", lat: 53.2707, lng: -9.0568 },
-        { name: "Georges Street", lat: 53.3438, lng: -6.2646 },
-        { name: "Inchicore", lat: 53.3396, lng: -6.3172 },
-        { name: "Jervis Street", lat: 53.3478, lng: -6.2666 },
-        { name: "Liffey Valley", lat: 53.3505, lng: -6.3903 },
-        { name: "Macken Street", lat: 53.3392, lng: -6.2385 },
-        { name: "Northside SC", lat: 53.3900, lng: -6.2450 },
-        { name: "Portobello", lat: 53.3315, lng: -6.2671 },
-        { name: "Ranelagh", lat: 53.3266, lng: -6.2550 },
-        { name: "Sallynoggin", lat: 53.2780, lng: -6.1330 },
         { name: "Swords", lat: 53.4597, lng: -6.2181 }
     ];
 
-    gyms.forEach(gym => {
-
-        const marker = new google.maps.Marker({
-            position: { lat: gym.lat, lng: gym.lng },
-            map: map,
-            title: gym.name
-        });
-
-        const info = new google.maps.InfoWindow({
-            content: `<strong>${gym.name}</strong>`
-        });
-
-        marker.addListener("click", () => {
-            info.open(map, marker);
-        });
-
+    let map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 7,
+        center: { lat: 53.3498, lng: -6.2603 }
     });
+
+    let markers = [];
+
+    function renderMarkers(activeGymName = null) {
+
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+
+        gyms.forEach(gym => {
+
+            const isSelected = gym.name === activeGymName;
+
+            const marker = new google.maps.Marker({
+                position: { lat: gym.lat, lng: gym.lng },
+                map: map,
+                title: gym.name,
+                icon: {
+                    url: isSelected
+                        ? "http://maps.google.com/mapfiles/ms/icons/purple-dot.png"
+                        : "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                }
+            });
+
+            const info = new google.maps.InfoWindow({
+                content: `
+                    <div style="padding:10px;">
+                        <h3>${gym.name}</h3>
+                        <button onclick="window.location.href='/classes?gym=${gym.name}'"
+                            style="background:#6d28d9;color:white;padding:6px 10px;border:none;border-radius:6px;">
+                            View Classes
+                        </button>
+                    </div>
+                `
+            });
+
+            marker.addListener("click", () => {
+                info.open(map, marker);
+            });
+
+            markers.push(marker);
+        });
+    }
+
+    // 🔥 STEP 1: If user has saved gym → use that
+    let centerGym = gyms.find(g => g.name === selectedGym);
+
+    if (centerGym) {
+        map.setCenter(centerGym);
+        map.setZoom(11);
+        renderMarkers(centerGym.name);
+    } 
+    else {
+        renderMarkers();
+
+        // 🚀 STEP 2: Use GPS
+        if (navigator.geolocation) {
+
+            navigator.geolocation.getCurrentPosition(position => {
+
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+
+                let nearest = null;
+                let minDistance = Infinity;
+
+                gyms.forEach(gym => {
+
+                    const dist = Math.sqrt(
+                        Math.pow(gym.lat - userLat, 2) +
+                        Math.pow(gym.lng - userLng, 2)
+                    );
+
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        nearest = gym;
+                    }
+
+                });
+
+                if (nearest) {
+                    map.setCenter(nearest);
+                    map.setZoom(12);
+                    renderMarkers(nearest.name);
+                }
+
+            });
+        }
+    }
 
 }
 </script>
