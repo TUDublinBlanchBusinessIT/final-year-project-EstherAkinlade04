@@ -25,6 +25,10 @@
             justify-content:center;
             border-radius:24px;
         }
+
+        .fade-out {
+            transition: opacity 0.5s ease;
+        }
     </style>
 </head>
 
@@ -56,13 +60,13 @@
 
 {{-- SUCCESS / ERROR --}}
 @if(session('success'))
-<div class="bg-green-100 text-green-800 p-4 rounded-xl mb-6 shadow">
+<div id="alert" class="fade-out bg-green-100 text-green-800 p-4 rounded-xl mb-6 shadow">
     {{ session('success') }}
 </div>
 @endif
 
 @if(session('error'))
-<div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow">
+<div id="alert" class="fade-out bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow">
     {{ session('error') }}
 </div>
 @endif
@@ -82,7 +86,7 @@
 </div>
 @endif
 
-{{-- 🔥 RECOMMENDATIONS SECTION --}}
+{{-- 🔥 RECOMMENDATIONS --}}
 @if(isset($recommendedClasses) && $recommendedClasses->count())
 
 <h2 class="text-3xl font-bold text-purple-800 mb-6">
@@ -93,7 +97,7 @@
 
 @foreach($recommendedClasses as $class)
 
-<div class="bg-purple-50 border border-purple-200 p-6 rounded-2xl shadow-md">
+<div class="bg-purple-50 border border-purple-200 p-6 rounded-2xl shadow-md hover:shadow-lg transition">
 
     <h3 class="text-lg font-bold text-purple-800 mb-1">
         {{ $class->name }}
@@ -103,9 +107,16 @@
         {{ $class->class_time->format('d M H:i') }}
     </p>
 
-    <p class="text-sm text-purple-700 font-semibold">
+    <p class="text-sm text-purple-700 font-semibold mb-4">
         €{{ $class->price }}
     </p>
+
+    <form method="POST" action="{{ route('book.class', $class->id) }}">
+        @csrf
+        <button class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+            Book Now
+        </button>
+    </form>
 
 </div>
 
@@ -196,6 +207,7 @@
 </div>
 
 <script>
+// 🔥 SLIDER
 document.addEventListener("DOMContentLoaded", function() {
     let slides = document.querySelectorAll('.slide');
     let index = 0;
@@ -208,6 +220,15 @@ document.addEventListener("DOMContentLoaded", function() {
         slides[index].classList.add('opacity-100');
     }, 4000);
 });
+
+// 🔔 AUTO HIDE ALERT
+setTimeout(() => {
+    const alert = document.getElementById('alert');
+    if(alert){
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 500);
+    }
+}, 4000);
 </script>
 
 </body>
