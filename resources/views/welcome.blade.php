@@ -374,45 +374,54 @@ function initMap() {
 
     let markers = [];
 
-    function renderMarkers(activeGymName = null) {
+    function renderMarkers(activeGymName = null, userLat = null, userLng = null) {
 
-        markers.forEach(m => m.setMap(null));
-        markers = [];
+markers.forEach(m => m.setMap(null));
+markers = [];
 
-        gyms.forEach(gym => {
+gyms.forEach(gym => {
 
-            const isSelected = gym.name === activeGymName;
+    const isSelected = gym.name === activeGymName;
 
-            const marker = new google.maps.Marker({
-                position: { lat: gym.lat, lng: gym.lng },
-                map: map,
-                title: gym.name,
-                icon: {
-                    url: isSelected
-                        ? "http://maps.google.com/mapfiles/ms/icons/purple-dot.png"
-                        : "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-                }
-            });
+    // 📏 Calculate distance
+    let distanceText = "";
 
-            const info = new google.maps.InfoWindow({
-                content: `
-                    <div style="padding:10px;">
-                        <h3>${gym.name}</h3>
-                        <button onclick="window.location.href='/classes?gym=${gym.name}'"
-                            style="background:#6d28d9;color:white;padding:6px 10px;border:none;border-radius:6px;">
-                            View Classes
-                        </button>
-                    </div>
-                `
-            });
-
-            marker.addListener("click", () => {
-                info.open(map, marker);
-            });
-
-            markers.push(marker);
-        });
+    if (userLat && userLng) {
+        const distance = getDistance(userLat, userLng, gym.lat, gym.lng);
+        distanceText = `<p style="font-size:12px;">📍 ${distance} km away</p>`;
     }
+
+    const marker = new google.maps.Marker({
+        position: { lat: gym.lat, lng: gym.lng },
+        map: map,
+        title: gym.name,
+        icon: {
+            url: isSelected
+                ? "http://maps.google.com/mapfiles/ms/icons/purple-dot.png"
+                : "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+        }
+    });
+
+    const info = new google.maps.InfoWindow({
+        content: `
+            <div style="padding:10px;">
+                <h3>${gym.name}</h3>
+                ${distanceText}
+                <button onclick="window.location.href='/classes?gym=${gym.name}'"
+                    style="background:#6d28d9;color:white;padding:6px 10px;border:none;border-radius:6px;">
+                    View Classes
+                </button>
+            </div>
+        `
+    });
+
+    marker.addListener("click", () => {
+        info.open(map, marker);
+    });
+
+    markers.push(marker);
+});
+}
 
     // 🔥 STEP 1: If user has saved gym → use that
     let centerGym = gyms.find(g => g.name === selectedGym);
@@ -453,7 +462,7 @@ function initMap() {
                 if (nearest) {
                     map.setCenter(nearest);
                     map.setZoom(12);
-                    renderMarkers(nearest.name);
+                    renderMarkers(nearest.name, userLat, userLng);
                 }
 
             });
@@ -465,6 +474,24 @@ function initMap() {
 
 <script async defer
 src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALHNH5TxEEr2iei6vuBS3yDEAmdgZgfdA&callback=initMap">
+</script>
+<script>
+function getDistance(lat1, lng1, lat2, lng2) {
+
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return (R * c).toFixed(1); // 1 decimal place
+}
 </script>
 </body>
 </html>
