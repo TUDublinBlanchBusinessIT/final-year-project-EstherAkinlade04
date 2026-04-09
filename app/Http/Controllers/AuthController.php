@@ -81,13 +81,15 @@ class AuthController extends Controller
     {
         $data = session('registration_data');
 
+        // 🚫 Safety check
         if (!$data) {
             return redirect()->route('register')
-                ->withErrors(['error' => 'Registration session expired.']);
+                ->withErrors(['error' => 'Registration session expired. Please try again.']);
         }
 
         $plan = MembershipPlan::findOrFail($data['membership_plan_id']);
 
+        // ✅ Create user
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -100,17 +102,18 @@ class AuthController extends Controller
             'price_paid' => $plan->price,
         ]);
 
-        // 📧 Send welcome email (SAFE)
+        // 📧 Send welcome email (safe for demo)
         try {
             Mail::to($user->email)
                 ->send(new WelcomeMemberMail($user));
         } catch (\Exception $e) {
-            // Don't break registration if email fails
+            // Fail silently (important for smooth UX)
         }
 
-        // Clear temporary registration data
+        // 🧹 Clear temporary session data
         session()->forget('registration_data');
 
+        // 🔐 Auto login
         Auth::login($user);
 
         return redirect()->route('dashboard')

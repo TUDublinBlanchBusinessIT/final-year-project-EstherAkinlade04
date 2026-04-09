@@ -288,6 +288,74 @@ $selectedGym = auth()->check() ? auth()->user()->gym_location : null;
     <div id="map" style="height:500px; border-radius:20px;"></div>
 
 </section>
+<!-- TESTIMONIALS -->
+<section style="padding:100px 60px; background:white;">
+
+    <h2 style="text-align:center; margin-bottom:50px;">
+        💬 What Our Members Say
+    </h2>
+
+    <div style="display:flex; gap:30px; justify-content:center; flex-wrap:wrap;">
+
+        <div class="lux-card" style="padding:30px; max-width:300px;">
+            <p>"Best gym I’ve ever joined. The classes are insane 🔥"</p>
+            <strong>- Sarah M.</strong>
+        </div>
+
+        <div class="lux-card" style="padding:30px; max-width:300px;">
+            <p>"Booking system is so easy and smooth."</p>
+            <strong>- James K.</strong>
+        </div>
+
+        <div class="lux-card" style="padding:30px; max-width:300px;">
+            <p>"Love the variety of locations and classes."</p>
+            <strong>- Emma L.</strong>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- FACILITIES -->
+<section style="padding:100px 60px; background:#f5f1fb;">
+
+    <h2 style="text-align:center; margin-bottom:50px;">
+        🏋️ Our Facilities
+    </h2>
+
+    <div style="display:flex; justify-content:center; gap:50px; flex-wrap:wrap; text-align:center;">
+
+        <div>
+            <h3>💪 Modern Equipment</h3>
+            <p>Top-tier machines & weights</p>
+        </div>
+
+        <div>
+            <h3>🔥 Group Classes</h3>
+            <p>HIIT, Strength, Cardio & more</p>
+        </div>
+
+        <div>
+            <h3>🧘 Recovery Zones</h3>
+            <p>Stretch & recovery spaces</p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- OPENING HOURS -->
+<section style="padding:100px 60px; background:white; text-align:center;">
+
+    <h2 style="margin-bottom:30px;">
+        ⏰ Opening Hours
+    </h2>
+
+    <p>Monday - Friday: 6:00 AM – 10:00 PM</p>
+    <p>Saturday: 8:00 AM – 8:00 PM</p>
+    <p>Sunday: 9:00 AM – 6:00 PM</p>
+
+</section>
 <!-- CLASS SLIDER -->
 <section class="class-slider-section">
 <h2>Popular Classes</h2>
