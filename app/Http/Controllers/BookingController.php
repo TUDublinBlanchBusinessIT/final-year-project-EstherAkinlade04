@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\FitnessClass;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmation;
 use Carbon\Carbon;
 
 class BookingController extends Controller
@@ -45,13 +47,22 @@ class BookingController extends Controller
             return back()->with('error', 'This class is full.');
         }
 
+        // ✅ Create booking
         Booking::create([
             'user_id' => $user->id,
             'fitness_class_id' => $class->id,
             'payment_status' => 'paid',
         ]);
 
-        return back()->with('success', 'Class booked successfully!');
+        // 📧 Send confirmation email
+        try {
+            Mail::to($user->email)
+                ->send(new BookingConfirmation($class));
+        } catch (\Exception $e) {
+            // Don't break booking if email fails
+        }
+
+        return back()->with('success', 'Class booked successfully! 📩 Confirmation email sent.');
     }
 
     /*
