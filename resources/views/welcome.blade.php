@@ -288,134 +288,74 @@ $selectedGym = auth()->check() ? auth()->user()->gym_location : null;
     <div id="map" style="height:500px; border-radius:20px;"></div>
 
 </section>
-<!-- TESTIMONIALS (PREMIUM) -->
-<section class="py-24 px-6 bg-gradient-to-br from-white to-purple-50">
+<!-- TESTIMONIALS -->
+<section style="padding:100px 60px; background:white;">
 
-    <h2 class="text-4xl font-bold text-center text-purple-800 mb-16">
+    <h2 style="text-align:center; margin-bottom:50px;">
         💬 What Our Members Say
     </h2>
 
-    <div class="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+    <div style="display:flex; gap:30px; justify-content:center; flex-wrap:wrap;">
 
-        <!-- CARD -->
-        <div class="group bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
-
-            <img src="https://randomuser.me/api/portraits/women/44.jpg"
-                 class="w-16 h-16 rounded-full mb-4">
-
-            <p class="text-gray-600 mb-4 italic">
-                "Best gym I’ve ever joined. The classes are insane 🔥"
-            </p>
-
-            <h4 class="font-semibold text-purple-800">Sarah M.</h4>
-
+        <div class="lux-card" style="padding:30px; max-width:300px;">
+            <p>"Best gym I’ve ever joined. The classes are insane 🔥"</p>
+            <strong>- Sarah M.</strong>
         </div>
 
-        <div class="group bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
-
-            <img src="https://randomuser.me/api/portraits/men/32.jpg"
-                 class="w-16 h-16 rounded-full mb-4">
-
-            <p class="text-gray-600 mb-4 italic">
-                "Booking system is so easy and smooth."
-            </p>
-
-            <h4 class="font-semibold text-purple-800">James K.</h4>
-
+        <div class="lux-card" style="padding:30px; max-width:300px;">
+            <p>"Booking system is so easy and smooth."</p>
+            <strong>- James K.</strong>
         </div>
 
-        <div class="group bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
-
-            <img src="https://randomuser.me/api/portraits/women/68.jpg"
-                 class="w-16 h-16 rounded-full mb-4">
-
-            <p class="text-gray-600 mb-4 italic">
-                "Love the variety of locations and classes."
-            </p>
-
-            <h4 class="font-semibold text-purple-800">Emma L.</h4>
-
+        <div class="lux-card" style="padding:30px; max-width:300px;">
+            <p>"Love the variety of locations and classes."</p>
+            <strong>- Emma L.</strong>
         </div>
 
     </div>
 
 </section>
 
+<!-- FACILITIES -->
+<section style="padding:100px 60px; background:#f5f1fb;">
 
-<!-- FACILITIES (WITH IMAGES + HOVER EFFECT) -->
-<section class="py-24 px-6 bg-white">
-
-    <h2 class="text-4xl font-bold text-center text-purple-800 mb-16">
+    <h2 style="text-align:center; margin-bottom:50px;">
         🏋️ Our Facilities
     </h2>
 
-    <div class="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+    <div style="display:flex; justify-content:center; gap:50px; flex-wrap:wrap; text-align:center;">
 
-        <!-- CARD -->
-        <div class="relative group rounded-3xl overflow-hidden shadow-xl">
-
-            <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61"
-                 class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-
-            <div class="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white opacity-0 group-hover:opacity-100 transition">
-
-                <h3 class="text-xl font-bold">💪 Equipment</h3>
-                <p class="text-sm">Top-tier machines</p>
-
-            </div>
-
+        <div>
+            <h3>💪 Modern Equipment</h3>
+            <p>Top-tier machines & weights</p>
         </div>
 
-        <div class="relative group rounded-3xl overflow-hidden shadow-xl">
-
-            <img src="https://images.unsplash.com/photo-1518611012118-fc6d3d3b5d4c"
-                 class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-
-            <div class="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white opacity-0 group-hover:opacity-100 transition">
-
-                <h3 class="text-xl font-bold">🔥 Classes</h3>
-                <p class="text-sm">HIIT, Strength & more</p>
-
-            </div>
-
+        <div>
+            <h3>🔥 Group Classes</h3>
+            <p>HIIT, Strength, Cardio & more</p>
         </div>
 
-        <div class="relative group rounded-3xl overflow-hidden shadow-xl">
-
-            <img src="https://images.unsplash.com/photo-1558611848-73f7eb4001a1"
-                 class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-
-            <div class="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white opacity-0 group-hover:opacity-100 transition">
-
-                <h3 class="text-xl font-bold">🧘 Recovery</h3>
-                <p class="text-sm">Relax & recharge</p>
-
-            </div>
-
+        <div>
+            <h3>🧘 Recovery Zones</h3>
+            <p>Stretch & recovery spaces</p>
         </div>
 
     </div>
 
 </section>
 
+<!-- OPENING HOURS -->
+<section style="padding:100px 60px; background:white; text-align:center;">
 
-<!-- OPENING HOURS (CARD STYLE) -->
-<section class="py-24 px-6 bg-gradient-to-br from-purple-50 to-white">
-
-    <h2 class="text-4xl font-bold text-center text-purple-800 mb-12">
+    <h2 style="margin-bottom:30px;">
         ⏰ Opening Hours
     </h2>
 
-    <div class="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl text-center">
-
-        <p class="mb-2">Mon - Fri: <strong>6:00 – 22:00</strong></p>
-        <p class="mb-2">Saturday: <strong>8:00 – 20:00</strong></p>
-        <p>Sunday: <strong>9:00 – 18:00</strong></p>
-
-    </div>
+    <p>Monday - Friday: 6:00 AM – 10:00 PM</p>
+    <p>Saturday: 8:00 AM – 8:00 PM</p>
+    <p>Sunday: 9:00 AM – 6:00 PM</p>
 
 </section>
-
 <!-- CLASS SLIDER -->
 <section class="class-slider-section">
 <h2>Popular Classes</h2>
