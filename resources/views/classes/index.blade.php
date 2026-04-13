@@ -52,7 +52,7 @@
     $membershipExpired = !$user->end_date || \Carbon\Carbon::parse($user->end_date)->isPast();
 @endphp
 
-<!-- 🔥 NAVBAR -->
+<!-- 🔥 NAVBAR (UPDATED) -->
 <nav class="fixed top-0 left-0 right-0 nav-blur z-50">
 <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
@@ -60,25 +60,39 @@
 VAULT FITNESS
 </h1>
 
-<div class="flex gap-6 items-center text-sm">
+<div class="flex gap-6 items-center">
 
-<span class="font-semibold text-gray-700">
-👋 {{ $user->name }}
-</span>
+<!-- 👤 USER + GYM -->
+<div class="flex flex-col leading-tight">
 
-<a href="{{ route('dashboard') }}">Dashboard</a>
+    <span class="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">
+        {{ $user->name }}
+    </span>
 
-<a href="{{ route('classes.index') }}" class="text-purple-700 font-semibold">
-Classes
+    <span class="text-xs text-purple-600 font-medium">
+        {{ $user->gym->name ?? '' }} 
+        @if($user->gym && $user->gym->location)
+            • {{ $user->gym->location }}
+        @endif
+    </span>
+
+</div>
+
+<a href="{{ route('dashboard') }}" class="text-sm hover:text-purple-600">
+    Dashboard
 </a>
 
-<a href="{{ route('checkout') }}" class="btn-primary">
-Renew
+<a href="{{ route('classes.index') }}" class="text-sm text-purple-700 font-semibold">
+    Classes
+</a>
+
+<a href="{{ route('checkout') }}" class="btn-primary text-sm">
+    Renew
 </a>
 
 <form method="POST" action="{{ route('logout') }}">
 @csrf
-<button class="hover:text-red-500">Logout</button>
+<button class="text-sm hover:text-red-500">Logout</button>
 </form>
 
 </div>
@@ -86,7 +100,7 @@ Renew
 </nav>
 
 <!-- HERO -->
-<div class="relative overflow-hidden h-[420px] mt-20">
+<div class="relative overflow-hidden h-[420px] mt-24">
     <div id="slides" class="absolute inset-0 transition-opacity duration-1000">
         <img src="https://images.unsplash.com/photo-1554284126-aa88f22d8b74"
              class="absolute w-full h-full object-cover opacity-100 slide">
@@ -125,7 +139,7 @@ Renew
 
     <a href="{{ route('checkout') }}"
        class="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition font-semibold">
-        🔄 Renew Membership
+        Renew Membership
     </a>
 </div>
 @endif
@@ -133,7 +147,7 @@ Renew
 @if(isset($recommendedClasses) && $recommendedClasses->count())
 
 <h2 class="text-3xl font-bold text-purple-800 mb-6">
-    🔥 Recommended for You
+    Recommended for You
 </h2>
 
 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
@@ -170,7 +184,7 @@ Renew
 @endif
 
 <h2 class="text-3xl font-bold text-indigo-900 mb-8">
-    🏋️ All Classes
+    All Classes
 </h2>
 
 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -211,8 +225,8 @@ Renew
 </p>
 
 <div class="text-sm space-y-2 mb-4 text-gray-700">
-    <p>📅 {{ $class->class_time->format('d M Y H:i') }}</p>
-    <p>👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked</p>
+    <p>{{ $class->class_time->format('d M Y H:i') }}</p>
+    <p>{{ $class->bookings_count }} / {{ $class->capacity }} booked</p>
 </div>
 
 <div class="w-full bg-gray-200 rounded-full h-2 mb-5 overflow-hidden">
@@ -223,7 +237,7 @@ Renew
 
 @if($alreadyBooked)
 <button disabled class="w-full bg-green-200 text-green-800 py-3 rounded-xl font-semibold">
-    ✅ Already Booked
+    Already Booked
 </button>
 
 @elseif($isPast || $isFull)
@@ -235,7 +249,7 @@ Renew
 <form method="POST" action="{{ route('book.class', $class->id) }}">
 @csrf
 <button class="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-semibold">
-📅 Book Class
+Book Class
 </button>
 </form>
 @endif
@@ -248,7 +262,6 @@ Renew
 </div>
 
 <script>
-// SLIDER
 document.addEventListener("DOMContentLoaded", function() {
     let slides = document.querySelectorAll('.slide');
     let index = 0;
@@ -262,7 +275,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 4000);
 });
 
-// ALERT FADE
 setTimeout(() => {
     const alert = document.getElementById('alert');
     if(alert){
