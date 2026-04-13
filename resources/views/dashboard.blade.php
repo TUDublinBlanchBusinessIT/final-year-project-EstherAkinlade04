@@ -141,8 +141,8 @@ VAULT FITNESS
 
 <div class="flex gap-6 items-center text-sm">
 
-<span class="font-semibold text-gray-700">
-👋 {{ $user->name }}
+<span class="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">
+{{ $user->name }}
 </span>
 
 <a href="{{ route('dashboard') }}">Dashboard</a>
