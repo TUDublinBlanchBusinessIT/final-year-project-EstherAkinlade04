@@ -319,6 +319,9 @@ No bookings yet.
 <div class="grid md:grid-cols-2 gap-6">
 
 @foreach($bookings as $class)
+@php
+    $booking = $class->bookings->where('user_id', $user->id)->first();
+@endphp
 
 @php
 $isPast = Carbon::parse($class->class_time)->isPast();
@@ -341,7 +344,40 @@ $isPast = Carbon::parse($class->class_time)->isPast();
 
 </span>
 
+
 @if(!$isPast && !$isExpired)
+
+@php
+    $booking = $class->bookings->where('user_id', $user->id)->first();
+@endphp
+
+<div class="mt-4 space-y-2">
+
+    {{-- Cancel Booking --}}
+    <form method="POST"
+          action="{{ route('cancel.booking',$class->id) }}">
+        @csrf
+        @method('DELETE')
+
+        <button class="text-red-500 hover:text-red-400 text-sm">
+            Cancel Booking
+        </button>
+    </form>
+
+    {{-- 📅 Add to Calendar --}}
+    @if($booking)
+        <a href="{{ route('calendar.download', $booking->id) }}"
+           class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm">
+            📅 Add to Calendar
+        </a>
+    @endif
+
+</div>
+
+@endif
+
+</div>
+
 
 <form method="POST"
 action="{{ route('cancel.booking',$class->id) }}"
