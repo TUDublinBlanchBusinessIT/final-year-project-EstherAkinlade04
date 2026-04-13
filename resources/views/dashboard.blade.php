@@ -131,6 +131,7 @@ animation:scan 2s infinite;
 <p class="mt-6 lilac-text font-semibold">Authenticating</p>
 </div>
 
+<!-- 🔥 UPDATED NAVBAR -->
 <nav class="fixed top-0 left-0 right-0 nav-blur z-50">
 <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
@@ -139,6 +140,12 @@ VAULT FITNESS
 </h1>
 
 <div class="flex gap-6 items-center text-sm">
+
+<span class="font-semibold text-gray-700">
+👋 {{ $user->name }}
+</span>
+
+<a href="{{ route('dashboard') }}">Dashboard</a>
 
 <a href="{{ route('classes.index') }}">Browse Classes</a>
 
@@ -156,6 +163,7 @@ Renew
 </nav>
 
 <div class="pt-28 px-6 max-w-6xl mx-auto">
+
 @if(session('success'))
 <div id="alert" class="bg-green-100 text-green-800 p-4 rounded-xl mb-6 shadow transition">
     {{ session('success') }}
@@ -167,8 +175,8 @@ Renew
     {{ session('error') }}
 </div>
 @endif
-@php
 
+@php
 use Carbon\Carbon;
 
 $upcoming = $bookings->where('class_time','>=',now());
@@ -183,29 +191,21 @@ $endDate = Carbon::parse($user->end_date);
 $isExpired = $endDate->isPast();
 $daysLeft = now()->diffInDays($endDate,false);
 }
-
 @endphp
 
-{{-- WARNING --}}
-
 @if($daysLeft !== null && $daysLeft <= 3 && $daysLeft > 0)
-
 <div class="bg-yellow-100 text-yellow-800 p-4 rounded-xl mb-6 shadow">
 ⚠ Your membership expires in {{ $daysLeft }} day(s). Renew soon.
 </div>
-
 @endif
 
 @if($isExpired)
-
 <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow">
 Your membership has expired. Please renew to continue booking classes.
 </div>
-
 @endif
 
 <!-- MEMBERSHIP CARD -->
-
 <div class="wallet-card p-8 mb-14">
 
 <div class="text-center mb-6">
@@ -252,18 +252,14 @@ Active
 </div>
 
 <div class="mt-6">
-
 <button class="btn-wallet w-full">
  Add to Apple Wallet
 </button>
-
 </div>
 
 </div>
-
 
 <!-- STATS -->
-
 <div class="grid md:grid-cols-2 gap-6 mb-10">
 
 <div class="lux-card p-6 text-center">
@@ -282,38 +278,20 @@ Active
 
 </div>
 
-
 @if($nextClass)
-
 <div class="lux-card p-6 mb-8">
-
-<h2 class="text-lg lilac-text mb-2">
-Next Session
-</h2>
-
-<p class="text-xl font-semibold">
-{{ $nextClass->name }}
-</p>
-
+<h2 class="text-lg lilac-text mb-2">Next Session</h2>
+<p class="text-xl font-semibold">{{ $nextClass->name }}</p>
 <p class="text-gray-500">
 {{ Carbon::parse($nextClass->class_time)->format('d M Y H:i') }}
 </p>
-
 </div>
-
 @endif
 
-
-<h2 class="text-2xl lilac-text mb-6">
-Your Bookings
-</h2>
+<h2 class="text-2xl lilac-text mb-6">Your Bookings</h2>
 
 @if($bookings->isEmpty())
-
-<div class="lux-card p-8 text-center">
-No bookings yet.
-</div>
-
+<div class="lux-card p-8 text-center">No bookings yet.</div>
 @else
 
 <div class="grid md:grid-cols-2 gap-6">
@@ -321,51 +299,45 @@ No bookings yet.
 @foreach($bookings as $class)
 
 @php
-    $booking = $class->bookings->where('user_id', $user->id)->first();
-    $isPast = Carbon::parse($class->class_time)->isPast();
+$booking = $class->bookings->where('user_id', $user->id)->first();
+$isPast = Carbon::parse($class->class_time)->isPast();
 @endphp
 
 <div class="lux-card p-6">
 
-    <h3 class="text-lg font-semibold mb-2">
-        {{ $class->name }}
-    </h3>
+<h3 class="text-lg font-semibold mb-2">{{ $class->name }}</h3>
 
-    <p class="text-gray-500 mb-3">
-        {{ Carbon::parse($class->class_time)->format('d M Y H:i') }}
-    </p>
+<p class="text-gray-500 mb-3">
+{{ Carbon::parse($class->class_time)->format('d M Y H:i') }}
+</p>
 
-    <span class="text-xs px-3 py-1 rounded-full
-    {{ $isPast ? 'bg-gray-200 text-gray-600' : 'bg-[#c4b5fd] text-black' }}">
-        {{ $isPast ? 'Completed' : 'Upcoming' }}
-    </span>
+<span class="text-xs px-3 py-1 rounded-full
+{{ $isPast ? 'bg-gray-200 text-gray-600' : 'bg-[#c4b5fd] text-black' }}">
+{{ $isPast ? 'Completed' : 'Upcoming' }}
+</span>
 
-    @if(!$isPast && !$isExpired)
+@if(!$isPast && !$isExpired)
 
-        <div class="mt-4 space-y-2">
+<div class="mt-4 space-y-2">
 
-            {{-- Cancel Booking --}}
-            <form method="POST"
-                  action="{{ route('cancel.booking',$class->id) }}">
-                @csrf
-                @method('DELETE')
+<form method="POST" action="{{ route('cancel.booking',$class->id) }}">
+@csrf
+@method('DELETE')
+<button class="text-red-500 hover:text-red-400 text-sm">
+Cancel Booking
+</button>
+</form>
 
-                <button class="text-red-500 hover:text-red-400 text-sm">
-                    Cancel Booking
-                </button>
-            </form>
+@if($booking)
+<a href="{{ route('calendar.download', $booking->id) }}"
+class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm">
+📅 Add to Calendar
+</a>
+@endif
 
-            {{-- 📅 Add to Calendar --}}
-            @if($booking)
-                <a href="{{ route('calendar.download', $booking->id) }}"
-                   class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm">
-                    📅 Add to Calendar
-                </a>
-            @endif
+</div>
 
-        </div>
-
-    @endif
+@endif
 
 </div>
 
@@ -378,22 +350,22 @@ No bookings yet.
 </div>
 
 <script>
-
 new QRCode(document.getElementById("qrcode"),{
 text:"{{ $user->email }}",
 width:70,
 height:70
 });
-
 </script>
+
 <script>
 setTimeout(() => {
-    const alert = document.getElementById('alert');
-    if(alert){
-        alert.style.opacity = '0';
-        setTimeout(() => alert.remove(), 500);
-    }
+const alert = document.getElementById('alert');
+if(alert){
+alert.style.opacity = '0';
+setTimeout(() => alert.remove(), 500);
+}
 }, 4000);
 </script>
+
 </body>
 </html>
