@@ -141,9 +141,17 @@ VAULT FITNESS
 
 <div class="flex gap-6 items-center text-sm">
 
-<span class="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">
-{{ $user->name }}
-</span>
+<div class="flex flex-col leading-tight">
+
+    <span class="text-xl md:text-2xl font-bold text-gray-800">
+        {{ $user->name }}
+    </span>
+
+    <span class="text-xs text-purple-600 font-medium">
+        {{ $user->gym->name ?? '' }}
+    </span>
+
+</div>
 
 <a href="{{ route('dashboard') }}">Dashboard</a>
 
