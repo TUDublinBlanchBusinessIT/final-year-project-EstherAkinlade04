@@ -15,7 +15,7 @@ class AdminController extends Controller
     public function index()
     {
         // ✅ CURRENT GYM
-        $gymId = session('selected_gym_id');
+        $gymId = auth()->user()->gym_id;
 
         // 📅 Classes (FILTERED)
         $classes = FitnessClass::withCount('bookings')
@@ -25,7 +25,7 @@ class AdminController extends Controller
             ->paginate(5);
 
         // 📊 Basic stats
-        $totalUsers = User::count();
+        $totalUsers = User::where('gym_id', $gymId)->count();
 
         $totalBookings = Booking::whereHas('fitnessClass', function ($q) use ($gymId) {
             if ($gymId) $q->where('gym_id', $gymId);
@@ -41,7 +41,7 @@ class AdminController extends Controller
             ->join('fitness_classes','bookings.fitness_class_id','=','fitness_classes.id')
             ->sum('fitness_classes.price');
 
-        $membershipRevenue = User::sum('price_paid');
+        $membershipRevenue = User::where('gym_id', $gymId)->sum('price_paid');
         $totalRevenue = $classRevenue + $membershipRevenue;
 
         // 📈 Monthly revenue
@@ -120,6 +120,7 @@ class AdminController extends Controller
 
         // 🏆 Top members (GLOBAL)
         $topMembers = User::withCount('bookings')
+            ->where('gym_id', $gymId)
             ->orderByDesc('bookings_count')
             ->take(5)
             ->get();
@@ -197,6 +198,7 @@ class AdminController extends Controller
 
         // ✅ USERS (GLOBAL)
         $users = User::withCount('bookings')
+            ->where('gym_id', $gymId)
             ->latest()
             ->take(20)
             ->get();
@@ -279,10 +281,13 @@ class AdminController extends Controller
         $gymId = session('selected_gym_id');
 
         return response()->json([
-            'users' => User::where('name', 'like', "%$query%")
-                ->orWhere('email', 'like', "%$query%")
-                ->limit(5)
-                ->get(),
+            'users' => User::where('gym_id', $gymId)
+    ->where(function($q) use ($query){
+        $q->where('name','like',"%$query%")
+          ->orWhere('email','like',"%$query%");
+    })
+    ->limit(5)
+    ->get(),
 
             'classes' => FitnessClass::when($gymId, fn($q)=>$q->where('gym_id',$gymId))
                 ->where('name', 'like', "%$query%")

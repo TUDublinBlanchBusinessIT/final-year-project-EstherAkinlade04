@@ -319,80 +319,53 @@ No bookings yet.
 <div class="grid md:grid-cols-2 gap-6">
 
 @foreach($bookings as $class)
-@php
-    $booking = $class->bookings->where('user_id', $user->id)->first();
-@endphp
 
 @php
-$isPast = Carbon::parse($class->class_time)->isPast();
+    $booking = $class->bookings->where('user_id', $user->id)->first();
+    $isPast = Carbon::parse($class->class_time)->isPast();
 @endphp
 
 <div class="lux-card p-6">
 
-<h3 class="text-lg font-semibold mb-2">
-{{ $class->name }}
-</h3>
+    <h3 class="text-lg font-semibold mb-2">
+        {{ $class->name }}
+    </h3>
 
-<p class="text-gray-500 mb-3">
-{{ Carbon::parse($class->class_time)->format('d M Y H:i') }}
-</p>
+    <p class="text-gray-500 mb-3">
+        {{ Carbon::parse($class->class_time)->format('d M Y H:i') }}
+    </p>
 
-<span class="text-xs px-3 py-1 rounded-full
-{{ $isPast ? 'bg-gray-200 text-gray-600' : 'bg-[#c4b5fd] text-black' }}">
+    <span class="text-xs px-3 py-1 rounded-full
+    {{ $isPast ? 'bg-gray-200 text-gray-600' : 'bg-[#c4b5fd] text-black' }}">
+        {{ $isPast ? 'Completed' : 'Upcoming' }}
+    </span>
 
-{{ $isPast ? 'Completed' : 'Upcoming' }}
+    @if(!$isPast && !$isExpired)
 
-</span>
+        <div class="mt-4 space-y-2">
 
+            {{-- Cancel Booking --}}
+            <form method="POST"
+                  action="{{ route('cancel.booking',$class->id) }}">
+                @csrf
+                @method('DELETE')
 
-@if(!$isPast && !$isExpired)
+                <button class="text-red-500 hover:text-red-400 text-sm">
+                    Cancel Booking
+                </button>
+            </form>
 
-@php
-    $booking = $class->bookings->where('user_id', $user->id)->first();
-@endphp
+            {{-- 📅 Add to Calendar --}}
+            @if($booking)
+                <a href="{{ route('calendar.download', $booking->id) }}"
+                   class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm">
+                    📅 Add to Calendar
+                </a>
+            @endif
 
-<div class="mt-4 space-y-2">
+        </div>
 
-    {{-- Cancel Booking --}}
-    <form method="POST"
-          action="{{ route('cancel.booking',$class->id) }}">
-        @csrf
-        @method('DELETE')
-
-        <button class="text-red-500 hover:text-red-400 text-sm">
-            Cancel Booking
-        </button>
-    </form>
-
-    {{-- 📅 Add to Calendar --}}
-    @if($booking)
-        <a href="{{ route('calendar.download', $booking->id) }}"
-           class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm">
-            📅 Add to Calendar
-        </a>
     @endif
-
-</div>
-
-@endif
-
-</div>
-
-
-<form method="POST"
-action="{{ route('cancel.booking',$class->id) }}"
-class="mt-4">
-
-@csrf
-@method('DELETE')
-
-<button class="text-red-500 hover:text-red-400 text-sm">
-Cancel Booking
-</button>
-
-</form>
-
-@endif
 
 </div>
 

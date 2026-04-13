@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\Booking;
 use App\Models\FitnessClass;
+use App\Models\Gym;
 
 class User extends Authenticatable
 {
@@ -19,6 +20,7 @@ class User extends Authenticatable
         'start_date',
         'end_date',
         'price_paid',
+        'gym_id', // ✅ ADDED (important for multi-gym)
     ];
 
     protected $hidden = [
@@ -31,11 +33,25 @@ class User extends Authenticatable
         'end_date' => 'datetime',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    // 🏢 User belongs to a Gym
+    public function gym()
+    {
+        return $this->belongsTo(Gym::class);
+    }
+
+    // 📖 User bookings
     public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
 
+    // 🏋️ Classes via bookings
     public function fitnessClasses()
     {
         return $this->belongsToMany(
@@ -46,6 +62,13 @@ class User extends Authenticatable
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    // 👑 Check if user is admin
     public function isAdmin()
     {
         return $this->role === 'admin';
