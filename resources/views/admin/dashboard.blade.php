@@ -168,11 +168,11 @@ Logout
 <main class="flex-1 p-14">
     <div class="mb-10 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8 rounded-3xl shadow-lg">
 
-    <p class="text-xs opacity-60 uppercase tracking-widest">
+    <p class="text-sm opacity-80 uppercase tracking-widest">
         Managing Gym
     </p>
 
-    <h1 class="text-5xl md:text-6xl font-extrabold mt-2 tracking-tight">
+    <h1 class="text-5xl md:text-6xl font-extrabold mt-2 tracking-tight drop-shadow-lg">
     {{ auth()->user()->gym->location }}
 </h1>
 
