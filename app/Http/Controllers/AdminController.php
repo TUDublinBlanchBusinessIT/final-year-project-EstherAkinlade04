@@ -11,151 +11,181 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminController extends Controller
 {
-
     public function index()
     {
-        // ✅ CURRENT GYM
         $gymId = auth()->user()->gym_id;
 
-        // 📅 Classes (FILTERED)
+        /* =========================
+         | 📅 CLASSES
+         ========================= */
         $classes = FitnessClass::withCount('bookings')
-            ->with(['bookings.user'])
-            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
+            ->with('bookings.user')
+            ->where('gym_id', $gymId)
             ->orderBy('class_time')
             ->paginate(5);
 
-        // 📊 Basic stats
+        /* =========================
+         | 📊 BASIC STATS
+         ========================= */
         $totalUsers = User::where('gym_id', $gymId)->count();
 
-        $totalBookings = Booking::whereHas('fitnessClass', function ($q) use ($gymId) {
-            if ($gymId) $q->where('gym_id', $gymId);
-        })->count();
+        $totalBookings = Booking::whereHas('fitnessClass', fn($q) =>
+            $q->where('gym_id', $gymId)
+        )->count();
 
-        $totalClasses = FitnessClass::when($gymId, fn($q) => $q->where('gym_id', $gymId))->count();
+        $totalClasses = FitnessClass::where('gym_id', $gymId)->count();
 
-        // 💰 Revenue (FILTERED)
-        $classRevenue = Booking::where('payment_status','paid')
-            ->whereHas('fitnessClass', function ($q) use ($gymId) {
-                if ($gymId) $q->where('gym_id', $gymId);
-            })
-            ->join('fitness_classes','bookings.fitness_class_id','=','fitness_classes.id')
+        /* =========================
+         | 💰 REVENUE
+         ========================= */
+        $classRevenue = Booking::where('payment_status', 'paid')
+            ->whereHas('fitnessClass', fn($q) =>
+                $q->where('gym_id', $gymId)
+            )
+            ->join('fitness_classes', 'bookings.fitness_class_id', '=', 'fitness_classes.id')
             ->sum('fitness_classes.price');
 
         $membershipRevenue = User::where('gym_id', $gymId)->sum('price_paid');
         $totalRevenue = $classRevenue + $membershipRevenue;
 
-        // 📈 Monthly revenue
-        $monthlyRevenue = User::select(
+        /* =========================
+         | 📈 MONTHLY REVENUE
+         ========================= */
+        $monthlyRevenue = User::where('gym_id', $gymId)
+            ->select(
                 DB::raw('MONTH(created_at) as month_number'),
                 DB::raw('MONTHNAME(created_at) as month'),
                 DB::raw('SUM(price_paid) as total')
             )
             ->whereYear('created_at', now()->year)
-            ->groupBy('month_number','month')
+            ->groupBy('month_number', 'month')
             ->orderBy('month_number')
             ->get();
 
-        // 📊 Membership breakdown
-        $membershipBreakdown = User::select(
-                'membership_type',
-                DB::raw('COUNT(*) as total')
-            )
+        /* =========================
+         | 📊 MEMBERSHIP BREAKDOWN
+         ========================= */
+        $membershipBreakdown = User::where('gym_id', $gymId)
+            ->select('membership_type', DB::raw('COUNT(*) as total'))
             ->groupBy('membership_type')
             ->get();
 
-        // 👥 Member status
-        $activeMembers = User::where('end_date','>=',now())->count();
-        $expiredMembers = User::where('end_date','<',now())->count();
+        /* =========================
+         | 👥 MEMBERS
+         ========================= */
+        $activeMembers = User::where('gym_id', $gymId)
+            ->where('end_date', '>=', now())
+            ->count();
 
-        // ⏳ Expiring soon
-        $expiringSoonUsers = User::whereBetween('end_date',[now(), now()->addDays(7)])
+        $expiredMembers = User::where('gym_id', $gymId)
+            ->where('end_date', '<', now())
+            ->count();
+
+        $expiringSoonUsers = User::where('gym_id', $gymId)
+            ->whereBetween('end_date', [now(), now()->addDays(7)])
             ->orderBy('end_date')
-            ->get(['name','end_date']);
+            ->get(['name', 'end_date']);
 
-        // ❌ Cancelled classes (FILTERED)
-        $cancelledClasses = FitnessClass::where('is_cancelled', true)
-            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
+        /* =========================
+         | ❌ CANCELLED CLASSES
+         ========================= */
+        $cancelledClasses = FitnessClass::where('gym_id', $gymId)
+            ->where('is_cancelled', true)
             ->orderBy('class_time')
-            ->get(['name','class_time']);
+            ->get(['name', 'class_time']);
 
-        // 💰 Revenue per class (FILTERED)
-        $classRevenueData = FitnessClass::withCount('bookings')
-            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
+        /* =========================
+         | 💰 REVENUE PER CLASS
+         ========================= */
+        $classRevenueData = FitnessClass::where('gym_id', $gymId)
+            ->withCount('bookings')
             ->get()
             ->map(fn($class) => [
                 'name' => $class->name,
                 'revenue' => $class->bookings_count * $class->price
             ]);
 
-        // 🔥 HEATMAP (FILTERED)
-        $activityData = Booking::select(
+        /* =========================
+         | 🔥 HEATMAP DATA
+         ========================= */
+        $activityData = Booking::whereHas('fitnessClass', fn($q) =>
+                $q->where('gym_id', $gymId)
+            )
+            ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as total')
             )
-            ->whereHas('fitnessClass', function ($q) use ($gymId) {
-                if ($gymId) $q->where('gym_id', $gymId);
-            })
             ->groupBy('date')
             ->orderBy('date')
             ->get()
             ->map(fn($d) => [
                 'date' => $d->date,
-                'total' => (int)$d->total
-            ])
-            ->values();
+                'total' => (int) $d->total
+            ]);
 
-        // 📊 Booking chart
-        $bookingChart = FitnessClass::withCount('bookings')
-            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
+        /* =========================
+         | 📊 BOOKING CHART
+         ========================= */
+        $bookingChart = FitnessClass::where('gym_id', $gymId)
+            ->withCount('bookings')
             ->get();
 
         $bookingLabels = $bookingChart->pluck('name');
         $bookingCounts = $bookingChart->pluck('bookings_count');
 
-        // 🔥 Most popular class (FILTERED)
-        $mostPopularClass = FitnessClass::withCount('bookings')
-            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
+        /* =========================
+         | 🔥 POPULAR CLASS
+         ========================= */
+        $mostPopularClass = FitnessClass::where('gym_id', $gymId)
+            ->withCount('bookings')
             ->orderByDesc('bookings_count')
             ->first();
 
-        // 🏆 Top members (GLOBAL)
-        $topMembers = User::withCount('bookings')
-            ->where('gym_id', $gymId)
+        /* =========================
+         | 🏆 TOP MEMBERS
+         ========================= */
+        $topMembers = User::where('gym_id', $gymId)
+            ->withCount('bookings')
             ->orderByDesc('bookings_count')
             ->take(5)
             ->get();
 
-        // 🚨 LOW BOOKING ALERT (FILTERED)
-        $lowBookingClasses = FitnessClass::withCount('bookings')
-            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
-            ->having('bookings_count','<',3)
+        /* =========================
+         | 🚨 ALERTS
+         ========================= */
+        $lowBookingClasses = FitnessClass::where('gym_id', $gymId)
+            ->withCount('bookings')
+            ->having('bookings_count', '<', 3)
             ->get();
 
-        // 🔥 ALMOST FULL (FILTERED)
-        $almostFullClasses = FitnessClass::withCount('bookings')
-            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
+        $almostFullClasses = FitnessClass::where('gym_id', $gymId)
+            ->withCount('bookings')
             ->get()
             ->filter(fn($c) =>
                 $c->capacity > 0 &&
                 ($c->bookings_count / $c->capacity) >= 0.8
             );
 
-        // ⏰ PEAK TIME (FILTERED)
-        $peakTime = Booking::select(
+        /* =========================
+         | ⏰ PEAK TIME
+         ========================= */
+        $peakTime = Booking::whereHas('fitnessClass', fn($q) =>
+                $q->where('gym_id', $gymId)
+            )
+            ->select(
                 DB::raw('DAYNAME(created_at) as day'),
                 DB::raw('HOUR(created_at) as hour'),
                 DB::raw('COUNT(*) as total')
             )
-            ->whereHas('fitnessClass', function ($q) use ($gymId) {
-                if ($gymId) $q->where('gym_id', $gymId);
-            })
-            ->groupBy('day','hour')
+            ->groupBy('day', 'hour')
             ->orderByDesc('total')
             ->first();
 
-        // 📊 CLASS PERFORMANCE (FILTERED)
-        $classPerformance = FitnessClass::withCount('bookings')
-            ->when($gymId, fn($q) => $q->where('gym_id', $gymId))
+        /* =========================
+         | 📊 PERFORMANCE
+         ========================= */
+        $classPerformance = FitnessClass::where('gym_id', $gymId)
+            ->withCount('bookings')
             ->get()
             ->map(fn($c) => [
                 'name' => $c->name,
@@ -164,41 +194,47 @@ class AdminController extends Controller
                     : 0
             ]);
 
-        // 📈 GROWTH RATE
-        $lastMonthRevenue = User::whereMonth('created_at', now()->subMonth()->month)
+        /* =========================
+         | 📈 GROWTH
+         ========================= */
+        $lastMonthRevenue = User::where('gym_id', $gymId)
+            ->whereMonth('created_at', now()->subMonth()->month)
             ->sum('price_paid');
 
-        $thisMonthRevenue = User::whereMonth('created_at', now()->month)
+        $thisMonthRevenue = User::where('gym_id', $gymId)
+            ->whereMonth('created_at', now()->month)
             ->sum('price_paid');
 
         $growthRate = $lastMonthRevenue > 0
             ? round((($thisMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100)
             : 100;
 
-        // 🧠 SMART INSIGHTS
+        /* =========================
+         | 🧠 INSIGHTS
+         ========================= */
         $insights = [];
 
-        if($activeMembers < $expiredMembers){
+        if ($activeMembers < $expiredMembers) {
             $insights[] = "⚠️ Retention is dropping";
         }
 
-        if($totalBookings < 20){
+        if ($totalBookings < 20) {
             $insights[] = "📉 Low booking activity";
         }
 
-        if($mostPopularClass){
+        if ($mostPopularClass) {
             $insights[] = "🔥 {$mostPopularClass->name} is trending";
         }
 
-        if($growthRate > 0){
-            $insights[] = "📈 Revenue growing {$growthRate}%";
-        } else {
-            $insights[] = "📉 Revenue declined {$growthRate}%";
-        }
+        $insights[] = $growthRate > 0
+            ? "📈 Revenue growing {$growthRate}%"
+            : "📉 Revenue declined {$growthRate}%";
 
-        // ✅ USERS (GLOBAL)
-        $users = User::withCount('bookings')
-            ->where('gym_id', $gymId)
+        /* =========================
+         | 👥 USERS
+         ========================= */
+        $users = User::where('gym_id', $gymId)
+            ->withCount('bookings')
             ->latest()
             ->take(20)
             ->get();
@@ -233,13 +269,12 @@ class AdminController extends Controller
         ));
     }
 
+    /* =========================
+     | STORE CLASS
+     ========================= */
     public function store(Request $request)
     {
-        $gymId = session('selected_gym_id');
-
-        if (!$gymId) {
-            return back()->with('error', 'Please select a gym first');
-        }
+        $gymId = auth()->user()->gym_id;
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -255,20 +290,16 @@ class AdminController extends Controller
         FitnessClass::create($validated);
 
         return redirect()->route('admin.dashboard')
-            ->with('success','Class created successfully');
+            ->with('success', 'Class created successfully');
     }
 
-    // 🔽 EVERYTHING ELSE UNCHANGED
-
-    public function deleteUser($id)
-    {
-        User::findOrFail($id)->delete();
-        return back()->with('success', 'User deleted');
-    }
-
+    /* =========================
+     | SEARCH (FIXED)
+     ========================= */
     public function search(Request $request)
     {
         $query = $request->q;
+        $gymId = auth()->user()->gym_id;
 
         if (!$query) {
             return response()->json([
@@ -278,34 +309,36 @@ class AdminController extends Controller
             ]);
         }
 
-        $gymId = session('selected_gym_id');
-
         return response()->json([
             'users' => User::where('gym_id', $gymId)
-    ->where(function($q) use ($query){
-        $q->where('name','like',"%$query%")
-          ->orWhere('email','like',"%$query%");
-    })
-    ->limit(5)
-    ->get(),
+                ->where(fn($q) =>
+                    $q->where('name', 'like', "%$query%")
+                      ->orWhere('email', 'like', "%$query%")
+                )
+                ->limit(5)
+                ->get(),
 
-            'classes' => FitnessClass::when($gymId, fn($q)=>$q->where('gym_id',$gymId))
+            'classes' => FitnessClass::where('gym_id', $gymId)
                 ->where('name', 'like', "%$query%")
                 ->limit(5)
                 ->get(),
 
             'bookings' => Booking::with(['user','fitnessClass'])
-                ->whereHas('fitnessClass', function ($q) use ($gymId) {
-                    if ($gymId) $q->where('gym_id', $gymId);
-                })
+                ->whereHas('fitnessClass', fn($q) =>
+                    $q->where('gym_id', $gymId)
+                )
                 ->limit(5)
                 ->get()
         ]);
     }
 
-    public function create()
+    /* =========================
+     | SIMPLE ACTIONS
+     ========================= */
+    public function deleteUser($id)
     {
-        return view('admin.create-class');
+        User::findOrFail($id)->delete();
+        return back()->with('success', 'User deleted');
     }
 
     public function editClass($id)
@@ -316,49 +349,36 @@ class AdminController extends Controller
 
     public function updateClass(Request $request, $id)
     {
-        $class = FitnessClass::findOrFail($id);
-
-        $class->update([
+        FitnessClass::findOrFail($id)->update([
             'admin_notes' => $request->admin_notes
         ]);
 
-        return redirect()->route('admin.dashboard')
-            ->with('success','Class notes updated');
+        return back()->with('success', 'Class notes updated');
     }
 
     public function deleteClass($id)
     {
         FitnessClass::findOrFail($id)->delete();
-
-        return redirect()->route('admin.dashboard')
-            ->with('success','Class deleted successfully');
+        return back()->with('success', 'Class deleted');
     }
 
     public function cancelClass($id)
     {
-        FitnessClass::findOrFail($id)->update([
-            'is_cancelled' => true
-        ]);
-
-        return back()->with('success','Class cancelled');
+        FitnessClass::findOrFail($id)->update(['is_cancelled' => true]);
+        return back()->with('success', 'Class cancelled');
     }
 
     public function toggleAttendance($id)
     {
         $booking = Booking::findOrFail($id);
-
-        $booking->update([
-            'attended' => !$booking->attended
-        ]);
-
+        $booking->update(['attended' => !$booking->attended]);
         return back();
     }
 
     public function removeBooking($id)
     {
         Booking::findOrFail($id)->delete();
-
-        return back()->with('success','Booking removed');
+        return back()->with('success', 'Booking removed');
     }
 
     public function checkinPage()
@@ -366,20 +386,25 @@ class AdminController extends Controller
         return view('admin.checkin');
     }
 
+    /* =========================
+     | EXPORT CSV
+     ========================= */
     public function exportRevenue()
     {
-        $users = User::select(
-            'name','email','membership_type','price_paid','created_at'
-        )->get();
+        $gymId = auth()->user()->gym_id;
+
+        $users = User::where('gym_id', $gymId)
+            ->select('name','email','membership_type','price_paid','created_at')
+            ->get();
 
         $response = new StreamedResponse(function () use ($users) {
 
             $handle = fopen('php://output','w');
 
-            fputcsv($handle,['Name','Email','Membership Type','Amount Paid (€)','Date']);
+            fputcsv($handle, ['Name','Email','Membership Type','Amount Paid (€)','Date']);
 
-            foreach($users as $user){
-                fputcsv($handle,[
+            foreach ($users as $user) {
+                fputcsv($handle, [
                     $user->name,
                     $user->email,
                     $user->membership_type,
