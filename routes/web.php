@@ -8,7 +8,8 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MembershipPlanController;
-use App\Http\Controllers\Admin\GymController; // ✅ ADDED
+use App\Http\Controllers\Admin\GymController;
+use App\Http\Controllers\CalendarController; // ✅ ADDED
 
 
 /*
@@ -80,6 +81,16 @@ Route::middleware('auth')->group(function () {
             ->name('cancel.booking');
 
     });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 📅 Calendar Integration (NEW)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/calendar/{booking}', [CalendarController::class, 'download'])
+        ->name('calendar.download');
 
 
     /*
