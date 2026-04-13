@@ -166,6 +166,26 @@ Logout
 <!-- MAIN -->
 
 <main class="flex-1 p-14">
+    <div class="mb-10 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8 rounded-3xl shadow-lg">
+
+    <p class="text-sm opacity-80 uppercase tracking-widest">
+        Managing Gym
+    </p>
+
+    <h1 class="text-3xl md:text-4xl font-bold mt-2">
+        {{ auth()->user()->gym->name ?? 'No Gym Assigned' }}
+    </h1>
+
+    <p class="text-sm mt-2 opacity-80">
+        📍 {{ auth()->user()->gym->location ?? '' }}
+    </p>
+
+    <!-- 🔥 ADD THIS EXACTLY HERE -->
+    <span class="inline-block mt-3 bg-white/20 px-4 py-1 rounded-full text-xs font-semibold tracking-wide">
+        🔒 Admin Access
+    </span>
+
+</div>
 <!-- 🔔 NOTIFICATIONS -->
 @if(session('success'))
 <div 
