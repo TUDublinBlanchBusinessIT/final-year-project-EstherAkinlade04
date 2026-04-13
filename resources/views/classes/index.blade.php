@@ -6,6 +6,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
+        .nav-blur{
+            backdrop-filter:blur(16px);
+            background:rgba(255,255,255,0.85);
+            border-bottom:1px solid #ede9fe;
+        }
+
+        .btn-primary{
+            background:#6d28d9;
+            color:white;
+            padding:10px 18px;
+            border-radius:14px;
+        }
+
         .lux-card {
             transition: all .35s ease;
         }
@@ -39,8 +52,41 @@
     $membershipExpired = !$user->end_date || \Carbon\Carbon::parse($user->end_date)->isPast();
 @endphp
 
+<!-- 🔥 NAVBAR -->
+<nav class="fixed top-0 left-0 right-0 nav-blur z-50">
+<div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+<h1 class="text-lg tracking-widest font-semibold text-purple-700">
+VAULT FITNESS
+</h1>
+
+<div class="flex gap-6 items-center text-sm">
+
+<span class="font-semibold text-gray-700">
+👋 {{ $user->name }}
+</span>
+
+<a href="{{ route('dashboard') }}">Dashboard</a>
+
+<a href="{{ route('classes.index') }}" class="text-purple-700 font-semibold">
+Classes
+</a>
+
+<a href="{{ route('checkout') }}" class="btn-primary">
+Renew
+</a>
+
+<form method="POST" action="{{ route('logout') }}">
+@csrf
+<button class="hover:text-red-500">Logout</button>
+</form>
+
+</div>
+</div>
+</nav>
+
 <!-- HERO -->
-<div class="relative overflow-hidden h-[420px]">
+<div class="relative overflow-hidden h-[420px] mt-20">
     <div id="slides" class="absolute inset-0 transition-opacity duration-1000">
         <img src="https://images.unsplash.com/photo-1554284126-aa88f22d8b74"
              class="absolute w-full h-full object-cover opacity-100 slide">
@@ -58,7 +104,6 @@
 
 <div class="p-10">
 
-{{-- SUCCESS / ERROR --}}
 @if(session('success'))
 <div id="alert" class="fade-out bg-green-100 text-green-800 p-4 rounded-xl mb-6 shadow">
     {{ session('success') }}
@@ -71,7 +116,6 @@
 </div>
 @endif
 
-{{-- MEMBERSHIP WARNING --}}
 @if($membershipExpired)
 <div class="bg-red-100 text-red-800 p-6 rounded-xl mb-10 shadow flex justify-between items-center">
     <div>
@@ -86,7 +130,6 @@
 </div>
 @endif
 
-{{-- 🔥 RECOMMENDATIONS --}}
 @if(isset($recommendedClasses) && $recommendedClasses->count())
 
 <h2 class="text-3xl font-bold text-purple-800 mb-6">
@@ -126,7 +169,6 @@
 
 @endif
 
-{{-- ALL CLASSES --}}
 <h2 class="text-3xl font-bold text-indigo-900 mb-8">
     🏋️ All Classes
 </h2>
@@ -146,58 +188,57 @@
 
 <div class="relative bg-white p-6 rounded-3xl shadow-xl border border-indigo-100 lux-card">
 
-    @if($membershipExpired && !$alreadyBooked && !$isPast)
-        <div class="locked-overlay">
-            <div class="text-center">
-                <p class="text-indigo-800 font-semibold text-lg mb-3">
-                    Membership Required
-                </p>
-                <a href="{{ route('checkout') }}"
-                   class="bg-indigo-600 text-white px-6 py-2 rounded-xl hover:bg-indigo-700 transition">
-                    Renew Now
-                </a>
-            </div>
-        </div>
-    @endif
-
-    <h2 class="text-2xl font-bold text-indigo-800 mb-2">
-        {{ $class->name }}
-    </h2>
-
-    <p class="text-gray-600 mb-4">
-        {{ $class->description }}
-    </p>
-
-    <div class="text-sm space-y-2 mb-4 text-gray-700">
-        <p>📅 {{ $class->class_time->format('d M Y H:i') }}</p>
-        <p>👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked</p>
+@if($membershipExpired && !$alreadyBooked && !$isPast)
+<div class="locked-overlay">
+    <div class="text-center">
+        <p class="text-indigo-800 font-semibold text-lg mb-3">
+            Membership Required
+        </p>
+        <a href="{{ route('checkout') }}"
+           class="bg-indigo-600 text-white px-6 py-2 rounded-xl hover:bg-indigo-700 transition">
+            Renew Now
+        </a>
     </div>
+</div>
+@endif
 
-    <div class="w-full bg-gray-200 rounded-full h-2 mb-5 overflow-hidden">
-        <div class="bg-indigo-600 h-2 rounded-full"
-             style="width: {{ $fillPercent }}%">
-        </div>
+<h2 class="text-2xl font-bold text-indigo-800 mb-2">
+    {{ $class->name }}
+</h2>
+
+<p class="text-gray-600 mb-4">
+    {{ $class->description }}
+</p>
+
+<div class="text-sm space-y-2 mb-4 text-gray-700">
+    <p>📅 {{ $class->class_time->format('d M Y H:i') }}</p>
+    <p>👥 {{ $class->bookings_count }} / {{ $class->capacity }} booked</p>
+</div>
+
+<div class="w-full bg-gray-200 rounded-full h-2 mb-5 overflow-hidden">
+    <div class="bg-indigo-600 h-2 rounded-full"
+         style="width: {{ $fillPercent }}%">
     </div>
+</div>
 
-    @if($alreadyBooked)
-        <button disabled class="w-full bg-green-200 text-green-800 py-3 rounded-xl font-semibold">
-            ✅ Already Booked
-        </button>
+@if($alreadyBooked)
+<button disabled class="w-full bg-green-200 text-green-800 py-3 rounded-xl font-semibold">
+    ✅ Already Booked
+</button>
 
-    @elseif($isPast || $isFull)
-        <button disabled class="w-full bg-gray-300 text-white py-3 rounded-xl">
-            Booking Unavailable
-        </button>
+@elseif($isPast || $isFull)
+<button disabled class="w-full bg-gray-300 text-white py-3 rounded-xl">
+    Booking Unavailable
+</button>
 
-    @elseif(!$membershipExpired)
-        <form method="POST" action="{{ route('book.class', $class->id) }}">
-            @csrf
-            <button
-                class="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-semibold">
-                📅 Book Class
-            </button>
-        </form>
-    @endif
+@elseif(!$membershipExpired)
+<form method="POST" action="{{ route('book.class', $class->id) }}">
+@csrf
+<button class="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-semibold">
+📅 Book Class
+</button>
+</form>
+@endif
 
 </div>
 
@@ -207,7 +248,7 @@
 </div>
 
 <script>
-// 🔥 SLIDER
+// SLIDER
 document.addEventListener("DOMContentLoaded", function() {
     let slides = document.querySelectorAll('.slide');
     let index = 0;
@@ -221,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 4000);
 });
 
-// 🔔 AUTO HIDE ALERT
+// ALERT FADE
 setTimeout(() => {
     const alert = document.getElementById('alert');
     if(alert){
