@@ -1,6 +1,6 @@
 # Vault Fitness Booking System
 
-> A modern full-stack fitness class booking and gym management platform developed using Laravel, Stripe, and MySQL.
+> A modern full-stack fitness class booking and gym management platform developed using Laravel, Stripe, Google cloud and MySQL.
 
 ---
 
